@@ -1,0 +1,4 @@
+#Developer specific settings should go in this file
+
+#Full system path to the directory that contains the static media
+STATIC_DOC_ROOT = '/Users/andy/work/projects/django-projects/tdsurface/media'
