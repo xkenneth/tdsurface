@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tndb>
+{% for tn in tns %}
+    <tnentry>
+        <tn>
+            <cc>{{ tn.cc }}</cc>
+            <npa>{{ tn.npa }})</npa>
+            <nxx>{{ tn.nxx }}</nxx>
+            <station>{{ tn.station }}</station>            
+        </tn>
+        <customer>{{ tn.customer }}</customer>
+        <billing_number>{{ tn.billing_number }}</billing_number>
+        <status>{{ tn.status }}</status>
+        <status_date>{{ tn.status_date }}</status_date>
+        <product>{{ tn.product }}</product>
+        <e911_provider>{{ tn.e911provider }}</e911_provider>
+        <switch>{{ tn.switch }}</switch>
+        <rate_center_state>{{ tn.rate_center_state }}</rate_center_state>
+        <rate_center_name>{{ tn.rate_center_name }}</rate_center_name>
+        <rate_center_market>{{ tn.rate_center_market }}</rate_center_market>
+        <source>{{ tn.source }}</source>
+    </tnentry>
+{% endfor %}
+</tndb>

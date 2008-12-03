@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+
+<table class="box" cellspacing="0">
+    <tr>
+        <th>Telephone Number Search Form</th> 
+    </tr>
+    <tr>   
+        <td>
+            <form method="POST" action="." >       
+                <p><label for="cc">Country Code: </label><input id="cc" name="cc" type="text" size="5" value="01"></p>
+                <p><label for="tn">TN: </label><input id="tn" name="tn" type="text" size="10"></p>
+                <p><label for="npa">NPA: </label><input id="npa" name="npa" type="text" size="5"></p>
+                <p><label for="nxx">NXX: </label><input id="nxx" name="nxx" type="text" size="5"></p>
+                <p><label for="station">Station: </label><input id="station" name="station" type="text" size="10"></p>
+                <p><label for="billing">Customer: </label><select id="billing" name="billing">   
+                    <option value=""> --------------- </option>
+                    {% for b in billing %}
+                        <option value='{{ b.id }}'>{{ b }}</option>
+                    {% endfor %}
+                </select>
+                </p>
+                <p><label for="status">Status: </label><select id="status" name="status">   
+                    <option value=""> --------------- </option>
+                    {% for s in status %}
+                        <option value='{{ s.id }}'>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                </p>
+                <p><label for="statusdate">Status Date (YYYY-MM-DD): </label><select id="statusdateop" name="statusdateop">   
+                    <option value=""> ------ </option>                    
+                        <option value='lessthan'> &lt; </option>
+                        <option value='greaterthan'> &gt; </option>
+                        <option value='equalto'> = </option>                    
+                </select> <input id="statusdate" name="statusdate" type="text" size="10">
+                </p>
+                <p><label for="switch">Switch: </label><select id="switch" name="switch">   
+                    <option value=""> --------------- </option>
+                    {% for s in switch %}
+                        <option value='{{ s.id }}'>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                </p>
+                <p><label for="product">Product: </label><select id="product" name="product">   
+                    <option value=""> --------------- </option>
+                    {% for s in product %}
+                        <option value='{{ s.id }}'>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                </p>                
+                <p><label for="e911provider">E911 Provider: </label><select id="e911provider" name="e911provider">   
+                    <option value=""> --------------- </option>
+                    {% for s in e911provider %}
+                        <option value='{{ s.id }}'>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                </p>                
+                <p><label for="rate_center_market">Rate Center Market: </label><select id="rate_center_market" name="rate_center_market">   
+                    <option value=""> --------------- </option>
+                    {% for s in rate_center_market %}
+                        <option value='{{ s.id }}'>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                </p>
+                <p><label for="source">Source: </label><select id="source" name="source">   
+                    <option value=""> --------------- </option>
+                    {% for s in source %}
+                        <option value='{{ s.id }}'>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                </p>
+                <p><label for="format">Report Format: </label><select id="format" name="format">   
+                    <option value="HTML">HTML</option>
+                    <option value="COMMA">Comma Delimited</option>
+                    <option value="XML">XML</option>                 
+                </select>
+                </p>    
+                <p><label for="submit">&nbsp;</label><input id="submit" name="submit" value="Search" type="submit"></p>
+            </form>
+        </td>
+    </tr>
+</table>
+
+
+{% endblock body %}

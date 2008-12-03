@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+{% if allowUpdates %}
+
+
+<script type="text/javascript">
+function checkAll(){
+	for (var i=0;i<document.forms[0].elements.length;i++)
+	{
+		var e=document.forms[0].elements[i];
+		if (e.type=='checkbox')
+		{
+			e.checked=1;
+		}
+	}
+}
+
+function checkNone(){
+	for (var i=0;i<document.forms[0].elements.length;i++)
+	{
+		var e=document.forms[0].elements[i];
+		if (e.type=='checkbox')
+		{
+			e.checked=0;
+		}
+	}
+}
+
+function checkToggle(){
+	for (var i=0;i<document.forms[0].elements.length;i++)
+	{
+		var e=document.forms[0].elements[i];
+		if (e.type=='checkbox')
+		{
+			if(e.checked)e.checked=0;
+            else e.checked = 1;
+		}
+	}
+}
+
+
+</script>
+
+<form method="POST" action="/i3/tndb/update/">
+{% endif %}
+
+<h4>Telephone Numbers Found: {{ tns|length }}</h4>
+
+
+<table class="hilightrow" cellpadding="4">
+    <tr>
+        {% if allowUpdates %}
+        <th>Update</th>
+        {% endif %}
+        <th>Telephone Number</th><th>Customer</th><th>Status</th><th>Status Date</th><th>Product</th><th>E911 Provider</th><th>Switch</th><th>State - Rate Center - Market</th><th>Source</th>
+    </tr>
+    {% if allowUpdates %}
+    <tr>
+        <th colspan="10">
+        Select: <a href="#" onclick="checkAll()">All,</a> <a href="#" onclick="checkNone()">None,</a> <a href="#" onclick="checkToggle()">Toggle</a> 
+        </th>
+    </tr>
+    {% endif %}
+{% for tn in tns %}
+    <tr>
+        {% if allowUpdates %}
+        <td><input type="checkbox" name="tnid" value="{{tn.id}}"></td>
+        {% endif %}
+        <td><a href="/i3/tndb/admin/tndb/telephonenumber/{{tn.id}}/" target="_blank">{{ tn.cc }} ({{ tn.npa }}) {{ tn.nxx }}-{{ tn.station }}</a></td>
+        <td>{{ tn.customer }} - {{ tn.billing_number }}</td>
+        <td>{{ tn.status }}</td>
+        <td>{{ tn.status_date }}</td>
+        <td>{{ tn.product }}</td>
+        <td>{{ tn.e911provider }}</td>
+        <td>{{ tn.switch }}</td>
+        <td>{{ tn.rate_center_state }} - {{ tn.rate_center_name }} - {{ tn.rate_center_market }}</td>
+        <td>{{ tn.source }}</td>
+    </tr>
+{% endfor %}
+{% if allowUpdates %}
+    <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>{{ updateForm.billing}}</td>
+        <td>{{ updateForm.status}}</td>
+        <td>{{ updateForm.statusdate}}</td>
+        <td>{{ updateForm.product}}</td>
+        <td>{{ updateForm.e911provider}}</td>
+        <td>{{ updateForm.switch}}</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+{% endif %}
+</table>
+
+{% if allowUpdates %}
+<input id="submit" name="submit" value="Update" type="submit">
+</form>
+{% endif %}
+
+{% endblock body %}

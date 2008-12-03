@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+
+<table class="box" cellspacing="0">
+    <tr>
+        <th>Telephone Number Import Form</th> 
+    </tr>    
+    <tr>           
+        <td>                        
+            <form method="POST" action="." enctype="multipart/form-data">       
+                <table>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th>Field #</th>
+                        <th>Override Value</th>                        
+                    </tr>
+                    
+                    {% if importForm.non_field_errors %}
+                    <tr>                        
+                        <td colspan="3">
+                            {{ importForm.non_field_errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.cc.label_tag }}:</td>
+                        <td>
+                            {{ importForm.cc_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.cc}}                            
+                        </td>                        
+                    </tr>
+                    {% if importForm.cc_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.cc_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.cc.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.cc.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.tn_field.label_tag }}:</td>
+                        <td>{{ importForm.tn_field}}                            
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                    </tr>
+                    {% if importForm.tn_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.tn_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.npa_field.label_tag }}:</td>
+                        <td>{{ importForm.npa_field}}                            
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                    </tr>
+                    {% if importForm.npa_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.npa_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.nxx_field.label_tag }}:</td>
+                        <td>{{ importForm.nxx_field}}                            
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                    </tr>
+                    {% if importForm.nxx_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.nxx_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td>{{ importForm.station_field.label_tag }}:</td>
+                        <td>{{ importForm.station_field}}                            
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                    </tr>
+                    {% if importForm.station_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.station_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td>{{ importForm.billing.label_tag }}:</td>
+                        <td>
+                            {{ importForm.billing_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.billing}}                            
+                        </td>
+                    </tr>
+                    {% if importForm.billing_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.billing_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.billing.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.billing.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.status.label_tag }}:</td>
+                        <td>
+                            {{ importForm.status_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.status}}                            
+                        </td>
+                    </tr>
+                    {% if importForm.status_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.status_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.status.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.status.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.statusdate.label_tag }}:</td>
+                        <td>
+                            {{ importForm.statusdate_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.statusdate}}                            
+                        </td>
+                    </tr>
+                    {% if importForm.statusdate_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.statusdate_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.statusdate.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.statusdate.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                 
+                    
+                    <tr>
+                        <td>{{ importForm.switch.label_tag }}:</td>
+                        <td>
+                            {{ importForm.switch_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.switch}}                            
+                        </td>
+                    </tr>
+                    {% if importForm.switch_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.switch_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.switch.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.switch.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.product.label_tag }}:</td>
+                        <td>
+                            {{ importForm.product_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.product}}                            
+                        </td>
+                    </tr>
+                    {% if importForm.product_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.product_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.product.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.product.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.e911provider.label_tag }}:</td>
+                        <td>
+                            {{ importForm.e911provider_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.e911provider}}                            
+                        </td>
+                    </tr>
+                    {% if importForm.e911provider_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.e911provider_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.e911provider.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.e911provider.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    
+                    <tr>
+                        <td>{{ importForm.rate_center_market.label_tag }}:</td>
+                        <td>
+                            {{ importForm.rate_center_market_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.rate_center_market}}                            
+                        </td>
+                    </tr>
+                    {% if importForm.rate_center_market_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.rate_center_market_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.rate_center_market.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.rate_center_market.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.rate_center_field.label_tag }}:</td>
+                        <td>{{ importForm.rate_center_field}}                            
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                    </tr>
+                    {% if importForm.rate_center_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.rate_center_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.market_field.label_tag }}:</td>
+                        <td>{{ importForm.market_field}}                            
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                    </tr>
+                    {% if importForm.market_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.market_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.state_field.label_tag }}:</td>
+                        <td>{{ importForm.state_field}}                            
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                    </tr>
+                    {% if importForm.state_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.state_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.source.label_tag }}:</td>
+                        <td>
+                            {{ importForm.source_field}}                            
+                        </td>
+                        <td>
+                            {{ importForm.source}}                            
+                        </td>
+                    </tr>
+                    {% if importForm.source_field.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.source_field.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if importForm.source.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.source.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr><td colspan="3">&nbsp;</td></tr>
+
+                    <tr>
+                        <td>{{ importForm.skip_lines.label_tag }}:</td>
+                        <td>
+                            {{ importForm.skip_lines}}                            
+                        </td>
+                        <td>
+                            &nbsp;                          
+                        </td>
+                    </tr>
+                    {% if importForm.skip_lines.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.skip_lines.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}                    
+
+                    <tr><td colspan="3">&nbsp;</td></tr>                    
+                    <tr>
+                        <td>{{ importForm.import_file.label_tag }}:</td>
+                        <td colspan="2">
+                            {{ importForm.import_file}}                            
+                        </td>                        
+                    </tr>                    
+                    {% if importForm.import_file.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            {{ importForm.import_file.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">
+                            <input id="submit" name="submit" value="Import" type="submit">
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </td>
+    </tr>
+</table>
+
+
+{% endblock body %}

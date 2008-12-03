@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+    {% if updatelist %}
+    <table class="hilightrow" cellpadding="4">
+    <tr><th>Update Results</th></tr>    
+   {% for u in updatelist %}
+      <tr><td>{{ u }}</td></tr>
+   {% endfor %}
+    
+    {% else %}
+        <h2>No numbers to update</h2>
+    {% endif %}
+
+
+{% endblock body %}

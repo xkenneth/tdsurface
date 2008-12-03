@@ -1,0 +1,24 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  
+  <title>Telephone Number Database</title>
+  <link rel="stylesheet" type="text/css" href="/i3/tndb/media/css/site.css">  
+  <script type="text/javascript" src="/i3/tndb/media/scripts/xb.js"></script>
+  <script type="text/javascript" src="/i3/tndb/media/scripts/tablehighlight.js"></script>
+</head>
+<body>
+    <img border="0" src="/i3/tndb/media/images/logo.jpg">
+    <h2>Telephone Number Database</h2>
+    <ul id="navigation">
+        <li><a href="/i3/tndb/search/">Search</a></li>    
+        <li><a href="/i3/tndb/import/">Custom Import</a></li>
+        <li><a href="/i3/tndb/importl3lnp/">Import L3 LNPs</a></li>    
+        <li><a href="/i3/tndb/importl3pod/">Import L3 Port Out/Disconnects</a></li>    
+        <li><a href="/i3/tndb/update/">Update</a></li>    
+        <li><a href="/i3/tndb/admin/" target="_blank">Admin</a></li>
+    </ul>    
+{% block body %}
+{% endblock body %}
+</body>
+</html>

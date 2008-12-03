@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+
+<table class="box" cellspacing="0">
+    <tr>
+        <th>Level3 LNP (to i3) Import Form</th> 
+    </tr>    
+    <tr>           
+        <td>                        
+            <form method="POST" action="." enctype="multipart/form-data">       
+                <table>                                                         
+                    
+                    <tr>
+                        <td>{{ importForm.skip_lines.label_tag }}:</td>
+                        <td>
+                            {{ importForm.skip_lines}}                            
+                        </td>                        
+                    </tr>
+                    {% if importForm.skip_lines.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td >
+                            {{ importForm.skip_lines.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>{{ importForm.import_file.label_tag }}:</td>
+                        <td >
+                            {{ importForm.import_file}}                            
+                        </td>                        
+                    </tr>                    
+                    {% if importForm.import_file.errors %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td >
+                            {{ importForm.import_file.errors }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td >
+                            <input id="submit" name="submit" value="Import" type="submit">
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </td>
+    </tr>
+</table>
+
+
+{% endblock body %}
