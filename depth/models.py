@@ -59,7 +59,7 @@ class Well(models.Model) :
     
     uid = models.CharField(max_length=255, primary_key=True)    
     name = models.CharField(max_length=255, unique=True)
-    legal_name = models.CharField(primary_key=True, max_length=255, blank=True)
+    legal_name = models.CharField(unique=True, max_length=255, blank=True)
     government_number = models.CharField(max_length=255)
     api_number = models.CharField(max_length=255, blank=True)
     license_number = models.CharField(max_length=255, blank=True)
@@ -74,7 +74,7 @@ class Well(models.Model) :
     timezone = models.CharField(max_length=255)
     operator = models.CharField(max_length=255, blank=True)
     division = models.CharField(max_length=255, blank=True)
-    interest = models.PositiveInteger(blank=True)
+    interest = models.PositiveIntegerField(blank=True)
     water_depth = models.DecimalField(max_digits=7, decimal_places=2, blank=True)
     water_depth_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES, blank=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6)
@@ -101,12 +101,12 @@ class WellBore(models.Model) :
     uid = models.CharField(primary_key=True, max_length=255)
     name = models.CharField(max_length=255, unique=True)
     well = models.ForeignKey(Well)
-    parrent_wellbore_uid = CharField(max_length=255, blank=True)
+    parrent_wellbore_uid = models.CharField(max_length=255, blank=True)
     rig = models.ForeignKey(Rig)
-    purpose = CharField(max_length=255, blank=True)
-    api_suffix = CharField(max_length=255, blank=True)
-    type = CharField(max_length=255, blank=True, choices = WELLBORE_TYPE_CHOIES)
-    shape = CharField(max_length=255, blank=True)
+    purpose = models.CharField(max_length=255, blank=True)
+    api_suffix = models.CharField(max_length=255, blank=True)
+    type = models.CharField(max_length=255, blank=True, choices = WELLBORE_TYPE_CHOICES)
+    shape = models.CharField(max_length=255, blank=True)
     
     def __unicode__(self) :
         return self.name
@@ -127,7 +127,7 @@ admin.site.register(ToolType)
 
 class Tool(models.Model) :
     serial_number = models.CharField(primary_key=True, max_length=255)
-    type = models.models.ForeignKey(ToolType)
+    type = models.ForeignKey(ToolType)
 
     def __unicode__(self) :
         return self.serial_number
@@ -175,7 +175,7 @@ admin.site.register(Run)
     
 class PipeTally(models.Model) :
     tally_id = models.CharField(max_length=64, primary_key=True)
-    trip = models.ForeignKey(Trip)
+    run = models.ForeignKey(Run)
     time_stamp = models.DateTimeField()
     length = models.DecimalField(max_digits=10, decimal_places=3)
     length_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
