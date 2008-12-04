@@ -80,3 +80,9 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'tdsurface.depth'
 )
+
+
+
+STATIC_DOC_ROOT = '/usr/local/django-projects/tdsurface/media'
+
+from settings_local import *

@@ -2,3 +2,6 @@
 *.pyc
 *.bak
 *~
+
+#Ignore developer sepcific settings
+settings_local.py
