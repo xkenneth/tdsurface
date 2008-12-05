@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block subtitle %}<h3>Well Form</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<form method="POST" action="wellform.html">
+{{ form.as_p }}
+<input id="submit" name="submit" value="Submit" type="submit">
+</form>
+
+{% endblock body %}

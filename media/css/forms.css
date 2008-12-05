@@ -1,0 +1,19 @@
+/* Form Formatting */
+form p 
+{  
+   clear: both;
+}
+
+form p label 
+{
+   display: inline;  
+   float: left;
+   width: 150px;
+   padding-left: 5px;
+   padding-right: 5px;
+}
+
+form p input, form p textarea, form p select 
+{
+   margin: 0;      
+}
