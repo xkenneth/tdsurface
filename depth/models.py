@@ -176,7 +176,8 @@ admin.site.register(Run)
 class PipeTally(models.Model) :
     tally_id = models.CharField(max_length=64, primary_key=True)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField()
+    time_stamp = models.DateTimeField(blank=True)
+    duration = models.PositiveIntegerField(blank=True)
     length = models.DecimalField(max_digits=10, decimal_places=3)
     length_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
 
@@ -257,3 +258,10 @@ class Slip(models.Model) :
 
 admin.site.register(Slip)
 
+
+class RigStatus(models.Model) :
+    uid = models.CharField(max_length=255, primary_key=True)
+    time_stamp = models.DateTimeField()
+    status = models.CharField(max_length=255)
+    
+admin.site.register(RigStatus)
