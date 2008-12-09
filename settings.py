@@ -11,7 +11,6 @@ MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 DATABASE_NAME = 'tdsurface'             # Or path to database file if using sqlite3.
-
 DATABASE_USER = 'tdsurface'             # Not used with sqlite3.
 DATABASE_PASSWORD = 'scimitar1'         # Not used with sqlite3.
 DATABASE_HOST = 'surfacesystem.dev.teledrill'             # Set to empty string for localhost. Not used with sqlite3.
