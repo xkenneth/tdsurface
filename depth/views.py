@@ -17,12 +17,3 @@ def mainmenu(request) :
     d = {}
     return render_to_response('mainmenu.html', d)
     
-def wellform(request) :
-    if request.method == 'POST': # If the form has been submitted...
-        form = WellForm(request.POST) # A form bound to the POST data
-        if form.is_valid(): # All validation rules pass                            
-            return render_to_response('wellform.html', {'form': form,})        
-    else:
-        form = WellForm() # An unbound form
-
-    return render_to_response('wellform.html', {'form': form,})
