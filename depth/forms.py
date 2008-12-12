@@ -14,7 +14,7 @@ class DatePickerWidget(forms.DateTimeInput):
 class WellForm(ModelForm) :
     def __init__(self, *args, **kwargs):
         super(WellForm, self).__init__(*args, **kwargs)
-        self.fields['license_date'].widget = DatePickerWidget()
+        #self.fields['license_date'].widget = DatePickerWidget()
     
     class Meta :
         model = Well

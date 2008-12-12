@@ -80,7 +80,7 @@ class Well(models.Model) :
     government_number = models.CharField(max_length=255)
     api_number = models.CharField(max_length=255, blank=True)
     license_number = models.CharField(max_length=255, blank=True)
-    license_date = models.DateField()
+    license_date = models.DateField(blank=True, null=True)
     field = models.CharField(max_length=255, blank=True)
     block = models.CharField(max_length=255, blank=True)
     region = models.CharField(max_length=255, blank=True)
@@ -118,7 +118,7 @@ class WellBore(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     name = models.CharField(max_length=255, unique=True)
     well = models.ForeignKey(Well)
-    parrent_wellbore_uid = models.CharField(max_length=255, blank=True)
+    parrent_wellbore_uid = models.ForeignKey('self', blank=True, null=True)
     rig = models.ForeignKey(Rig)
     purpose = models.CharField(max_length=255, blank=True)
     api_suffix = models.CharField(max_length=255, blank=True)
@@ -126,7 +126,7 @@ class WellBore(models.Model) :
     shape = models.CharField(max_length=255, blank=True)
     
     def __unicode__(self) :
-        return self.name
+        return str(self.well) + ' - ' + self.name
 
 admin.site.register(WellBore)
 

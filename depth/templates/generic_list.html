@@ -1,0 +1,22 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+
+{{ form.media }}
+{% endblock head %}
+
+{% block subtitle %}
+    <h3>{{ subtitle }}</h3>
+{% endblock subtitle %}
+
+{% block navigation %}
+    {% include navigation_template %}
+{% endblock navigation %}
+
+{% block body %}
+
+{% for object in object_list %}
+<p> <a href="update/{{ object.pk}}/">{{ object }}</a> </p>
+{% endfor %}
+
+{% endblock body %}

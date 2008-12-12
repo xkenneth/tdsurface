@@ -1,0 +1,21 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    <link href="/tdsurface/media/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<form method="POST" action=".">
+{{ form.as_p }}
+<input id="submit" name="submit" value="Submit" type="submit">
+</form>
+
+{% endblock body %}

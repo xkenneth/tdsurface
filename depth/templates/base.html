@@ -13,13 +13,12 @@
     <h2>TeleDrill Surface System</h2>
     {% block subtitle %}
     {% endblock subtitle %}
+    {% block navigation %}
     <ul id="navigation">
-        <li><a href="/tdsurface/depth/wellcreate/">Create Well</a></li>
-        <li><a href="/tdsurface/depth/wellupdate/">Update Well</a></li> 
-        <li><a href="/tdsurface/depth/toolsetup/">Tool Setup</a></li>
-        <li><a href="/tdsurface/depth/trip/">Trip</a></li>        
+        <li><a href="/tdsurface/depth/">Home</a></li>                
         <li><a href="/admin/" target="_blank">Admin</a></li>
-    </ul>    
+    </ul>
+    {% endblock navigation %}
 {% block body %}
 {% endblock body %}
 </body>
