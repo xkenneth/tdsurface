@@ -1,0 +1,20 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Tool Configuration - {{ object }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<a href="{% url tool_pullcal object.pk %}"><button>Pull Calibration Constants</button></a>
+<a href="{% url tool_settime object.pk %}"><button>Set Time</button></a>
+
+
+{% endblock body %}

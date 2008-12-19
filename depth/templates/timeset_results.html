@@ -1,0 +1,25 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+{% endblock head %}
+
+{% block navigation %}
+{% include 'tool_menu.html' %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Tool Time Set - {{ object }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table class="hilightrow">    
+    
+    <tr>
+        <th>Tool Time</th><td>{{ tool_time }}</td>
+    </tr>
+                
+</table>
+
+
+{% endblock body %}

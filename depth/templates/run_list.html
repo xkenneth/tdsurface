@@ -1,0 +1,45 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table class="hilightrow">
+    <tr>
+        <th>Run</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Well</th>
+        <th>Bore</th>
+        <th>Active (RTD)</th>
+        <th></th>
+    </tr>
+    
+{% for object in object_list %}    
+    <tr>
+        <td>{{ object.name }} </td>
+        <td>{{ object.start_time}} </td>
+        <td>{{ object.end_time }} </td>
+        <td>{{ object.well_bore.well }} </td>
+        <td>{{ object.well_bore }} </td>
+        <td>
+            {% ifequal active_run object.pk %}<img src="{{ MEDIA_URL }}/images/action_check.png" alt="Active">{% endifequal %}
+            {% ifnotequal active_run object.pk %}
+                <a href="{% url run_activate object.pk %}"><button>Activate</button></a>
+            {% endifnotequal %}
+        </td>
+        <td><a href="{% url run_update object.pk %}"><button>Update</button</a></td>
+    </tr>
+{% endfor %}                
+</table>
+
+
+{% endblock body %}

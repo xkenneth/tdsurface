@@ -15,8 +15,10 @@
 
 {% block body %}
 
+<ul>
 {% for object in object_list %}
-<p> <a href="update/{{ object.pk}}/">{{ object }}</a> </p>
+<li>{% block objectline %}<a href="update/{{ object.pk}}/">{{ object }}</a>{% endblock objectline %}</li>
 {% endfor %}
+</ul>
 
 {% endblock body %}

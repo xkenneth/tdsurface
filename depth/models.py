@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib import admin
+from django.contrib.localflavor.us.models import USStateField
 import uuid
 
 LENGTH_UNIT_CHOICES = (('m','meters'), ('ft','feet'))
@@ -86,7 +87,7 @@ class Well(models.Model) :
     region = models.CharField(max_length=255, blank=True)
     district = models.CharField(max_length=255, blank=True)
     country = models.CharField(max_length=255, blank=True)
-    state = models.CharField(max_length=255, blank=True)
+    state = USStateField(blank=True)
     county = models.CharField(max_length=255, blank=True)    
     timezone = models.CharField(max_length=255)
     operator = models.CharField(max_length=255, blank=True)
@@ -147,7 +148,7 @@ class Tool(models.Model) :
     type = models.ForeignKey(ToolType)
 
     def __unicode__(self) :
-        return self.serial_number
+        return 'Tool-' + self.serial_number
 
 admin.site.register(Tool)
 
@@ -169,6 +170,9 @@ class ToolConfig(models.Model) :
     calco10 = models.PositiveIntegerField()
     calco11 = models.PositiveIntegerField()
     calco12 = models.PositiveIntegerField()
+    calco13 = models.PositiveIntegerField()
+    calco14 = models.PositiveIntegerField()
+    calco15 = models.PositiveIntegerField()
     
     def __unicode__(self) :
         return str(self.tool) + " " + str(self.time_stamp)
@@ -294,5 +298,7 @@ class Settings(models.Model) :
 
     class Meta:        
         verbose_name_plural = "Settings"
+
+    
 
 admin.site.register(Settings) 

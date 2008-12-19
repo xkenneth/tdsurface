@@ -20,7 +20,7 @@ h3		{ color:#000000; }
 
 table		{ background-color:#FFFFFF; font-size:8pt; font-weight:bold;font-family:verdana,sans-serif;}
 
-th		{ padding:4px;color:#FFFFFF; text-align:left; background-color:#ED1C22; }
+th		{ padding:4px;color:#FFFFFF; text-align:left; background-color:#227BB3; }
 
 th A:link	{ color:#FFFFFF; text-decoration:none; }
 th A:visited	{ color:#FFFFFF; text-decoration:none; }
@@ -43,7 +43,7 @@ table.box
 {
     border-width: 1px; 
     border-style: solid;
-    border-color: #ED1C22;    
+    border-color: #227BB3;    
 }
 
 th.box

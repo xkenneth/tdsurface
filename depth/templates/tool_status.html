@@ -1,0 +1,41 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+{% endblock head %}
+
+{% block navigation %}
+{% include 'tool_menu.html' %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Tool Status - {{ object }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table class="hilightrow">
+    <tr>
+        <th colspan="2">Current Time</th><td>{{ tool_time }}</td>
+    </tr>
+    <tr>
+        <th colspan="2">Current Log Address</th><td>{{ log_address }}</td>
+    </tr>
+    <tr>
+        <th rowspan="4">Calibration Constants</th>
+        
+        <th>ID</th><td>{{ calibration.0 }} {{calibration.1}}</td>
+    </tr>
+    <tr>
+        <th>Accelerometer</th><td>{{ calibration.2 }} {{ calibration.3 }} {{ calibration.4 }} {{ calibration.5 }} {{ calibration.6 }} {{ calibration.7 }} </td>
+    </tr>
+    <tr>
+        <th>Magnetometer</th><td>{{ calibration.8 }} {{ calibration.9 }} {{ calibration.10 }} {{ calibration.11 }} {{ calibration.12 }} {{ calibration.13 }} </td>
+    </tr>
+    <tr>
+       <th>Temperature</th><td>{{ calibration.14 }} {{ calibration.15 }} </td>
+    </tr>
+                
+</table>
+
+
+{% endblock body %}

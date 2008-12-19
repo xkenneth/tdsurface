@@ -1,36 +1,40 @@
 from django.conf.urls.defaults import *
 from tdsurface.depth.models import *
 from tdsurface.depth.forms import *
+from tdsurface.shortcuts import get_object_or_None
 
+def get_active_run() :
+        active_run, created = Settings.objects.get_or_create(name='ACTIVE_RUN')
+        return active_run.value
 
 urlpatterns = patterns('',
     
-    (r'^well/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }),
-    (r'^well/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }),
-    (r'^well/list/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Wells', 'navigation_template': 'well_menu.html'}, 'queryset': Well.objects.all(), 'template_name': 'generic_list.html'}),
-    (r'^well/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Wells', 'navigation_template': 'well_menu.html'}, 'queryset': Well.objects.all(), 'template_name': 'generic_list.html'}),
+    (r'^well/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'well_create'),
+    (r'^well/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'well_update'),    
+    (r'^well/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Wells', 'navigation_template': 'well_menu.html'}, 'queryset': Well.objects.all(), 'template_name': 'generic_list.html'}, 'well_list'),
         
-    (r'^rig/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Rig', 'navigation_template': 'rig_menu.html'}, 'model': Rig, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }),
-    (r'^rig/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Rig', 'navigation_template': 'rig_menu.html'}, 'model': Rig, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }),
-    (r'^rig/list/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Rigs', 'navigation_template': 'rig_menu.html'}, 'queryset': Rig.objects.all(), 'template_name': 'generic_list.html'}),
-    (r'^rig/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Rigs', 'navigation_template': 'rig_menu.html'}, 'queryset': Rig.objects.all(), 'template_name': 'generic_list.html'}),
+    (r'^rig/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Rig', 'navigation_template': 'rig_menu.html'}, 'form_class': RigForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'rig_create'),
+    (r'^rig/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Rig', 'navigation_template': 'rig_menu.html'}, 'form_class': RigForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'rig_update'),    
+    (r'^rig/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Rigs', 'navigation_template': 'rig_menu.html'}, 'queryset': Rig.objects.all(), 'template_name': 'generic_list.html'}, 'rig_list'),
         
-    (r'^wellbore/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'Update Well Bore', 'navigation_template': 'wellbore_menu.html'}, 'model': WellBore, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }),
-    (r'^wellbore/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'New Well Bore', 'navigation_template': 'wellbore_menu.html'}, 'model': WellBore, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }),
-    (r'^wellbore/list/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Well Bores', 'navigation_template': 'wellbore_menu.html'}, 'queryset': WellBore.objects.all(), 'template_name': 'generic_list.html'}),
-    (r'^wellbore/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Well Bores', 'navigation_template': 'wellbore_menu.html'}, 'queryset': WellBore.objects.all(), 'template_name': 'generic_list.html'}),
+    (r'^wellbore/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'Update Well Bore', 'navigation_template': 'wellbore_menu.html'}, 'model': WellBore, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'wellbore_create'),
+    (r'^wellbore/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'New Well Bore', 'navigation_template': 'wellbore_menu.html'}, 'model': WellBore, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'wellbore_update'),    
+    (r'^wellbore/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Well Bores', 'navigation_template': 'wellbore_menu.html'}, 'queryset': WellBore.objects.all(), 'template_name': 'generic_list.html'}, 'wellbore_list'),
     
-    (r'^tool/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }),
-    (r'^tool/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }),
-    (r'^tool/list/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Tools', 'navigation_template': 'tool_menu.html'}, 'queryset': Tool.objects.all(), 'template_name': 'generic_list.html'}),
-    (r'^tool/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Tools', 'navigation_template': 'tool_menu.html'}, 'queryset': Tool.objects.all(), 'template_name': 'generic_list.html'}),
+    (r'^tool/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'tool_create'),
+    (r'^tool/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'tool_update'),    
+    (r'^tool/config/(?P<object_id>[^/]*)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'toolconfig_form.html', 'post_save_redirect': '../../' }, 'tool_config'),
+    (r'^tool/config/(?P<object_id>.*)/pullcal/$', 'tdsurface.depth.views.pull_calibration', {}, 'tool_pullcal'),
+    (r'^tool/config/(?P<object_id>.*)/settime/$', 'tdsurface.depth.views.set_time', {}, 'tool_settime'),
+    (r'^tool/status/(?P<object_id>.*)/$', 'tdsurface.depth.views.tool_status', {}, 'tool_status'),
+    (r'^tool/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Tools', 'navigation_template': 'tool_menu.html'}, 'queryset': Tool.objects.all(), 'template_name': 'tool_list.html'}, 'tool_list'),
         
-    (r'^run/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run', 'navigation_template': 'run_menu.html'}, 'model': Run, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }),
-    (r'^run/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, 'model': Run, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }),
-    (r'^run/list/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html'}, 'queryset': Run.objects.all(), 'template_name': 'generic_list.html'}),
-    (r'^run/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html'}, 'queryset': Run.objects.all(), 'template_name': 'generic_list.html'}),
-     
-    
-    (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}),
+    (r'^run/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'run_create'),
+    (r'^run/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../activate/%(uid)s/' }, 'run_createactive'),
+    (r'^run/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'run_update'),
+    (r'^run/activate/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_activate', {}, 'run_activate'),    
+    (r'^run/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html', 'active_run': get_active_run}, 'queryset': Run.objects.all(), 'template_name': 'run_list.html'}, 'run_list'),
+         
+    (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}, 'home'),
     #(r'.*', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}),
 )

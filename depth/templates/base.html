@@ -2,20 +2,20 @@
 <html>
 <head>
   <title>TeleDrill Surface System</title>
-  <link rel="stylesheet" type="text/css" href="/tdsurface/media/css/site.css">
-  <script type="text/javascript" src="/tdsurface/media/scripts/xb.js"></script>
-  <script type="text/javascript" src="/tdsurface/media/scripts/tablehighlight.js"></script>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}/css/site.css">
+  <script type="text/javascript" src="{{ MEDIA_URL }}/scripts/xb.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}/scripts/tablehighlight.js"></script>
 {% block head %}
 {% endblock head %}
 </head>
 <body>
-    <img border="0" src="/tdsurface/media/images/logo.jpg">
+    <img border="0" src="{{ MEDIA_URL }}/images/logo.jpg">
     <h2>TeleDrill Surface System</h2>
     {% block subtitle %}
     {% endblock subtitle %}
     {% block navigation %}
     <ul id="navigation">
-        <li><a href="/tdsurface/depth/">Home</a></li>                
+        <li><a href="{% url home %}">Home</a></li>                
         <li><a href="/admin/" target="_blank">Admin</a></li>
     </ul>
     {% endblock navigation %}

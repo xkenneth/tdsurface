@@ -35,12 +35,12 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = '/usr/local/django-projects/tdsurface/media'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = ''
+MEDIA_URL = '/tdsurface/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -81,8 +81,13 @@ INSTALLED_APPS = (
     'tdsurface.depth'
 )
 
-
-
 STATIC_DOC_ROOT = '/usr/local/django-projects/tdsurface/media'
+
+COMPORT = '/dev/tty.BluePortXP-C6DC-SPP-1'
+BAUDRATE=2400
+DATABITS=8
+PARITY='N'
+STOPBITS=1
+COMPORT_TIMEOUT=10
 
 from settings_local import *
