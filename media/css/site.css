@@ -64,7 +64,7 @@ td.box
     padding-left: 16px; padding-right:16px;
 }				
 
-tr.hi td, td.hi 
+.hilight 
 {
     background-color: #ccc;
 }

@@ -76,7 +76,7 @@ class ToolAPI :
         s = self.decruft(raw)
         return s.split(' ')
         
-    def get_log(self) :
+    def get_log(self, call_back=None) :
         self.raw_data = []
         self.toolcom.write_line('RL')
         log = []
@@ -85,8 +85,9 @@ class ToolAPI :
             self.raw_data.append(raw)
             s = self.decruft(raw)
             l = s.split('\t')
-            print l
             log.append(l)
+            if call_back :
+                call_back(l)
             if 'FFFF' in l :
                 break
         

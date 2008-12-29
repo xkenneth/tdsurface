@@ -7,8 +7,10 @@ from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from tdsurface.shortcuts import get_object_or_None
-from datetime import date
+#from datetime import date
+import time
 import datetime
+
 from tdsurface.depth.models import *
 from tdsurface.depth.forms import *
 
@@ -100,4 +102,39 @@ def run_activate(request, object_id) :
     active_run.value=run.pk
     active_run.save()
         
-    return HttpResponseRedirect(reverse('run_list')) 
+    return HttpResponseRedirect(reverse('run_list'))
+
+def run_download_status(request) :
+    return HttpResponse("Downloading: %s - Count: %s" % (str(request.session['log_download_in_progress']), str(request.session['log_download_cnt'])))
+
+    
+def run_download_log(request, object_id) :
+    run = Run.objects.get(pk=object_id)
+    
+    #tc = ToolCom(port = '/dev/tty.BluePortXP-C6DC-SPP-1', baudrate=2400, bytesize=8, parity='N', stopbits=1, timeout=10)
+    #tapi = ToolAPI(tc)
+    
+    #comcheck = tapi.echo('ABC123')
+    #if comcheck != 'ABC123' :
+    #    return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+    
+    request.session['log_download_in_progress'] = False
+    request.session['log_download_data'] = []
+    request.session['log_download_cnt'] = 0
+    request.session.save()
+    
+    def call_back(l) :
+        request.session['log_download_data'].append(l)
+        request.session['log_download_cnt'] += 1
+        request.session.save() 
+
+    request.session['log_download_in_progress'] = True
+    request.session.save() 
+    #log = tapi.get_log(call_back)
+    for x in range(5) :
+        call_back(x)
+        time.sleep(1)
+    request.session['log_download_in_progress'] = False
+    request.session.save() 
+    
+    return HttpResponse("Log Download Complete!")

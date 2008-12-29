@@ -299,6 +299,8 @@ class Settings(models.Model) :
     class Meta:        
         verbose_name_plural = "Settings"
 
-    
+    def get_active_run(self) :
+        active_run, created = self.objects.get_or_create(name='ACTIVE_RUN')
+        return active_run.value
 
 admin.site.register(Settings) 
