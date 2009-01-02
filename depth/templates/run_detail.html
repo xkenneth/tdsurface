@@ -1,0 +1,69 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+<script type="text/JavaScript">
+ $(document).ready(function(){
+   $("#run_download_log").click(function(){
+    $(this).hide(); // Hide the button
+     $.get("{% url run_download_log object.pk %}");
+     window.setTimeout(status,1000)
+   });
+ });
+ 
+ function status_callback(data)
+ {
+    if(!data.match("False"))
+    {
+        window.setTimeout(status,1000);
+    }
+ }
+ 
+ function status()
+ {
+    $("#run_download_status").load("{% url run_download_status %}", status_callback);
+    
+
+ }
+ </script>     
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table class="hilightrow">
+    <tr>
+        <th>Run</th><td>{{ object.name }} </td>
+    </tr>
+    <tr>
+        <th>Start Time</th><td>{{ object.start_time}} </td>
+    </tr>
+    <tr>
+        <th>End Time</th><td>{{ object.end_time }} </td>
+    </tr>
+    <tr>
+        <th>Well</th><td>{{ object.well_bore.well }} </td>
+    </tr>
+    <tr>
+        <th>Bore</th><td>{{ object.well_bore }} </td>
+    </tr>
+        <th>Active (RTD)</th>
+        <td>
+            {% ifequal active_run object.pk %}<img src="{{ MEDIA_URL }}/images/action_check.png" alt="Active">{% endifequal %}
+            {% ifnotequal active_run object.pk %}
+                <a href="{% url run_activate object.pk %}"><button>Activate</button></a>
+            {% endifnotequal %}
+        </td>
+    </tr>
+    
+</table>
+
+<button id="run_download_log">Download Log</button>
+
+<div id="run_download_status"></div>
+
+{% endblock body %}
