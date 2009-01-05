@@ -222,6 +222,8 @@ class MWDRealTime(models.Model) :
     gama1 = models.IntegerField(blank=True, null=True)
     gama2 = models.IntegerField(blank=True, null=True)
     gama3 = models.IntegerField(blank=True, null=True)
+    azimuth = models.IntegerField(blank=True, null=True)
+    inclination = models.IntegerField(blank=True, null=True)    
 
 admin.site.register(MWDRealTime)
     
@@ -351,6 +353,7 @@ class WitsGeneralTimeBased(models.Model) :
     spare4 = models.FloatField(blank=True, null=True)
     spare5 = models.FloatField(blank=True, null=True)
     
+admin.site.register(WitsGeneralTimeBased)
     
     
     
