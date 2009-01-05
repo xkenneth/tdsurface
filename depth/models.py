@@ -307,7 +307,7 @@ class Settings(models.Model) :
 
 admin.site.register(Settings)
 
-class WitsGeneralTimeBased(models.Model) :
+class WITSGeneralTimeBased(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
     time_stamp = models.DateTimeField()
@@ -353,7 +353,7 @@ class WitsGeneralTimeBased(models.Model) :
     spare4 = models.FloatField(blank=True, null=True)
     spare5 = models.FloatField(blank=True, null=True)
     
-admin.site.register(WitsGeneralTimeBased)
+admin.site.register(WITSGeneralTimeBased)
     
     
     
