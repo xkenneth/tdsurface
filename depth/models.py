@@ -303,4 +303,58 @@ class Settings(models.Model) :
         active_run, created = self.objects.get_or_create(name='ACTIVE_RUN')
         return active_run.value
 
-admin.site.register(Settings) 
+admin.site.register(Settings)
+
+class WitsGeneralTimeBased(models.Model) :
+    uid = UUIDField(primary_key=True, editable=False)
+    run = models.ForeignKey(Run)
+    time_stamp = models.DateTimeField()
+    recid = models.IntegerField(blank=True, null=True)
+    seqid = models.IntegerField(blank=True, null=True)
+    actcod = models.IntegerField(blank=True, null=True)
+    deptbitm = models.FloatField(blank=True, null=True)
+    deptbitv = models.FloatField(blank=True, null=True)
+    deptmeas = models.FloatField(blank=True, null=True)
+    deptvert = models.FloatField(blank=True, null=True)
+    blkpos = models.FloatField(blank=True, null=True)
+    ropa = models.FloatField(blank=True, null=True)
+    hkla = models.FloatField(blank=True, null=True)
+    hklx = models.FloatField(blank=True, null=True)
+    woba = models.FloatField(blank=True, null=True)
+    wobx = models.FloatField(blank=True, null=True)
+    torqa = models.FloatField(blank=True, null=True)
+    torqx = models.FloatField(blank=True, null=True)
+    rpma = models.IntegerField(blank=True, null=True)
+    sppa = models.FloatField(blank=True, null=True)  
+    chkp = models.FloatField(blank=True, null=True)
+    spm1 = models.IntegerField(blank=True, null=True)
+    spm2 = models.IntegerField(blank=True, null=True)
+    spm3 = models.IntegerField(blank=True, null=True)
+    tvolact = models.FloatField(blank=True, null=True)
+    tvolcact = models.FloatField(blank=True, null=True)
+    mfop = models.IntegerField(blank=True, null=True)
+    mfoa = models.FloatField(blank=True, null=True)
+    mfia = models.FloatField(blank=True, null=True)
+    mdao = models.FloatField(blank=True, null=True)
+    mdia = models.FloatField(blank=True, null=True)
+    mtoa = models.FloatField(blank=True, null=True)
+    mtia = models.FloatField(blank=True, null=True)
+    mcoa = models.FloatField(blank=True, null=True)
+    mcia = models.FloatField(blank=True, null=True)
+    stkc = models.IntegerField(blank=True, null=True)
+    lagstks = models.IntegerField(blank=True, null=True)
+    deptretm = models.FloatField(blank=True, null=True)
+    gasa = models.FloatField(blank=True, null=True)
+    spare1 = models.FloatField(blank=True, null=True)
+    spare2 = models.FloatField(blank=True, null=True)
+    spare3 = models.FloatField(blank=True, null=True)
+    spare4 = models.FloatField(blank=True, null=True)
+    spare5 = models.FloatField(blank=True, null=True)
+    
+    
+    
+    
+    
+    
+    
+    
