@@ -204,34 +204,22 @@ class PipeTally(models.Model) :
 
 admin.site.register(PipeTally)
 
-    
+
 class MWDRealTime(models.Model) :
+    VALUE_TYPE_CHOICES = (('G','gravity'),('m','Magnetic'),('t','temperature'),('r','gamaray'),('a','azimuth'),('i','inclination'))
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField()
-    raw_data = models.CharField(max_length=255)
-    gravity_x = models.IntegerField(blank=True, null=True)
-    gravity_y = models.IntegerField(blank=True, null=True)
-    gravity_z = models.IntegerField(blank=True, null=True)
-    magnetic_x = models.IntegerField(blank=True, null=True)
-    magnetic_y = models.IntegerField(blank=True, null=True)
-    magnetic_z = models.IntegerField(blank=True, null=True)
-    temperature = models.IntegerField(blank=True, null=True)
-    temperature_units = models.CharField(max_length=1, choices = TEMP_UNIT_CHOICES, blank=True)
-    gama0 = models.IntegerField(blank=True, null=True)
-    gama1 = models.IntegerField(blank=True, null=True)
-    gama2 = models.IntegerField(blank=True, null=True)
-    gama3 = models.IntegerField(blank=True, null=True)
-    azimuth = models.IntegerField(blank=True, null=True)
-    inclination = models.IntegerField(blank=True, null=True)    
-
+    time_stamp = models.DateTimeField( db_index=True)
+    type = models.CharField(max_length=1, choices = VALUE_TYPE_CHOICES, db_index=True)
+    value = models.IntegerField()
+    
 admin.site.register(MWDRealTime)
     
     
 class MWDLog(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField()
+    time_stamp = models.DateTimeField(db_index=True)
     raw_data = models.CharField(max_length=255)
     gravity_x = models.IntegerField()
     gravity_y = models.IntegerField()
@@ -252,7 +240,7 @@ admin.site.register(MWDLog)
 class ManualDepth(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField()
+    time_stamp = models.DateTimeField(db_index=True)
     depth = models.DecimalField(max_digits=10, decimal_places=3)
     depth_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
 
@@ -265,7 +253,7 @@ admin.site.register(ManualDepth)
 class BlockPosition(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField()
+    time_stamp = models.DateTimeField(db_index=True)
     position = models.DecimalField(max_digits=10, decimal_places=3)
     position_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
 
@@ -276,7 +264,7 @@ class Slip(models.Model) :
     SLIP_STATUS_CHOICES = ((0,'Out'),(1,'In'))
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField()
+    time_stamp = models.DateTimeField(db_index=True)
     status = models.DecimalField(max_digits=1, decimal_places=0, choices = SLIP_STATUS_CHOICES)
 
 admin.site.register(Slip)
@@ -284,7 +272,7 @@ admin.site.register(Slip)
 
 class RigStatus(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
-    time_stamp = models.DateTimeField()
+    time_stamp = models.DateTimeField(db_index=True)
     status = models.CharField(max_length=255)
     
     class Meta:        
@@ -310,7 +298,7 @@ admin.site.register(Settings)
 class WITSGeneralTimeBased(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField()
+    time_stamp = models.DateTimeField(db_index=True)
     recid = models.IntegerField(blank=True, null=True)
     seqid = models.IntegerField(blank=True, null=True)
     actcod = models.IntegerField(blank=True, null=True)
@@ -354,10 +342,5 @@ class WITSGeneralTimeBased(models.Model) :
     spare5 = models.FloatField(blank=True, null=True)
     
 admin.site.register(WITSGeneralTimeBased)
-    
-    
-    
-    
-    
     
     
