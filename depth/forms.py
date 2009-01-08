@@ -34,9 +34,9 @@ class RigForm(ModelForm) :
                 'all': (form_css,)
         }
     
-    yr_in_service = forms.DateField(widget=DynarchDateTimeWidget(date_button_html, format='%Y-%m-%d'))
-    phone = USPhoneNumberField()
-    fax = USPhoneNumberField()
+    yr_in_service = forms.DateField(required=False, widget=DynarchDateTimeWidget(date_button_html, format='%Y-%m-%d'))
+    phone = USPhoneNumberField(required=False)
+    fax = USPhoneNumberField(required=False)
 
 
 class RunForm(ModelForm) :
@@ -50,7 +50,7 @@ class RunForm(ModelForm) :
         }
 
     start_time = forms.DateTimeField(widget = DynarchDateTimeWidget(datetime_button_html))
-    end_time = forms.DateTimeField(widget = DynarchDateTimeWidget(datetime_button_html))
+    end_time = forms.DateTimeField(required=False, widget = DynarchDateTimeWidget(datetime_button_html))
 
 
 class SetTimeForm(forms.Form) :

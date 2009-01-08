@@ -66,6 +66,7 @@ class Rig(models.Model) :
     phone = models.CharField(max_length=255, blank=True)
     fax = models.CharField(max_length=255, blank=True)
     email = models.EmailField(blank=True)
+    notes = models.TextField(blank=True, null=True)
     
     def __unicode__(self) :
         return self.name
@@ -97,7 +98,7 @@ class Well(models.Model) :
     water_depth_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES, blank=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6)
     lon = models.DecimalField(max_digits=9, decimal_places=6)
-
+    notes = models.TextField(blank=True, null=True)
     def __unicode__(self) :
         return self.name
 
@@ -125,7 +126,7 @@ class WellBore(models.Model) :
     api_suffix = models.CharField(max_length=255, blank=True)
     type = models.CharField(max_length=255, blank=True, choices = WELLBORE_TYPE_CHOICES)
     shape = models.CharField(max_length=255, blank=True)
-    
+    notes = models.TextField(blank=True, null=True)
     def __unicode__(self) :
         return str(self.well) + ' - ' + self.name
 
@@ -146,7 +147,8 @@ admin.site.register(ToolType)
 class Tool(models.Model) :
     serial_number = models.CharField(primary_key=True, max_length=255)
     type = models.ForeignKey(ToolType)
-
+    notes = models.TextField(blank=True, null=True)
+    
     def __unicode__(self) :
         return 'Tool-' + self.serial_number
 
@@ -184,10 +186,11 @@ class Run(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     name = models.CharField(max_length=255, unique=True)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    tool_config = models.ForeignKey(ToolConfig)
+    end_time = models.DateTimeField(blank=True, null=True)
+    tool_config = models.ForeignKey(ToolConfig, blank=True, null=True)
     well_bore = models.ForeignKey(WellBore)        
-        
+    notes = models.TextField(blank=True, null=True)
+    
     def __unicode__(self) :
         return str(self.well_bore) + " " + str(self.start_time)
         
@@ -197,7 +200,7 @@ admin.site.register(Run)
 class PipeTally(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField(blank=True)
+    time_stamp = models.DateTimeField(blank=True, null=True)
     duration = models.PositiveIntegerField(blank=True, null=True)
     length = models.DecimalField(max_digits=10, decimal_places=3)
     length_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
@@ -212,6 +215,9 @@ class MWDRealTime(models.Model) :
     time_stamp = models.DateTimeField( db_index=True)
     type = models.CharField(max_length=1, choices = VALUE_TYPE_CHOICES, db_index=True)
     value = models.IntegerField()
+    value_x = models.IntegerField()
+    value_y = models.IntegerField()
+    value_z = models.IntegerField()
     
 admin.site.register(MWDRealTime)
     
@@ -342,5 +348,13 @@ class WITSGeneralTimeBased(models.Model) :
     spare5 = models.FloatField(blank=True, null=True)
     
 admin.site.register(WITSGeneralTimeBased)
+
+class WITS0(models.Model) :
+    uid = UUIDField(primary_key=True, editable=False)
+    run = models.ForeignKey(Run)
+    time_stamp = models.DateTimeField(db_index=True)
+    recid = models.IntegerField(db_index=True)
+    itemid = models.IntegerField(db_index=True)
+    value = models.CharField(max_length=255, blank=True, null=True)
     
-    
+admin.site.register(WITS0) 
