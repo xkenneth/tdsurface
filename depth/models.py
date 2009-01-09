@@ -209,15 +209,15 @@ admin.site.register(PipeTally)
 
 
 class MWDRealTime(models.Model) :
-    VALUE_TYPE_CHOICES = (('G','gravity'),('m','Magnetic'),('t','temperature'),('r','gamaray'),('a','azimuth'),('i','inclination'))
+    VALUE_TYPE_CHOICES = (('G','Gravity'),('M','Magnetic'),('T','Temperature'),('R','Gamma Ray'),('A','Azimuth'),('I','Inclination'),)
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
     time_stamp = models.DateTimeField( db_index=True)
     type = models.CharField(max_length=1, choices = VALUE_TYPE_CHOICES, db_index=True)
-    value = models.IntegerField()
-    value_x = models.IntegerField()
-    value_y = models.IntegerField()
-    value_z = models.IntegerField()
+    value = models.IntegerField(blank=True, null=True)
+    value_x = models.IntegerField(blank=True, null=True)
+    value_y = models.IntegerField(blank=True, null=True)
+    value_z = models.IntegerField(blank=True, null=True)
     
 admin.site.register(MWDRealTime)
     
@@ -295,9 +295,9 @@ class Settings(models.Model) :
     class Meta:        
         verbose_name_plural = "Settings"
 
-    def get_active_run(self) :
-        active_run, created = self.objects.get_or_create(name='ACTIVE_RUN')
-        return active_run.value
+    def get_active_run(self) :        
+        active_run, created = Settings.objects.get_or_create(name='ACTIVE_RUN')
+        return Run.objects.get(pk=active_run.value)
 
 admin.site.register(Settings)
 
