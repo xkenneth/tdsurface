@@ -1,0 +1,1 @@
+insert into depth_tooltype set id=1, type='MWD/ROP Serial', interface='S'

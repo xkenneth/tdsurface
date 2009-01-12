@@ -1,0 +1,1 @@
+alter table depth_wits0 add index depth_wits0_recid_itemid (recid, itemid)
