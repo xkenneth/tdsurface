@@ -1,5 +1,6 @@
-# Django settings for tdsurface project.
+import os
 
+# Django settings for tdsurface project.
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -35,7 +36,7 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/usr/local/django-projects/tdsurface/media'
+MEDIA_ROOT = os.path.join(os.getcwd(),'media')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -81,7 +82,9 @@ INSTALLED_APPS = (
     'tdsurface.depth'
 )
 
-STATIC_DOC_ROOT = '/usr/local/django-projects/tdsurface/media'
+STATIC_DOC_ROOT = os.path.join(os.getcwd(),'media')
+
+print "!",STATIC_DOC_ROOT
 
 COMPORT = '/dev/tty.BluePortXP-C6DC-SPP-1'
 BAUDRATE=2400
