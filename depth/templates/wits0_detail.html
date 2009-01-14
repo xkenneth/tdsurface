@@ -1,0 +1,36 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table class="hilightrow">
+    <tr>
+        <th>Time Stamp</th>
+        <th>Record ID</th>
+        <th>Item ID</th>
+        <th>Description</th>
+        <th>Value</th>        
+    </tr>
+    
+{% for wit in wits %}    
+    <tr>
+        <td>{{ wit.time_stamp }} </td>
+        <td align="right">{{ wit.recid}} </td>
+        <td align="right">{{ wit.itemid }} </td>
+        <td>{{ wit.description|default:"Unknown" }} </td>
+        <td align="right">{{ wit.value }} </td>        
+    </tr>
+{% endfor %}                
+</table>
+
+
+{% endblock body %}
