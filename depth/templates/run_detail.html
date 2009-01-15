@@ -5,8 +5,8 @@
  $(document).ready(function(){
    $("#run_download_log").click(function(){
     $(this).hide(); // Hide the button
-     $.get("{% url run_download_log object.pk %}");
-     window.setTimeout(status,1000)
+    $.get("{% url run_download_log object.pk %}");
+    window.setTimeout(status,1000);
    });
  });
  

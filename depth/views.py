@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 from django.http import HttpResponseNotFound
 from django.http import Http404
 from django.template import loader, Context
+from django.template import RequestContext 
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
@@ -105,7 +106,10 @@ def run_activate(request, object_id) :
     return HttpResponseRedirect(reverse('run_list'))
 
 def run_download_status(request) :
-    return HttpResponse("Downloading: %s - Count: %s" % (str(request.session['log_download_in_progress']), str(request.session['log_download_cnt'])))
+    if request.session['log_download_in_progress'] :    
+        return HttpResponse("Downloading Log: %s" % (str(request.session['log_download_cnt'])))
+    else :
+        return HttpResponse("Download Complete")
 
     
 def run_download_log(request, object_id) :
@@ -130,11 +134,18 @@ def run_download_log(request, object_id) :
 
     request.session['log_download_in_progress'] = True
     request.session.save() 
-    #log = tapi.get_log(call_back)
-    for x in range(5) :
-        call_back(x)
-        time.sleep(1)
+    log = tapi.get_log(call_back)
+    #for x in range(5) :
+    #    call_back(x)
+    #    time.sleep(1)
     request.session['log_download_in_progress'] = False
     request.session.save() 
     
     return HttpResponse("Log Download Complete!")
+    
+def run_wits_detail(request, object_id) :
+    run = Run.objects.get(pk=object_id)
+
+    wits = WITS0.objects.filter(run=run).order_by('-time_stamp','recid','itemid')[:100]
+    return render_to_response('wits0_detail.html', {'wits': wits,}, context_instance = RequestContext(request)) 
+    

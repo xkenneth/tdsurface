@@ -6,6 +6,59 @@ import uuid
 LENGTH_UNIT_CHOICES = (('m','meters'), ('ft','feet'))
 TEMP_UNIT_CHOICES = (('F','Fahrenheit'), ('C','Celsius'))
 
+WITS0_NAMES = {1:{
+    1:'Well Identifier',
+    2:'Sidetrack/Hole Sect No.',
+    3:'Record Identifier', 
+    4:'Sequence Identifier', 
+    5:'Date', 
+    6:'Time', 
+    7:'Activity Code',
+    8:'Depth Bit (meas)',
+    9:'Depth Bit (vert)',
+    10:'Depth Hole (meas)', 
+    11:'Depth Hole (vert)', 
+    12:'Block Position', 
+    13:'Rate of Penetration (avg)', 
+    14:'Hookload (avg)', 
+    15:'Hookload (max)', 
+    16:'Weight-on-Bit (surf,avg)', 
+    17:'Weight-on-Bit (surf,max)', 
+    18:'Rotary Torque (surf,avg)', 
+    19:'Rotary Torque (surf,max)', 
+    20:'Rotary Speed (surf,avg)', 
+    21:'Standpipe Pressure (avg)', 
+    22:'Casing (Choke) Pressure', 
+    23:'Pump Stroke Rate #1', 
+    24:'Pump Stroke Rate #2', 
+    25:'Pump Stroke Rate #3', 
+    26:'Tank Volume (active)', 
+    27:'Tank Volume Change (act)', 
+    28:'Mud Flow Out %', 
+    29:'Mud Flow Out (avg)', 
+    30:'Mud Flow In (avg)', 
+    31:'Mud Density Out (avg)', 
+    32:'Mud Density In (avg)', 
+    33:'Mud Temperature Out (avg)', 
+    34:'Mud Temperature In (avg)', 
+    35:'Mud Conductivity Out (avg)', 
+    36:'Mud Conductivity In (avg)', 
+    37:'Pump Stroke Count (cum)', 
+    38:'Lag Strokes', 
+    39:'Depth Returns (meas)', 
+    40:'Gas (avg)', 
+    41:'< SPARE 1 >', 
+    42:'< SPARE 2 >', 
+    43:'< SPARE 3 >', 
+    44:'< SPARE 4 >', 
+    45:'< SPARE 5 >',
+    50:'Unknown'
+},
+    19:
+        {
+            84:'Vendor 1 Name/Service',
+        }
+}
 
 class UUIDField(models.CharField) :
     
@@ -356,5 +409,12 @@ class WITS0(models.Model) :
     recid = models.IntegerField(db_index=True)
     itemid = models.IntegerField(db_index=True)
     value = models.CharField(max_length=255, blank=True, null=True)
+    
+    def description(self) :
+        try :
+            desc = WITS0_NAMES[self.recid][self.itemid]
+        except :
+            return None
+        return desc
     
 admin.site.register(WITS0) 

@@ -35,6 +35,7 @@ urlpatterns = patterns('',
     (r'^run/activate/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_activate', {}, 'run_activate'),
     (r'^run/detail/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_menu.html', 'active_run': get_active_run},'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),
     (r'^run/downloadlog/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_download_log', {}, 'run_download_log'),
+    (r'^run/wits/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_wits_detail', {}, 'run_wits_detail'),
     (r'^run/downloadstatus/$', 'tdsurface.depth.views.run_download_status', {}, 'run_download_status'),
     (r'^run/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html', 'active_run': get_active_run}, 'queryset': Run.objects.all(), 'template_name': 'run_list.html'}, 'run_list'),
          

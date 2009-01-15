@@ -36,7 +36,9 @@
                 <a href="{% url run_activate object.pk %}"><button>Activate</button></a>
             {% endifnotequal %}
         </td>
-        <td><a href="{% url run_update object.pk %}"><button>Update</button</a>&nbsp;&nbsp;<a href="{% url run_detail object.pk %}"><button>Download Log</button</a></td>
+        <td><a href="{% url run_update object.pk %}"><button>Update</button</a>&nbsp;&nbsp;<a href="{% url run_detail object.pk %}"><button>Download Log</button</a>
+            &nbsp;&nbsp;<a href="{% url run_wits_detail object.pk %}"><button>View WITS0</button</a>
+        </td>
     </tr>
 {% endfor %}                
 </table>
