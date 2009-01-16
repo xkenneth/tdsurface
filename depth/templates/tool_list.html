@@ -1,5 +1,5 @@
 {% extends 'generic_list.html' %}
 
 {% block objectline %}
-<a href="{% url tool_update object.pk %}">{{ object }}</a> - <a href="{% url tool_config object.pk %}"><button>Configure</button></a> <a href="{% url tool_status object.pk %}"><button>Status</button></a>
+<a href="{% url tool_update object.pk %}">{{ object }}</a> - <button onclick="location='{% url tool_config object.pk %}';">Configure</button> <button onclick="location='{% url tool_status object.pk %}';">Status</button>
 {% endblock objectline %}

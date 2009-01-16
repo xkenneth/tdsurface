@@ -13,8 +13,8 @@
 
 {% block body %}
 
-<a href="{% url tool_pullcal object.pk %}"><button>Pull Calibration Constants</button></a>
-<a href="{% url tool_settime object.pk %}"><button>Set Time</button></a>
+<button onclick="location='{% url tool_pullcal object.pk %}';">Pull Calibration Constants</button>
+<button onclick="location='{% url tool_settime object.pk %}';">Set Time</button>
 
 
 {% endblock body %}

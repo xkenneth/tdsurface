@@ -48,7 +48,7 @@ def pull_calibration(request, object_id) :
                     , calco15=ival[15])
     tc.save()
     
-    return render_to_response('calibration_results.html', d)
+    return render_to_response('calibration_results.html', d, context_instance = RequestContext(request))
     
 def set_time(request, object_id) :
     if request.method == 'POST': # If the form has been submitted...
@@ -57,7 +57,7 @@ def set_time(request, object_id) :
                                 
             tool = Tool.objects.get(pk=object_id)
     
-            tc = ToolCom(port = '/dev/tty.BluePortXP-C6DC-SPP-1', baudrate=2400, bytesize=8, parity='N', stopbits=1, timeout=10)
+            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
             tapi = ToolAPI(tc)
             
             comcheck = tapi.echo('ABC123')
@@ -68,29 +68,32 @@ def set_time(request, object_id) :
             tool_time = tapi.get_time() # Read the time back
             tc.close()
             
-            return render_to_response('timeset_results.html', {'tool_time': tool_time,'object': tool,})
+            return render_to_response('timeset_results.html', {'tool_time': tool_time,'object': tool,}, context_instance = RequestContext(request))
     else:
         form = SetTimeForm(initial = {'set_time_to': datetime.datetime.utcnow(),}) # An unbound form
 
-    return render_to_response('generic_form.html', {'form': form,})
+    return render_to_response('generic_form.html', {'form': form,}, context_instance = RequestContext(request))
     
 def tool_status(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
     
-    tc = ToolCom(port = '/dev/tty.BluePortXP-C6DC-SPP-1', baudrate=2400, bytesize=8, parity='N', stopbits=1, timeout=10)
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
+    
+    time.sleep(1)
     
     comcheck = tapi.echo('ABC123')
     if comcheck != 'ABC123' :
-        return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+        tc.close()
+        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
         
     tool_time = tapi.get_time()
     calibration = tapi.get_calibration_contants()
     log_address = tapi.get_current_log_address()
     tc.close()
     
-    return render_to_response('tool_status.html', {'tool_time': tool_time,'object': tool, 'calibration': calibration, 'log_address': log_address})
+    return render_to_response('tool_status.html', {'tool_time': tool_time,'object': tool, 'calibration': calibration, 'log_address': log_address}, context_instance = RequestContext(request))
     
     
 def run_activate(request, object_id) :    
@@ -115,13 +118,13 @@ def run_download_status(request) :
 def run_download_log(request, object_id) :
     run = Run.objects.get(pk=object_id)
     
-    #tc = ToolCom(port = '/dev/tty.BluePortXP-C6DC-SPP-1', baudrate=2400, bytesize=8, parity='N', stopbits=1, timeout=10)
-    #tapi = ToolAPI(tc)
-    
-    #comcheck = tapi.echo('ABC123')
-    #if comcheck != 'ABC123' :
-    #    return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
-    
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+
     request.session['log_download_in_progress'] = False
     request.session['log_download_data'] = []
     request.session['log_download_cnt'] = 0
@@ -135,7 +138,7 @@ def run_download_log(request, object_id) :
     request.session['log_download_in_progress'] = True
     request.session.save() 
     log = tapi.get_log(call_back)
-    #for x in range(5) :
+    #for x in range(10) :
     #    call_back(x)
     #    time.sleep(1)
     request.session['log_download_in_progress'] = False
@@ -143,9 +146,22 @@ def run_download_log(request, object_id) :
     
     return HttpResponse("Log Download Complete!")
     
-def run_wits_detail(request, object_id) :
-    run = Run.objects.get(pk=object_id)
+def run_wits0_latest(request, run_id, num_latest=100, num_skip=0, extra_context={}) :
+    run = Run.objects.get(pk=run_id)
 
-    wits = WITS0.objects.filter(run=run).order_by('-time_stamp','recid','itemid')[:100]
-    return render_to_response('wits0_detail.html', {'wits': wits,}, context_instance = RequestContext(request)) 
+    num_latest=int(num_latest)
+    neg_num_latest = -num_latest
+    num_skip = int(num_skip)
+
+    wits = WITS0.objects.filter(run=run).order_by('-time_stamp','recid','itemid')[num_skip: num_skip+num_latest]
+    
+    data = {'wits':wits, 'num_latest':num_latest, 'neg_num_latest':neg_num_latest, 'num_skip':num_skip, 'run':run, }
+    
+    for key, value in extra_context.items():
+        if callable(value):
+            data[key] = value()
+        else:
+            data[key] = value    
+    
+    return render_to_response('wits0_detail.html', data , context_instance = RequestContext(request)) 
     

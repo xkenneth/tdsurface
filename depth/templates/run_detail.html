@@ -12,7 +12,7 @@
  
  function status_callback(data)
  {
-    if(!data.match("False"))
+    if(!data.match("Complete"))
     {
         window.setTimeout(status,1000);
     }
@@ -21,8 +21,6 @@
  function status()
  {
     $("#run_download_status").load("{% url run_download_status %}", status_callback);
-    
-
  }
  </script>     
 {% endblock head %}
