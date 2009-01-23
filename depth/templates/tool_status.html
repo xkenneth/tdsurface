@@ -14,8 +14,9 @@
 {% block body %}
 
 <table class="hilightrow">
+    
     <tr>
-        <th colspan="2">Current Time</th><td>{{ tool_time }}</td>
+        <th colspan="2">Tool Timer</th><td>{{ tool_timer }} seconds</td>
     </tr>
     <tr>
         <th colspan="2">Current Log Address</th><td>{{ log_address }}</td>
@@ -34,7 +35,29 @@
     <tr>
        <th>Temperature</th><td>{{ calibration.14 }} {{ calibration.15 }} </td>
     </tr>
-                
+    <tr>
+        <th rowspan="7">Current Sensor Readings</th>
+        
+        <th>Temperature</th><td>{{ sensor.temperature }} F</td>
+    </tr>
+    <tr>
+        <th>Azimuth</th><td>{{ sensor.azimuth }} </td>
+    </tr>
+    <tr>
+        <th>Inclination</th><td>{{ sensor.inclination }} </td>
+    </tr>
+    <tr>
+        <th>Gravity</th><td>{{ sensor.gravity }} </td>
+    </tr>
+    <tr>
+        <th>Magnetometer</th><td>{{ sensor.magnetic }} </td>
+    </tr>
+    <tr>
+        <th>Gamma Ray</th><td>{{ sensor.gamma_ray }} </td>
+    </tr>
+    <tr>
+        <th>Tool Face</th><td>{{ sensor.tool_face }} </td>
+    </tr>
 </table>
 
 

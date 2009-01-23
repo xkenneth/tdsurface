@@ -2,27 +2,46 @@
 
 {% block head %}
 <script type="text/JavaScript">
- $(document).ready(function(){
-   $("#run_download_log").click(function(){
-    $(this).hide(); // Hide the button
-    $.get("{% url run_download_log object.pk %}");
+
+function cancel_click()
+{
+    $.get("{% url run_download_cancel %}");
+    $(this).attr("disabled","disabled");
+}
+
+function download_click()
+{    
+    $(this).attr("disabled","disabled");
+    $("#run_download_cancel").removeAttr("disabled");
     window.setTimeout(status,1000);
-   });
- });
+    $("#run_download_satus").html("Starting Download...");
+    $.get("{% url run_download_log object.pk %}");
+    $(this).unbind('click', download_click);
+    $(this).bind('click', cancel_click);
+}
+
+function install_events()
+{
+    $("#run_download_log").click(download_click);
+    $("#run_download_cancel").click(cancel_click);
+}
+
+$(document).ready(install_events);
  
- function status_callback(data)
- {
+function status_callback(data, textStatus)
+{
+    $("#run_download_status").html(data);    
     if(!data.match("Complete"))
     {
-        window.setTimeout(status,1000);
+        window.setTimeout(status,2000);
     }
- }
+}
  
- function status()
- {
-    $("#run_download_status").load("{% url run_download_status %}", status_callback);
- }
- </script>     
+function status()
+{
+   $.get("{% url run_download_status %}", status_callback);
+}
+</script>     
 {% endblock head %}
 
 {% block navigation %}
@@ -60,7 +79,8 @@
     
 </table>
 
-<button id="run_download_log">Download Log</button>
+<button id="run_download_log">Download Log</button>&nbsp;&nbsp;&nbsp;<button id="run_download_cancel" disabled="disabled">Cancel Download</button>
+
 
 <div id="run_download_status"></div>
 

@@ -3,6 +3,45 @@
 {% block head %}
     <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
     {{ form.media }}
+    
+<script type="text/JavaScript">
+
+function purge_click()
+{
+    var rc = confirm("Are you sure you want to totally erase the logs on the tool?");
+    if(rc==true)
+    {
+        location='{% url tool_purge_log object.pk %}';
+    }
+    else
+    {
+        alert("Log Purge Canceled");
+    }
+}
+
+function reset_timer_click()
+{
+    var rc = confirm("Are you sure you want to reset the timer on the tool?");
+    if(rc==true)
+    {
+        location='{% url tool_reset_timer object.pk %}';
+    }
+    else
+    {
+        alert("Timer Reset Canceled");    
+    }
+}
+
+function install_events()
+{
+    $("#purge_log_button").click(purge_click);
+    $("#reset_timer_button").click(reset_timer_click);
+}
+
+$(document).ready(install_events);
+ 
+</script>    
+        
 {% endblock head %}
 
 {% block navigation %}
@@ -12,9 +51,11 @@
 {% block subtitle %}<h3>Tool Configuration - {{ object }}</h3>{% endblock subtitle %}
 
 {% block body %}
-
-<button onclick="location='{% url tool_pullcal object.pk %}';">Pull Calibration Constants</button>
-<button onclick="location='{% url tool_settime object.pk %}';">Set Time</button>
+<ul>
+    <li><button onclick="location='{% url tool_pullcal object.pk %}';">Pull Calibration Constants</button></li>
+    <li><button id="reset_timer_button">Reset Tool Timer</button></li>
+    <li><button id="purge_log_button">Purge Tool MWD Log</button></li>
+</ul>
 
 
 {% endblock body %}

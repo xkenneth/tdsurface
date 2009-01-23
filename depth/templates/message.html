@@ -1,0 +1,25 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table>
+    <tr>
+        <th>{{ message_title }}</th>
+    </tr>
+    <tr>
+        <td>{{ message }}</td>
+    </tr>
+</table>
+
+{% endblock body %}

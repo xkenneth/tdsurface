@@ -94,6 +94,7 @@ class State(models.Model) :
 
 admin.site.register(State)    
     
+    
 class Rig(models.Model) :
     RIG_TYPE_CHOICES = (
         ('barge', 'Barge rig'),
@@ -199,13 +200,21 @@ admin.site.register(ToolType)
 
 class Tool(models.Model) :
     serial_number = models.CharField(primary_key=True, max_length=255)
-    type = models.ForeignKey(ToolType)
-    notes = models.TextField(blank=True, null=True)
+    type = models.ForeignKey(ToolType)    
     
     def __unicode__(self) :
         return 'Tool-' + self.serial_number
 
 admin.site.register(Tool)
+
+
+class ToolNotes(models.Model) :
+    uid = UUIDField(primary_key=True, editable=False)
+    tool = models.ForeignKey(Tool)
+    time_stamp = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
+    notes = models.TextField(blank=True, null=True)
+
+admin.site.register(ToolNotes)
 
 
 class ToolConfig(models.Model) :
@@ -242,13 +251,21 @@ class Run(models.Model) :
     end_time = models.DateTimeField(blank=True, null=True)
     tool_config = models.ForeignKey(ToolConfig, blank=True, null=True)
     well_bore = models.ForeignKey(WellBore)        
-    notes = models.TextField(blank=True, null=True)
     
     def __unicode__(self) :
         return str(self.well_bore) + " " + str(self.start_time)
         
 admin.site.register(Run)
 
+
+class RunNotes(models.Model) :
+    uid = UUIDField(primary_key=True, editable=False)
+    run = models.ForeignKey(Run)
+    time_stamp = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
+    notes = models.TextField(blank=True, null=True)
+
+admin.site.register(RunNotes)
+    
     
 class PipeTally(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
@@ -261,10 +278,10 @@ class PipeTally(models.Model) :
 admin.site.register(PipeTally)
 
 
-class MWDRealTime(models.Model) :
+class ToolMWDRealTime(models.Model) :
     VALUE_TYPE_CHOICES = (('G','Gravity'),('M','Magnetic'),('T','Temperature'),('R','Gamma Ray'),('A','Azimuth'),('I','Inclination'),)
     uid = UUIDField(primary_key=True, editable=False)
-    run = models.ForeignKey(Run)
+    run = models.ForeignKey(Run)    
     time_stamp = models.DateTimeField( db_index=True)
     type = models.CharField(max_length=1, choices = VALUE_TYPE_CHOICES, db_index=True)
     value = models.IntegerField(blank=True, null=True)
@@ -272,14 +289,15 @@ class MWDRealTime(models.Model) :
     value_y = models.IntegerField(blank=True, null=True)
     value_z = models.IntegerField(blank=True, null=True)
     
-admin.site.register(MWDRealTime)
+admin.site.register(ToolMWDRealTime)
     
     
-class MWDLog(models.Model) :
-    uid = UUIDField(primary_key=True, editable=False)
+class ToolMWDLog(models.Model) :
+    uid = UUIDField(primary_key=True, editable=False)    
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField(db_index=True)
-    raw_data = models.CharField(max_length=255)
+    seconds = models.IntegerField()
+    raw_data = models.CharField(max_length=255, blank=True, null=True)
+    status = models.IntegerField()
     gravity_x = models.IntegerField()
     gravity_y = models.IntegerField()
     gravity_z = models.IntegerField()
@@ -287,13 +305,12 @@ class MWDLog(models.Model) :
     magnetic_y = models.IntegerField()
     magnetic_z = models.IntegerField()
     temperature = models.IntegerField()
-    temperature_units = models.CharField(max_length=1, choices = TEMP_UNIT_CHOICES)
-    gama0 = models.IntegerField()
-    gama1 = models.IntegerField()
-    gama2 = models.IntegerField()
-    gama3 = models.IntegerField()
+    gamma0 = models.IntegerField()
+    gamma1 = models.IntegerField()
+    gamma2 = models.IntegerField()
+    gamma3 = models.IntegerField()
 
-admin.site.register(MWDLog)
+admin.site.register(ToolMWDLog)
 
 
 class ManualDepth(models.Model) :
@@ -354,6 +371,7 @@ class Settings(models.Model) :
 
 admin.site.register(Settings)
 
+
 class WITSGeneralTimeBased(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
@@ -401,6 +419,7 @@ class WITSGeneralTimeBased(models.Model) :
     spare5 = models.FloatField(blank=True, null=True)
     
 admin.site.register(WITSGeneralTimeBased)
+
 
 class WITS0(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)

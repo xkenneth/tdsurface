@@ -19,6 +19,8 @@ from tdsurface.toolcom import ToolCom
 from tdsurface.toolapi import ToolAPI
 from django.conf import settings
 
+import threading
+import logging
 
 def mainmenu(request) :
     d = {}
@@ -73,7 +75,25 @@ def set_time(request, object_id) :
         form = SetTimeForm(initial = {'set_time_to': datetime.datetime.utcnow(),}) # An unbound form
 
     return render_to_response('generic_form.html', {'form': form,}, context_instance = RequestContext(request))
+
+def reset_timer(request, object_id) :
     
+    tool = Tool.objects.get(pk=object_id)
+    
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)    
+    
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        tc.close()
+        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+        
+    tapi.set_time(datetime.datetime(2001,1,1,0,0,0)) # Set the timer to 0 using tool base time (2001-01-01 00:00:00) (year & month are ignored on the timer)
+    
+    tc.close()
+    
+    return render_to_response('message.html', {'message': 'Tool timer reset to 0', 'navigation_template': 'tool_menu.html' }, context_instance = RequestContext(request))
+        
 def tool_status(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
@@ -81,20 +101,37 @@ def tool_status(request, object_id) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
     
-    time.sleep(1)
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        tc.close()
+        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+        
+    tool_timer = tapi.get_timer()
+    calibration = tapi.get_calibration_contants()
+    sensor = tapi.get_sensor_readings()
+    log_address = tapi.get_current_log_address()
+    tc.close()
+    
+    return render_to_response('tool_status.html', {'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'calibration': calibration, 'log_address': log_address}, context_instance = RequestContext(request))
+
+def tool_purge_log(request, object_id) :
+    
+    tool = Tool.objects.get(pk=object_id)
+    
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
     
     comcheck = tapi.echo('ABC123')
     if comcheck != 'ABC123' :
         tc.close()
         return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
         
-    tool_time = tapi.get_time()
-    calibration = tapi.get_calibration_contants()
-    log_address = tapi.get_current_log_address()
+    tapi.purge_log()
+    
     tc.close()
     
-    return render_to_response('tool_status.html', {'tool_time': tool_time,'object': tool, 'calibration': calibration, 'log_address': log_address}, context_instance = RequestContext(request))
-    
+    return render_to_response('message.html', {'message': 'Tool MWD Log Purged', 'navigation_template': 'tool_menu.html' }, context_instance = RequestContext(request))
+        
     
 def run_activate(request, object_id) :    
     d = {}
@@ -109,43 +146,109 @@ def run_activate(request, object_id) :
     return HttpResponseRedirect(reverse('run_list'))
 
 def run_download_status(request) :
-    if request.session['log_download_in_progress'] :    
-        return HttpResponse("Downloading Log: %s" % (str(request.session['log_download_cnt'])))
+    
+    p = bool(Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS').value)
+    c = int(Settings.objects.get(name='LOG_DOWNLOAD_CNT').value)
+        
+    if p :
+        if c > 0 :
+            return HttpResponse("Downloading Log: %d" % c )
+        elif c < 0 :
+            return HttpResponse("Error while downloading: %d" % c)
+        else :
+            return HttpResponse("Starting Download...")
+    elif  c == 0 :
+        return HttpResponse("Not Downloading")  # No download in process or completed
+    elif c < 0 :
+        return HttpResponse("Error: %d" % c)
     else :
         return HttpResponse("Download Complete")
 
+# Canceling does not work reliablly because the download process does not get
+# an updated copy of the session varibles
+def run_download_cancel(request) :
     
-def run_download_log(request, object_id) :
-    run = Run.objects.get(pk=object_id)
+    p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')
+    p.value=''
+    p.save()
     
+    return HttpResponse("Canceling")
+
+
+def _download_log(run_id) :
+    
+    p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')
+    p.value='True'
+    p.save()
+           
+    c = Settings.objects.get(name='LOG_DOWNLOAD_CNT')
+    c.value=str('0')
+    c.save()       
+               
+    run = Run.objects.get(pk=run_id)
+        
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
 
     comcheck = tapi.echo('ABC123')
     if comcheck != 'ABC123' :
-        return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+        p.value=''
+        p.save()
+        c.value = str(-1)
+        c.save()        
+        tc.close()
+        return
 
-    request.session['log_download_in_progress'] = False
-    request.session['log_download_data'] = []
-    request.session['log_download_cnt'] = 0
-    request.session.save()
-    
-    def call_back(l) :
-        request.session['log_download_data'].append(l)
-        request.session['log_download_cnt'] += 1
-        request.session.save() 
+    def call_back(log_data) :
+        
+        c.value = str(int(c.value) + 1)
+        c.save()    
+        d = ToolMWDLog()        
+        d.run_id = run_id
+        d.raw_data = log_data.raw_data
+        d.seconds = log_data.seconds
+        d.status = log_data.status
+        d.gravity_x = log_data.gravity_x
+        d.gravity_y = log_data.gravity_y
+        d.gravity_z = log_data.gravity_z
+        d.magnetic_x = log_data.magnetic_x
+        d.magnetic_y = log_data.magnetic_y
+        d.magnetic_z = log_data.magnetic_z
+        d.temperature = log_data.temperature
+        d.gamma0 = log_data.gamma0
+        d.gamma1 = log_data.gamma1
+        d.gamma2 = log_data.gamma2
+        d.gamma3 = log_data.gamma3
+        d.save()
+        
+        p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')
+        
+        return bool(p.value)
 
-    request.session['log_download_in_progress'] = True
-    request.session.save() 
-    log = tapi.get_log(call_back)
-    #for x in range(10) :
-    #    call_back(x)
-    #    time.sleep(1)
-    request.session['log_download_in_progress'] = False
-    request.session.save() 
     
-    return HttpResponse("Log Download Complete!")
+    tapi.get_log(call_back)
+
+    p.value=''
+    p.save()
+            
+    tc.close()
     
+def run_start_download_log(request, object_id) :
+    run = Run.objects.get(pk=object_id)
+        
+    p, created = Settings.objects.get_or_create(name='LOG_DOWNLOAD_IN_PROGRESS')
+    p.value='True'
+    p.save()
+           
+    c, created = Settings.objects.get_or_create(name='LOG_DOWNLOAD_CNT')
+    c.value=str('0')
+    c.save()
+    
+    t = threading.Thread(target = _download_log, args=[object_id])
+    t.setDaemon(True)
+    t.start()
+    return HttpResponse("Download Started")
+        
 def run_wits0_latest(request, run_id, num_latest=100, num_skip=0, extra_context={}) :
     run = Run.objects.get(pk=run_id)
 

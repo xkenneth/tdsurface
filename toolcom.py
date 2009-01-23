@@ -28,7 +28,7 @@ class ToolCom :
     def read_line(self) :
         line = self.ser.readline()
         if DEBUG :
-            logging.debug("in '%s'" % line)
+            logging.debug("in %d '%s'" % (self.in_waiting(), line))
         return line
     
     def flush_input_buffer(self) :
