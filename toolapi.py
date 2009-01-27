@@ -1,6 +1,6 @@
 import time
 import datetime
-import toolsensor
+
 from tooldata import ToolLogData
 from tooldata import ToolSensorData
 

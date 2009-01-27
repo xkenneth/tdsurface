@@ -19,7 +19,7 @@ class WellForm(ModelForm) :
                 'all': (form_css,)
         }
 
-    license_date = forms.DateField(widget=DynarchDateTimeWidget(date_button_html, format='%Y-%m-%d'))
+    license_date = forms.DateField(required=False, widget=DynarchDateTimeWidget(date_button_html, format='%Y-%m-%d'))
     state = USStateSelect()
     
 
@@ -52,6 +52,33 @@ class RunForm(ModelForm) :
     start_time = forms.DateTimeField(widget = DynarchDateTimeWidget(datetime_button_html))
     end_time = forms.DateTimeField(required=False, widget = DynarchDateTimeWidget(datetime_button_html))
 
+class RunNotesForm(forms.Form) :
+    
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+
+    notes = forms.CharField(widget=forms.Textarea)
+    
+
+class ToolForm(ModelForm) :
+    class Meta :
+        model=Tool
+    
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+    
+class ToolNotesForm(forms.Form) :
+    
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+
+    notes = forms.CharField(widget=forms.Textarea)    
 
 class SetTimeForm(forms.Form) :
     set_time_to = forms.DateTimeField(widget = DynarchDateTimeWidget(datetime_button_html))

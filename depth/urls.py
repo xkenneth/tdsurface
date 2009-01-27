@@ -4,8 +4,8 @@ from tdsurface.depth.forms import *
 from tdsurface.shortcuts import get_object_or_None
 
 def get_active_run() :
-        active_run, created = Settings.objects.get_or_create(name='ACTIVE_RUN')
-        return active_run.value
+    active_run, created = Settings.objects.get_or_create(name='ACTIVE_RUN')
+    return active_run.value
 
 urlpatterns = patterns('',
     
@@ -22,32 +22,33 @@ urlpatterns = patterns('',
     (r'^wellbore/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Well Bores', 'navigation_template': 'wellbore_menu.html'}, 'queryset': WellBore.objects.all(), 'template_name': 'generic_list.html'}, 'wellbore_list'),
     
     (r'^tool/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'tool_create'),
-    (r'^tool/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'tool_update'),    
-    (r'^tool/config/(?P<object_id>[^/]*)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'toolconfig_form.html', 'post_save_redirect': '../../' }, 'tool_config'),
-    (r'^tool/config/(?P<object_id>.*)/pullcal/$', 'tdsurface.depth.views.pull_calibration', {}, 'tool_pullcal'),
-    (r'^tool/config/(?P<object_id>.*)/settime/$', 'tdsurface.depth.views.set_time', {}, 'tool_set_time'),
-    (r'^tool/config/(?P<object_id>.*)/resettimer/$', 'tdsurface.depth.views.reset_timer', {}, 'tool_reset_timer'),
-    (r'^tool/config/(?P<object_id>.*)/purgelog/$', 'tdsurface.depth.views.tool_purge_log', {}, 'tool_purge_log'),
-    (r'^tool/status/(?P<object_id>.*)/$', 'tdsurface.depth.views.tool_status', {}, 'tool_status'),
+    #(r'^tool/update/(?P<object_id>.*)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'tool_update'),
+    (r'^tool/update/(?P<tool_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.tool_update', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, }, 'tool_update'),    
+    (r'^tool/config/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'toolconfig_form.html', 'post_save_redirect': '../../' }, 'tool_config'),
+    (r'^tool/config/(?P<object_id>[\d\-a-f]+)/pullcal/$', 'tdsurface.depth.views.pull_calibration', {}, 'tool_pullcal'),
+    (r'^tool/config/(?P<object_id>[\d\-a-f]+)/settime/$', 'tdsurface.depth.views.set_time', {}, 'tool_set_time'),
+    (r'^tool/config/(?P<object_id>[\d\-a-f]+)/resettimer/$', 'tdsurface.depth.views.reset_timer', {}, 'tool_reset_timer'),
+    (r'^tool/config/(?P<object_id>[\d\-a-f]+)/purgelog/$', 'tdsurface.depth.views.tool_purge_log', {}, 'tool_purge_log'),
+    (r'^tool/status/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.tool_status', {}, 'tool_status'),
     (r'^tool/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Tools', 'navigation_template': 'tool_menu.html'}, 'queryset': Tool.objects.all(), 'template_name': 'tool_list.html'}, 'tool_list'),
+    
+    (r'^run/notes/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run Note', 'navigation_template': 'run_menu.html'}, 'form_class': RunNotesForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'run_notes_create'),
         
     (r'^run/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'run_create'),
-    (r'^run/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../activate/%(uid)s/' }, 'run_createactive'),
-    (r'^run/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'run_update'),
+    (r'^run/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../activate/%(uid)s/' }, 'run_createactive'),    
+    (r'^run/update/(?P<run_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_update', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, }, 'run_update'),    
     (r'^run/activate/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_activate', {}, 'run_activate'),
-    (r'^run/detail/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_menu.html', 'active_run': get_active_run},'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),
-    
+    (r'^run/detail/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),
+
     (r'^run/downloadlog/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_start_download_log', {}, 'run_download_log'),
     (r'^run/downloadstatus/$', 'tdsurface.depth.views.run_download_status', {}, 'run_download_status'),
     (r'^run/downloadcancel/$', 'tdsurface.depth.views.run_download_cancel', {}, 'run_download_cancel'),
-    
-    ##(r'^run/wits0/$', 'django.views.generic.date_based.archive_index', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html', },'queryset': WITS0.objects.all(), 'date_field': 'time_stamp', 'num_latest': 100, 'template_name': 'wits0_detail.html', 'template_object_name': 'wits'}, 'run_wits0_latest'),
-    ##(r'^run/wits0/(?P<object_id>[\d\-a-f]+)/(?P<num_latest>[\d]+)$', 'tdsurface.depth.views.run_wits_detail', {}, 'run_wits0_latest'),
+
     (r'^run/wits0/(?P<run_id>[\d\-a-f]+)/(?P<num_latest>[\d]+)/(?P<num_skip>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html',} }, 'run_wits0_latest'),
     (r'^run/wits0/(?P<run_id>[\d\-a-f]+)/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html',} }, 'run_wits0_latest'),
     (r'^run/wits0/(?P<run_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html',} }, 'run_wits0_latest'),
-    
-    (r'^run/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html', 'active_run': get_active_run}, 'queryset': Run.objects.all(), 'template_name': 'run_list.html'}, 'run_list'),
+
+    (r'^run/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html', 'active_run': get_active_run }, 'queryset': Run.objects.all(), 'template_name': 'run_list.html'}, 'run_list'),
          
     (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}, 'home'),
     #(r'.*', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}),

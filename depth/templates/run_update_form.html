@@ -1,0 +1,47 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<form id="run_update_form" method="POST" action=".">
+    <input id="form_id" name="form_id" value="run_update_form" type="hidden">
+{{ run_form.as_p }}
+<input id="run_update_submit_button" name="submit" value="Update" type="submit">
+</form>
+<hr>
+
+<form id="run_notes_form" method="POST" action=".">
+<input id="form_id" name="form_id" value="run_notes_form" type="hidden">    
+<h3>Run Notes</h3>
+<table class="hilightrow">
+    <tr>        
+        <th>Time Stamp</th>
+        <th>Note</th>        
+    </tr>    
+{% for note in run_notes %}    
+    <tr>
+        <td valign="top">{{ note.time_stamp }} </td>
+        <td valign="top"><pre>{{ note.notes }}</pre></td>        
+    </tr>
+{% endfor %}
+    <tr>
+        <td valign="top"> &nbsp;</td>
+        <td valign="top">{{ run_notes_form.notes }}
+            <input id="run_notes_submit_button" name="submit" value="Save Note" type="submit">
+        </td>
+    </tr>
+</table>
+
+</form>
+
+{% endblock body %}

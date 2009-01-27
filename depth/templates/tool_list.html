@@ -1,5 +1,23 @@
-{% extends 'generic_list.html' %}
+{% extends 'mainmenu.html' %}
 
-{% block objectline %}
-<a href="{% url tool_update object.pk %}">{{ object }}</a> - <button onclick="location='{% url tool_config object.pk %}';">Configure</button> <button onclick="location='{% url tool_status object.pk %}';">Status</button>
-{% endblock objectline %}
+{% block head %}
+    
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+
+{% block body %}
+<table  class="hilightrow">
+{% for object in object_list %}    
+<tr>
+    <td><a href="{% url tool_update object.pk %}">{{ object }}</a></td>
+    <td><button onclick="location='{% url tool_update object.pk %}';">Update</button> <button onclick="location='{% url tool_config object.pk %}';">Configure</button> <button onclick="location='{% url tool_status object.pk %}';">Status</button></td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock body %}

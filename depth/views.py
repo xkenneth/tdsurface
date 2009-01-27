@@ -131,6 +131,41 @@ def tool_purge_log(request, object_id) :
     tc.close()
     
     return render_to_response('message.html', {'message': 'Tool MWD Log Purged', 'navigation_template': 'tool_menu.html' }, context_instance = RequestContext(request))
+
+def tool_update(request, tool_id, extra_context=None,) :
+    
+    tool = Tool.objects.get(pk=tool_id)
+    
+    if request.method == 'POST': # If the form has been submitted...
+        if request.POST['form_id'] == 'tool_update_form' :
+            tool_form = ToolForm(request.POST, instance=tool) # A form bound to the POST data
+            tool_notes_form = ToolNotesForm(initial = {'tool': tool_id,})
+            if tool_form.is_valid(): # All validation rules pass
+                tool_form.save()            
+                return HttpResponseRedirect(reverse('tool_update', args=[tool_id]))
+        else :
+            tool_notes_form = ToolNotesForm(request.POST) # A form bound to the POST data
+            tool_form = ToolForm(instance = tool)
+            if tool_notes_form.is_valid() :
+                tool_notes = ToolNotes(tool=tool, notes = tool_notes_form.cleaned_data['notes'])
+                tool_notes.save()
+                return HttpResponseRedirect(reverse('tool_update', args=[tool_id]))
+    else:
+        tool_form = ToolForm(instance = tool)
+        tool_notes_form = ToolNotesForm(initial = {'tool': tool_id,})
+
+    tool_notes = ToolNotes.objects.filter(tool=tool).order_by('time_stamp')
+    
+    data = {'tool_form':tool_form, 'tool':tool, 'tool_notes_form': tool_notes_form, 'tool_notes': tool_notes }
+    
+    for key, value in extra_context.items():
+        if callable(value):
+            data[key] = value()
+        else:
+            data[key] = value    
+
+    return render_to_response('tool_update_form.html', data, context_instance = RequestContext(request))
+
         
     
 def run_activate(request, object_id) :    
@@ -144,6 +179,42 @@ def run_activate(request, object_id) :
     active_run.save()
         
     return HttpResponseRedirect(reverse('run_list'))
+
+
+def run_update(request, run_id, extra_context=None,) :
+    
+    run = Run.objects.get(pk=run_id)
+    
+    if request.method == 'POST': # If the form has been submitted...
+        if request.POST['form_id'] == 'run_update_form' :
+            run_form = RunForm(request.POST, instance=run) # A form bound to the POST data
+            run_notes_form = RunNotesForm(initial = {'run': run_id,})
+            if run_form.is_valid(): # All validation rules pass
+                run_form.save()            
+                return HttpResponseRedirect(reverse('run_update', args=[run.pk]))
+        else :
+            run_notes_form = RunNotesForm(request.POST) # A form bound to the POST data
+            run_form = RunForm(instance = run)
+            if run_notes_form.is_valid() :
+                run_notes = RunNotes(run=run, notes = run_notes_form.cleaned_data['notes'])
+                run_notes.save()
+                return HttpResponseRedirect(reverse('run_update', args=[run.pk]))
+    else:
+        run_form = RunForm(instance = run)
+        run_notes_form = RunNotesForm(initial = {'run': run_id,})
+
+    run_notes = RunNotes.objects.filter(run=run).order_by('time_stamp')
+    
+    data = {'run_form':run_form, 'run':run, 'run_notes_form': run_notes_form, 'run_notes': run_notes }
+    
+    for key, value in extra_context.items():
+        if callable(value):
+            data[key] = value()
+        else:
+            data[key] = value    
+
+    return render_to_response('run_update_form.html', data, context_instance = RequestContext(request))
+
 
 def run_download_status(request) :
     
