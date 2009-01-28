@@ -87,7 +87,7 @@ STATIC_DOC_ROOT = os.path.join(os.getcwd(),'media')
 print "!",STATIC_DOC_ROOT
 
 #COMPORT = '/dev/tty.BluePortXP-C6DC-SPP-1'
-COMPORT = 'dev/ttyUSB0'
+COMPORT = '/dev/ttyUSB0'
 #COMPORT = '/dev/rfcomm0'
 BAUDRATE=2400
 DATABITS=8

@@ -1,0 +1,203 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    <script src="{{ MEDIA_URL}}scripts/jquery.color.js"></script>
+    {{ form.media }}
+    
+    
+<script type="text/JavaScript">
+
+var pattern_time = new Array(28,28,28,35,35,56,56,28,28,28,28,42,42,21,21,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,60,60);
+
+function update_sequence_time()
+{    
+    for(var seq=0;seq<3;seq=seq+1)
+    {
+        var seq_time=0;
+        for(var pat=0;pat<20;pat=pat+1)
+        {
+            var pat_id = '#seq'+seq+'pat'+pat;
+            var cnt_id = '#seq'+seq+'cnt'+pat;
+            
+            var pat_val = $(pat_id).val()*1;
+            var cnt_val = $(cnt_id).val()*1;
+            
+            if(pat_val==65535)
+            {
+                break;
+            }
+            
+            if(pat_val<35)
+            {
+                seq_time = seq_time + (pattern_time[pat_val] * cnt_val);                
+            }            
+        }
+        var seq_time_id = '#seq'+seq+'time';
+        
+        var min = Math.floor(seq_time/60)
+        var sec = seq_time%60
+        if(sec<10)
+        {
+            sec = '0'+sec;            
+        }
+        $(seq_time_id).html(min+':'+sec);
+    }
+}
+
+function ppp_change(eventObject)
+{    
+    update_sequence_time();
+    seq_time_id = '#'+this.id.substr(0,4)+'time';
+    $(seq_time_id).css('color', "red");
+    $(seq_time_id).animate({color: "white"},'slow');
+    $("#submit_button").removeAttr("disabled");
+}
+
+function ppsp_change(eventObject)
+{    
+    $("#submit_button").removeAttr("disabled");    
+}
+
+function adv_seq_display(show)
+{
+    if(show)
+    {
+        $(".seq1class").show();
+        $(".seq2class").show();
+        $(".seqpatclass").show();
+    }
+    else
+    {
+        $(".seqpatclass").hide();
+        $(".seq2class").hide();
+        $(".seq1class").hide();
+    }
+    
+}
+
+function adv_seq_change(eventObject)
+{
+    $("#submit_button").removeAttr("disabled");    
+    adv_seq_display($(this).attr("checked"));
+}
+
+function ready()
+{    
+    $('#adv_seq').change(adv_seq_change);
+    adv_seq_display($('#adv_seq').attr('checked'));
+    update_sequence_time();
+    $('.pattern_field').change(ppp_change);
+    $('.count_field').change(ppp_change);
+    $('.ppsp_seq_field').change(ppsp_change);
+    $('.ppsp_time_field').change(ppsp_change);
+}
+
+$(document).ready(ready);
+ 
+</script>     
+    
+{% endblock head %}
+
+{% block navigation %}
+{% include 'tool_menu.html' %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Pulse Pattern Profile - {{ object }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<form action="#" method="post">
+
+<table>
+    <tr>
+        <th>Advanced Sequence Patterns</th>
+        <td><input type="checkbox" id="adv_seq" name="adv_seq" {% ifequal scp.3 1 %}checked="checked"{% endifequal %} ></td>
+    </tr>
+</table>
+    
+<table>
+    
+    <tr>
+    {% for s in ppp %}        
+        <th class="seq{{forloop.counter0}}class"><div style="float:right;">length (m:s) <span id="seq{{ forloop.counter0 }}time"></span></div>Sequence {{ forloop.counter }} 
+        </th>
+    {% endfor %}
+    <th class="seqpatclass">Sequence Pattern</th>
+    </tr>
+    
+    <tr>
+    {% for s in ppp %}
+        <td>
+            <div class="seq{{forloop.counter0}}class">
+            <table>
+                <tr>    
+                    <th>
+                        Pattern
+                    </th>
+                    <th>
+                        Count
+                    </th>                
+                </tr>
+                {% for p in s %}                
+                <tr>
+                    <td>
+                        <select class="pattern_field" id="seq{{forloop.parentloop.counter0}}pat{{forloop.counter0}}" name="seq{{forloop.parentloop.counter0}}pat{{forloop.counter0}}">
+                            <option value="0" {% ifequal p.0 0 %}selected="selected"{% endifequal %} >tool status</option>
+                            <option value="1" {% ifequal p.0 1 %}selected="selected"{% endifequal %} >azimuth</option>
+                            <option value="2" {% ifequal p.0 2 %}selected="selected"{% endifequal %} >inclination</option>
+                            <option value="3" {% ifequal p.0 3 %}selected="selected"{% endifequal %} >Gz</option>
+                            <option value="4" {% ifequal p.0 4 %}selected="selected"{% endifequal %} >Hz</option>
+                            <option value="5" {% ifequal p.0 5 %}selected="selected"{% endifequal %} >high res Gx Gy</option>
+                            <option value="6" {% ifequal p.0 6 %}selected="selected"{% endifequal %} >high res Hx Hy</option>
+                            <option value="7" {% ifequal p.0 7 %}selected="selected"{% endifequal %} >temperature</option>
+                            <option value="9" {% ifequal p.0 9 %}selected="selected"{% endifequal %} >high res tool face</option>
+                            <option value="10" {% ifequal p.0 10 %}selected="selected"{% endifequal %} >high res gamma</option>
+                            <option value="11" {% ifequal p.0 11 %}selected="selected"{% endifequal %} >low res Gx Gy</option>
+                            <option value="12" {% ifequal p.0 12 %}selected="selected"{% endifequal %} >low res Hx Hy</option>
+                            <option value="13" {% ifequal p.0 13 %}selected="selected"{% endifequal %} >low res tool face</option>
+                            <option value="14" {% ifequal p.0 14 %}selected="selected"{% endifequal %} >low res gamma</option>
+                            <option value="15" {% ifequal p.0 15 %}selected="selected"{% endifequal %} >low res tool face gamma</option>
+                            <option value="33" {% ifequal p.0 33 %}selected="selected"{% endifequal %} >pulse cnt inclination</option>                        
+                            <option value="34" {% ifequal p.0 34 %}selected="selected"{% endifequal %} >pulse freq inclination</option>
+                            <option value="65535" {% ifequal p.0 65535 %}selected="selected"{% endifequal %} >End</option>                        
+                        </select>
+                        
+                    </td>
+                    <td align="right">
+                        <input size="1" class="count_field" id="seq{{forloop.parentloop.counter0}}cnt{{forloop.counter0}}" name="seq{{forloop.parentloop.counter0}}cnt{{forloop.counter0}}" value="{{ p.1 }}">
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            </div>
+        </td>
+    {% endfor %}
+        <td valign="top">
+            <table class="seqpatclass">
+                <tr>
+                    <th>Sequence</th>
+                    <th>Minutes</th>
+                </tr>
+                {% for p in ppsp %}
+                    <tr>
+                        <td>
+                            <select class="ppsp_seq_field" id="ppsp_seq{{ forloop.counter0 }}" name="ppsp_seq{{ forloop.counter0 }}"">
+                                <option value="0" {% ifequal p.0 0 %}selected="selected"{% endifequal %} >1</option>
+                                <option value="1" {% ifequal p.0 1 %}selected="selected"{% endifequal %} >2</option>
+                                <option value="2" {% ifequal p.0 2 %}selected="selected"{% endifequal %} >3</option>                                
+                                <option value="65535" {% ifequal p.0 65535 %}selected="selected"{% endifequal %} >End</option>                        
+                            </select>
+                        </td>
+                        <td align="right"><input size="1" class="ppsp_time_field" id="ppsp_time{{ forloop.counter0 }}" name="ppsp_time{{ forloop.counter0 }}" value="{{ p.1 }}"></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>    
+</table>
+    <br>
+    <input type="submit" value="Save To Tool" id="submit_button" disabled="disabled" >
+</form>
+
+{% endblock body %}

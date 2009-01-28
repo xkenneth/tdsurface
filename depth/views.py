@@ -114,6 +114,32 @@ def tool_status(request, object_id) :
     
     return render_to_response('tool_status.html', {'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'calibration': calibration, 'log_address': log_address}, context_instance = RequestContext(request))
 
+
+def tool_pulse_pattern_profile(request, object_id) :
+    
+    tool = Tool.objects.get(pk=object_id)
+
+    #tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    #tapi = ToolAPI(tc)
+    #
+    #comcheck = tapi.echo('ABC123')
+    #if comcheck != 'ABC123' :
+    #    tc.close()
+    #    return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+    #    
+    #ppp = tapi.get_pulse_pattern_profile()
+    #ppsp = tapi.get_pulse_pattern_sequence_profile()
+    #scp = tapi.get_status_constant_profile()
+    #tc.close()
+    
+    ppp = [[(1, 1), (14, 1), (2, 1), (14, 1), (1, 1), (14, 1), (2, 1), (14, 1), (14, 3), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(33, 1), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]]
+    ##ppsp = [(0, 240000), (1, 256608), (65535, 196609), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608)]
+    ppsp = [(0, 4), (1, 4), (65535, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3)]
+    scp = [42330, 33, 0, 1, 1, 1, 0, 6, 300, 300, 7, 500, 1000, 0, 0, 0, 8528, 14, 576, 25, 4, 0, 30, 30, 10, 20, 20, 20, 20, 20]
+    
+    return render_to_response('tool_pulse_pattern_profile.html', {'ppp': ppp, 'ppsp': ppsp, 'scp': scp, 'object': tool, }, context_instance = RequestContext(request))
+
+
 def tool_purge_log(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)

@@ -42,57 +42,49 @@ class ToolAPI :
         seconds = int(high+low,16)
         
     
-    def get_timer(self) :
-        self.raw_data = []
+    def get_timer(self) :        
         self.toolcom.write_line('T')
-        raw = self.toolcom.read_line()
-        self.raw_data.append(raw)
+        raw = self.toolcom.read_line()        
         s = self.decruft(raw)
 
         return self._tooltime2timer(s)
         
    
-    def get_time(self) :
-        self.raw_data = []
+    def get_time(self) :        
         self.toolcom.write_line('T')
-        raw = self.toolcom.read_line()
-        self.raw_data.append(raw)
+        raw = self.toolcom.read_line()        
         s = self.decruft(raw)
 
         return self._tooltime2datetime(s)
     
 
-    def set_time(self,dt) :
-        self.raw_data = []
+    def set_time(self,dt) :        
         
         #Set seconds first so that the time will be more accurate
         self.toolcom.write_line('TS ' + hex(dt.second)[2:])     # Remove the '0x' from the beginning of hex strings
-        self.raw_data.append(self.toolcom.read_line())          # Each set commands returns a tooltime string.  Only return the last one
+        self.toolcom.read_line()          # Each set commands returns a tooltime string.  Only return the last one
         
         self.toolcom.write_line('TN ' + hex(dt.minute)[2:])
-        self.raw_data.append(self.toolcom.read_line())
+        self.toolcom.read_line()
         
         self.toolcom.write_line('TH ' + hex(dt.hour)[2:])
-        self.raw_data.append(self.toolcom.read_line())
+        self.toolcom.read_line()
         
         self.toolcom.write_line('TD ' + hex(dt.day)[2:])
-        self.raw_data.append(self.toolcom.read_line())
+        self.toolcom.read_line()
         
         self.toolcom.write_line('TM ' + hex(dt.month)[2:])
-        self.raw_data.append(self.toolcom.read_line())
+        self.toolcom.read_line()
         
         self.toolcom.write_line('TY ' + hex(dt.year-2000)[2:])  # Send years since 2000
-        raw = self.toolcom.read_line()
-        self.raw_data.append(raw)
+        raw = self.toolcom.read_line()        
         
         s = self.decruft(raw)
         return self._tooltime2datetime(s)
     
-    def echo(self, s) :
-        self.raw_data=[]
+    def echo(self, s) :        
         self.toolcom.write_line('E ' + s)
-        raw = self.toolcom.read_line()
-        self.raw_data.append(raw)
+        raw = self.toolcom.read_line()        
         return self.decruft(raw)
     
     def decruft(self, s) :
@@ -103,13 +95,11 @@ class ToolAPI :
     def get_calibration_contants(self) :
         self.raw_data = []
         self.toolcom.write_line('RC')
-        raw = self.toolcom.read_line()
-        self.raw_data.append(raw)
+        raw = self.toolcom.read_line()        
         s = self.decruft(raw)
         return s.split(' ')
         
-    def get_log(self, call_back) :
-        self.raw_data = []
+    def get_log(self, call_back) :        
         self.toolcom.write_line('RL')
         
         bad_data_cnt = 0   #Safty valve in case the tool wigs out
@@ -145,11 +135,9 @@ class ToolAPI :
         self.toolcom.flush_input_buffer()
         
 
-    def get_sensor_readings(self) :
-        self.raw_data = []
+    def get_sensor_readings(self) :        
         self.toolcom.write_line('S')
-        raw = self.toolcom.read_line()
-        self.raw_data.append(raw)
+        raw = self.toolcom.read_line()        
         s = self.decruft(raw)        
         sensor = ToolSensorData(s)
         return sensor
@@ -162,16 +150,44 @@ class ToolAPI :
                 break
             time.sleep(10)
             
-        self.raw_data.append(self.toolcom.read_line())  # Read '>> Flash erased!\r\n'
-        self.raw_data.append(self.toolcom.read_line())  # Read the log start address '>> D600\r\n'        
+        self.toolcom.read_line()  # Read '>> Flash erased!\r\n'
+        self.toolcom.read_line()  # Read the log start address '>> D600\r\n'        
 
-    def get_current_log_address(self) :
-        self.raw_data = []
+    def get_current_log_address(self) :        
         self.toolcom.write_line('RS')
-        raw = self.toolcom.read_line()
-        self.raw_data.append(raw)
+        raw = self.toolcom.read_line()        
         return self.decruft(raw)
         
+    def get_pulse_pattern_profile(self) :
+        self.toolcom.write_line('RP')
+        ppp = []
+        for x in range(3) :            
+            p = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]                    
+            c = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+            l = []
+            for x in range(len(p)) :
+                l.append((p[x],c[x]))
+            ppp.append(l)
+            
+        return ppp
+            
     
+    def get_pulse_pattern_sequence_profile(self) :
+        self.toolcom.write_line('RQ')
+        ppsp = []
         
+        s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        hl = self.decruft(self.toolcom.read_line()).split(' ')
+        t = [ int(hl[h]+hl[l], 16)/60000 for h in range(0,20,2) for l in range(1,20,2) ]
+            
+        for x in range(len(s) ) :
+            ppsp.append((s[x],t[x]))        
+            
+        return ppsp    
         
+    def get_status_constant_profile(self) :
+        self.toolcom.write_line('RT')
+                
+        scp = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]                            
+            
+        return scp
