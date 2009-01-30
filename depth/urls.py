@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     (r'^wellbore/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Well Bores', 'navigation_template': 'wellbore_menu.html'}, 'queryset': WellBore.objects.all(), 'template_name': 'generic_list.html'}, 'wellbore_list'),
     
     (r'^tool/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'tool_create'),    
-    (r'^tool/update/(?P<tool_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.tool_update', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, }, 'tool_update'),    
+    (r'^tool/update/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.tool_update', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, }, 'tool_update'),    
     (r'^tool/config/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'toolconfig_form.html', 'post_save_redirect': '../../' }, 'tool_config'),
     (r'^tool/config/(?P<object_id>[\d\-a-f]+)/pulsepatternprofile/$', 'tdsurface.depth.views.tool_pulse_pattern_profile', {}, 'tool_pulse_pattern_profile'),
     (r'^tool/config/(?P<object_id>[\d\-a-f]+)/pullcal/$', 'tdsurface.depth.views.pull_calibration', {}, 'tool_pullcal'),
@@ -30,7 +30,8 @@ urlpatterns = patterns('',
     (r'^tool/config/(?P<object_id>[\d\-a-f]+)/resettimer/$', 'tdsurface.depth.views.reset_timer', {}, 'tool_reset_timer'),
     (r'^tool/config/(?P<object_id>[\d\-a-f]+)/purgelog/$', 'tdsurface.depth.views.tool_purge_log', {}, 'tool_purge_log'),
     (r'^tool/status/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.tool_status', {}, 'tool_status'),
-    (r'^tool/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Tools', 'navigation_template': 'tool_menu.html'}, 'queryset': Tool.objects.all(), 'template_name': 'tool_list.html'}, 'tool_list'),
+    (r'^tool/detail/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'navigation_template': 'tool_menu.html'}, 'queryset': Tool.objects.all(), 'template_name': 'tool_detail.html' }, 'tool_detail'),
+    (r'^tool/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Tools', 'navigation_template': 'tool_list_menu.html'}, 'queryset': Tool.objects.all(), 'template_name': 'tool_list.html'}, 'tool_list'),
     
     (r'^run/notes/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run Note', 'navigation_template': 'run_menu.html'}, 'form_class': RunNotesForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'run_notes_create'),
         

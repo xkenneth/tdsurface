@@ -1,6 +1,7 @@
 
-    <ul id="navigation">
-        <li><a href="{% url home %}">Home</a></li>
-        <li><a href="{% url tool_create %}">New Tool</a></li>
-        <li><a href="{% url tool_list %}">Tool List</a></li>        
-    </ul>
+<ul id="navigation">
+    <li><a href="{% url tool_list %}">Tool List</a></li>
+    <li><a href="{% url tool_update object.pk %}">Update</a></li>
+    <li><a href="{% url tool_config object.pk %}">Configure</a></li>
+    <li><a href="{% url tool_status object.pk %}">Current Status</a></li>        
+</ul>

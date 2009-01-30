@@ -10,6 +10,8 @@
 
 var pattern_time = new Array(28,28,28,35,35,56,56,28,28,28,28,42,42,21,21,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,60,60);
 
+var seq_time_prev = Array(3);
+
 function update_sequence_time()
 {    
     for(var seq=0;seq<3;seq=seq+1)
@@ -17,8 +19,8 @@ function update_sequence_time()
         var seq_time=0;
         for(var pat=0;pat<20;pat=pat+1)
         {
-            var pat_id = '#seq'+seq+'pat'+pat;
-            var cnt_id = '#seq'+seq+'cnt'+pat;
+            var pat_id = '#ppp_seq'+seq+'_pat'+pat;
+            var cnt_id = '#ppp_seq'+seq+'_cnt'+pat;
             
             var pat_val = $(pat_id).val()*1;
             var cnt_val = $(cnt_id).val()*1;
@@ -33,8 +35,8 @@ function update_sequence_time()
                 seq_time = seq_time + (pattern_time[pat_val] * cnt_val);                
             }            
         }
-        var seq_time_id = '#seq'+seq+'time';
-        
+        var seq_time_id = '#ppp_seq'+seq+'_time';
+                
         var min = Math.floor(seq_time/60)
         var sec = seq_time%60
         if(sec<10)
@@ -42,15 +44,21 @@ function update_sequence_time()
             sec = '0'+sec;            
         }
         $(seq_time_id).html(min+':'+sec);
+        if(seq_time != seq_time_prev[seq])
+        {
+            if(!isNaN(seq_time_prev[seq]))
+            {
+                $(seq_time_id).css('color', "red");
+                $(seq_time_id).animate({color: "white"},'slow');
+            }
+            seq_time_prev[seq] = seq_time;
+        }
     }
 }
 
 function ppp_change(eventObject)
 {    
-    update_sequence_time();
-    seq_time_id = '#'+this.id.substr(0,4)+'time';
-    $(seq_time_id).css('color', "red");
-    $(seq_time_id).animate({color: "white"},'slow');
+    update_sequence_time();    
     $("#submit_button").removeAttr("disabled");
 }
 
@@ -82,10 +90,17 @@ function adv_seq_change(eventObject)
     adv_seq_display($(this).attr("checked"));
 }
 
+function submit_form(eventObject)
+{
+    $('#ppp_form').submit();
+    $(this).html('Please Wait');
+    $(this).attr("disabled","disabled");
+}
 function ready()
-{    
-    $('#adv_seq').change(adv_seq_change);
-    adv_seq_display($('#adv_seq').attr('checked'));
+{
+    $('#submit_button').click(submit_form);
+    $('#scp_adv_seq').change(adv_seq_change);
+    adv_seq_display($('#scp_adv_seq').attr('checked'));
     update_sequence_time();
     $('.pattern_field').change(ppp_change);
     $('.count_field').change(ppp_change);
@@ -107,12 +122,15 @@ $(document).ready(ready);
 
 {% block body %}
 
-<form action="#" method="post">
+{% load rpnmath %}
+
+<form id="ppp_form" action="#" method="post">
 
 <table>
     <tr>
         <th>Advanced Sequence Patterns</th>
-        <td><input type="checkbox" id="adv_seq" name="adv_seq" {% ifequal scp.3 1 %}checked="checked"{% endifequal %} ></td>
+        <td><input type="hidden" name="scp_adv_seq_cur" value="{{ scp.3 }}" >
+            <input type="checkbox" id="scp_adv_seq" name="scp_adv_seq" {% ifequal scp.3 1 %}checked="checked"{% endifequal %} ></td>
     </tr>
 </table>
     
@@ -120,7 +138,7 @@ $(document).ready(ready);
     
     <tr>
     {% for s in ppp %}        
-        <th class="seq{{forloop.counter0}}class"><div style="float:right;">length (m:s) <span id="seq{{ forloop.counter0 }}time"></span></div>Sequence {{ forloop.counter }} 
+        <th class="seq{{forloop.counter0}}class"><div style="float:right;">length (m:s) <span id="ppp_seq{{ forloop.counter0 }}_time"></span></div>Sequence {{ forloop.counter }} 
         </th>
     {% endfor %}
     <th class="seqpatclass">Sequence Pattern</th>
@@ -142,7 +160,9 @@ $(document).ready(ready);
                 {% for p in s %}                
                 <tr>
                     <td>
-                        <select class="pattern_field" id="seq{{forloop.parentloop.counter0}}pat{{forloop.counter0}}" name="seq{{forloop.parentloop.counter0}}pat{{forloop.counter0}}">
+                        <input type="hidden" name="ppp_seq{{forloop.parentloop.counter0}}_pat{{forloop.counter0}}_cur" value="{{ p.0 }}">
+                        <select class="pattern_field" id="ppp_seq{{forloop.parentloop.counter0}}_pat{{forloop.counter0}}" name="ppp_seq{{forloop.parentloop.counter0}}_pat{{forloop.counter0}}">
+                            <option value="65535" {% ifequal p.0 65535 %}selected="selected"{% endifequal %} > </option> 
                             <option value="0" {% ifequal p.0 0 %}selected="selected"{% endifequal %} >tool status</option>
                             <option value="1" {% ifequal p.0 1 %}selected="selected"{% endifequal %} >azimuth</option>
                             <option value="2" {% ifequal p.0 2 %}selected="selected"{% endifequal %} >inclination</option>
@@ -160,12 +180,12 @@ $(document).ready(ready);
                             <option value="15" {% ifequal p.0 15 %}selected="selected"{% endifequal %} >low res tool face gamma</option>
                             <option value="33" {% ifequal p.0 33 %}selected="selected"{% endifequal %} >pulse cnt inclination</option>                        
                             <option value="34" {% ifequal p.0 34 %}selected="selected"{% endifequal %} >pulse freq inclination</option>
-                            <option value="65535" {% ifequal p.0 65535 %}selected="selected"{% endifequal %} >End</option>                        
                         </select>
                         
                     </td>
                     <td align="right">
-                        <input size="1" class="count_field" id="seq{{forloop.parentloop.counter0}}cnt{{forloop.counter0}}" name="seq{{forloop.parentloop.counter0}}cnt{{forloop.counter0}}" value="{{ p.1 }}">
+                        <input type="hidden" name="ppp_seq{{forloop.parentloop.counter0}}_cnt{{forloop.counter0}}_cur" value="{{ p.1 }}">
+                        <input type="text" size="1" class="count_field" id="ppp_seq{{forloop.parentloop.counter0}}_cnt{{forloop.counter0}}" name="ppp_seq{{forloop.parentloop.counter0}}_cnt{{forloop.counter0}}" value="{{ p.1 }}">
                     </td>
                 </tr>
                 {% endfor %}
@@ -177,19 +197,24 @@ $(document).ready(ready);
             <table class="seqpatclass">
                 <tr>
                     <th>Sequence</th>
-                    <th>Minutes</th>
+                    <th>Repeat (m:s)</th>
                 </tr>
                 {% for p in ppsp %}
                     <tr>
                         <td>
-                            <select class="ppsp_seq_field" id="ppsp_seq{{ forloop.counter0 }}" name="ppsp_seq{{ forloop.counter0 }}"">
+                            <input type="hidden" name="ppsp_seq{{ forloop.counter0 }}_cur" value="{{ p.0 }}">
+                            <select class="ppsp_seq_field" id="ppsp_seq{{ forloop.counter0 }}" name="ppsp_seq{{ forloop.counter0 }}">
+                                <option value="65535" {% ifequal p.0 65535 %}selected="selected"{% endifequal %} > </option>                        
                                 <option value="0" {% ifequal p.0 0 %}selected="selected"{% endifequal %} >1</option>
                                 <option value="1" {% ifequal p.0 1 %}selected="selected"{% endifequal %} >2</option>
-                                <option value="2" {% ifequal p.0 2 %}selected="selected"{% endifequal %} >3</option>                                
-                                <option value="65535" {% ifequal p.0 65535 %}selected="selected"{% endifequal %} >End</option>                        
+                                <option value="2" {% ifequal p.0 2 %}selected="selected"{% endifequal %} >3</option>                                                                
                             </select>
                         </td>
-                        <td align="right"><input size="1" class="ppsp_time_field" id="ppsp_time{{ forloop.counter0 }}" name="ppsp_time{{ forloop.counter0 }}" value="{{ p.1 }}"></td>
+                        <td align="right">
+                            <input type="hidden" name="ppsp_time{{ forloop.counter0 }}_cur" value="{{ p.1 }}" >
+                            <input size="1" class="ppsp_time_field" id="ppsp_min{{ forloop.counter0 }}" name="ppsp_min{{ forloop.counter0 }}" value="{{ "rpn"|stnew|stpush:p.1|stpush:"60000"|stdiv|stfloor|stget }}"> :
+                            <input size="1" class="ppsp_time_field" id="ppsp_sec{{ forloop.counter0 }}" name="ppsp_sec{{ forloop.counter0 }}" value="{{ "rpn"|stnew|stpush:p.1|stpush:"60000"|stmod|stpush:1000|stdiv|stfloor|stget }}">
+                        </td>
                     </tr>
                 {% endfor %}
             </table>
@@ -197,7 +222,7 @@ $(document).ready(ready);
     </tr>    
 </table>
     <br>
-    <input type="submit" value="Save To Tool" id="submit_button" disabled="disabled" >
+    <button id="submit_button" disabled="disabled" >Save To Tool</button>
 </form>
 
 {% endblock body %}

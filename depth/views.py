@@ -26,6 +26,7 @@ def mainmenu(request) :
     d = {}
     return render_to_response('mainmenu.html', d)
     
+    
 def pull_calibration(request, object_id) :    
     d = {}
     
@@ -92,7 +93,7 @@ def reset_timer(request, object_id) :
     
     tc.close()
     
-    return render_to_response('message.html', {'message': 'Tool timer reset to 0', 'navigation_template': 'tool_menu.html' }, context_instance = RequestContext(request))
+    return render_to_response('message.html', {'message': 'Tool timer reset to 0', 'navigation_template': 'tool_menu.html' , 'object':tool }, context_instance = RequestContext(request))
         
 def tool_status(request, object_id) :
     
@@ -105,37 +106,67 @@ def tool_status(request, object_id) :
     if comcheck != 'ABC123' :
         tc.close()
         return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
-        
-    tool_timer = tapi.get_timer()
+            
     calibration = tapi.get_calibration_contants()
     sensor = tapi.get_sensor_readings()
     log_address = tapi.get_current_log_address()
+    bytes_in_log = int(log_address, 16) - int('D600', 16)
+    scp = tapi.get_status_constant_profile()
+    tool_timer = tapi.get_timer()    
     tc.close()
     
-    return render_to_response('tool_status.html', {'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'calibration': calibration, 'log_address': log_address}, context_instance = RequestContext(request))
+    return render_to_response('tool_status.html', {'scp': scp, 'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'calibration': calibration, 'log_address': log_address, 'bytes_in_log': bytes_in_log}, context_instance = RequestContext(request))
 
 
 def tool_pulse_pattern_profile(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
 
-    #tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    #tapi = ToolAPI(tc)
-    #
-    #comcheck = tapi.echo('ABC123')
-    #if comcheck != 'ABC123' :
-    #    tc.close()
-    #    return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
-    #    
-    #ppp = tapi.get_pulse_pattern_profile()
-    #ppsp = tapi.get_pulse_pattern_sequence_profile()
-    #scp = tapi.get_status_constant_profile()
-    #tc.close()
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        tc.close()
+        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+
+    if request.method == 'POST':
+        for seq in range(3) :
+            for num in range(20) :
+                pat_val = int(request.POST['ppp_seq'+str(seq)+'_pat'+str(num)])
+                pat_val_cur = int(request.POST['ppp_seq'+str(seq)+'_pat'+str(num)+'_cur'])
+                cnt_val = int(request.POST['ppp_seq'+str(seq)+'_cnt'+str(num)])
+                cnt_val_cur = int(request.POST['ppp_seq'+str(seq)+'_cnt'+str(num)+'_cur'])
+                if (pat_val != pat_val_cur) or (cnt_val != cnt_val_cur):
+                    tapi.set_pulse_pattern_profile(seq, num, pat_val, cnt_val)                    
+
+        for cnt in range(10) :
+            seq = int(request.POST['ppsp_seq'+str(cnt)])
+            seq_cur = int(request.POST['ppsp_seq'+str(cnt)+'_cur'])
+            time_min = int(request.POST['ppsp_min'+str(cnt)])
+            time_sec = int(request.POST['ppsp_sec'+str(cnt)])
+            time = ((time_min * 60) + time_sec) * 1000
+            time_cur = int(request.POST['ppsp_time'+str(cnt)+'_cur'])
+            if (seq != seq_cur) or (time != time_cur) :
+                print 'ppsp',cnt,seq,time,time_min,time_sec
+                tapi.set_pulse_pattern_sequence_profile(cnt, seq, time)                
+        
+        adv_seq = 0
+        adv_seq_cur = int(request.POST['scp_adv_seq_cur'])
+        if request.POST.has_key('scp_adv_seq') :
+            adv_seq=1
+        if adv_seq != adv_seq_cur :
+            tapi.toggle_advanced_sequence_pattern_mode()
+                
+    ppp = tapi.get_pulse_pattern_profile()
+    ppsp = tapi.get_pulse_pattern_sequence_profile()
+    scp = tapi.get_status_constant_profile()
+    tc.close()
     
-    ppp = [[(1, 1), (14, 1), (2, 1), (14, 1), (1, 1), (14, 1), (2, 1), (14, 1), (14, 3), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(33, 1), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]]
-    ##ppsp = [(0, 240000), (1, 256608), (65535, 196609), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608)]
-    ppsp = [(0, 4), (1, 4), (65535, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3)]
-    scp = [42330, 33, 0, 1, 1, 1, 0, 6, 300, 300, 7, 500, 1000, 0, 0, 0, 8528, 14, 576, 25, 4, 0, 30, 30, 10, 20, 20, 20, 20, 20]
+    #ppp = [[(1, 1), (14, 1), (2, 1), (14, 1), (1, 1), (14, 1), (2, 1), (14, 1), (14, 3), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(33, 1), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]]
+    #ppsp = [(0, 240000), (1, 256608), (65535, 196609), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608)]
+    ##ppsp = [(0, 4), (1, 4), (65535, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3)]
+    #scp = [42330, 33, 0, 0, 1, 1, 0, 6, 300, 300, 7, 500, 1000, 0, 0, 0, 8528, 14, 576, 25, 4, 0, 30, 30, 10, 20, 20, 20, 20, 20]
     
     return render_to_response('tool_pulse_pattern_profile.html', {'ppp': ppp, 'ppsp': ppsp, 'scp': scp, 'object': tool, }, context_instance = RequestContext(request))
 
@@ -156,33 +187,33 @@ def tool_purge_log(request, object_id) :
     
     tc.close()
     
-    return render_to_response('message.html', {'message': 'Tool MWD Log Purged', 'navigation_template': 'tool_menu.html' }, context_instance = RequestContext(request))
+    return render_to_response('message.html', {'message': 'Tool MWD Log Purged', 'navigation_template': 'tool_menu.html', 'object':tool }, context_instance = RequestContext(request))
 
-def tool_update(request, tool_id, extra_context=None,) :
+def tool_update(request, object_id, extra_context=None,) :
     
-    tool = Tool.objects.get(pk=tool_id)
+    tool = Tool.objects.get(pk=object_id)
     
     if request.method == 'POST': # If the form has been submitted...
         if request.POST['form_id'] == 'tool_update_form' :
             tool_form = ToolForm(request.POST, instance=tool) # A form bound to the POST data
-            tool_notes_form = ToolNotesForm(initial = {'tool': tool_id,})
+            tool_notes_form = ToolNotesForm(initial = {'tool': object_id,})
             if tool_form.is_valid(): # All validation rules pass
                 tool_form.save()            
-                return HttpResponseRedirect(reverse('tool_update', args=[tool_id]))
+                return HttpResponseRedirect(reverse('tool_update', args=[object_id]))
         else :
             tool_notes_form = ToolNotesForm(request.POST) # A form bound to the POST data
             tool_form = ToolForm(instance = tool)
             if tool_notes_form.is_valid() :
                 tool_notes = ToolNotes(tool=tool, notes = tool_notes_form.cleaned_data['notes'])
                 tool_notes.save()
-                return HttpResponseRedirect(reverse('tool_update', args=[tool_id]))
+                return HttpResponseRedirect(reverse('tool_update', args=[object_id]))
     else:
         tool_form = ToolForm(instance = tool)
-        tool_notes_form = ToolNotesForm(initial = {'tool': tool_id,})
+        tool_notes_form = ToolNotesForm(initial = {'tool': object_id,})
 
     tool_notes = ToolNotes.objects.filter(tool=tool).order_by('time_stamp')
     
-    data = {'tool_form':tool_form, 'tool':tool, 'tool_notes_form': tool_notes_form, 'tool_notes': tool_notes }
+    data = {'tool_form':tool_form, 'object': tool, 'tool_notes_form': tool_notes_form, 'tool_notes': tool_notes }
     
     for key, value in extra_context.items():
         if callable(value):
@@ -260,6 +291,28 @@ def run_download_status(request) :
         return HttpResponse("Error: %d" % c)
     else :
         return HttpResponse("Download Complete")
+
+
+def run_download_status_json(request) :
+    
+    p = bool(Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS').value)
+    c = int(Settings.objects.get(name='LOG_DOWNLOAD_CNT').value)
+        
+    if p :
+        if c > 0 :
+            return HttpResponse("Downloading Log: %d" % c )
+        elif c < 0 :
+            return HttpResponse("Error while downloading: %d" % c)
+        else :
+            return HttpResponse("Starting Download...")
+    elif  c == 0 :
+        return HttpResponse("Not Downloading")  # No download in process or completed
+    elif c < 0 :
+        return HttpResponse("Error: %d" % c)
+    else :
+        return HttpResponse("Download Complete")
+
+
 
 # Canceling does not work reliablly because the download process does not get
 # an updated copy of the session varibles

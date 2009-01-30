@@ -3,6 +3,8 @@
 {% block head %}
 <script type="text/JavaScript">
 
+var log_start_count={{ object.toolmwdlog_set.count }};
+
 function cancel_click()
 {
     $.get("{% url run_download_cancel %}");
@@ -68,6 +70,7 @@ function status()
     <tr>
         <th>Bore</th><td>{{ object.well_bore }} </td>
     </tr>
+    <tr>
         <th>Active (RTD)</th>
         <td>
             {% ifequal active_run object.pk %}<img src="{{ MEDIA_URL }}/images/action_check.png" alt="Active">{% endifequal %}
@@ -75,6 +78,9 @@ function status()
                 <a href="{% url run_activate object.pk %}"><button>Activate</button></a>
             {% endifnotequal %}
         </td>
+    </tr>
+    <tr>
+        <th>Log Count</th><td>{{ object.toolmwdlog_set.count }}</td>
     </tr>
     
 </table>

@@ -11,13 +11,10 @@
 {% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
 
 {% block body %}
-<table  class="hilightrow">
+<ul>
 {% for object in object_list %}    
-<tr>
-    <td><a href="{% url tool_update object.pk %}">{{ object }}</a></td>
-    <td><button onclick="location='{% url tool_update object.pk %}';">Update</button> <button onclick="location='{% url tool_config object.pk %}';">Configure</button> <button onclick="location='{% url tool_status object.pk %}';">Status</button></td>
-</tr>
+<li><a href="{% url tool_detail object.pk %}">{{ object }}</a></li>    
 {% endfor %}
-</table>
+</ul>
 
 {% endblock body %}

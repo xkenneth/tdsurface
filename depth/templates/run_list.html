@@ -20,6 +20,7 @@
         <th>Well</th>
         <th>Bore</th>
         <th>Active (RTD)</th>
+        <th>Log Count</th>
         <th></th>
     </tr>
     
@@ -29,12 +30,15 @@
         <td>{{ object.start_time}} </td>
         <td>{{ object.end_time }} </td>
         <td>{{ object.well_bore.well }} </td>
-        <td>{{ object.well_bore }} </td>
+        <td>{{ object.well_bore }} </td>        
         <td>
             {% ifequal active_run object.pk %}<img src="{{ MEDIA_URL }}/images/action_check.png" alt="Active">{% endifequal %}
             {% ifnotequal active_run object.pk %}
                 <a href="{% url run_activate object.pk %}"><button>Activate</button></a>
             {% endifnotequal %}
+        </td>
+        <td>
+            {{ object.toolmwdlog_set.count }}
         </td>
         <td><a href="{% url run_update object.pk %}"><button>Update</button</a>&nbsp;&nbsp;<a href="{% url run_detail object.pk %}"><button>Download Log</button</a>
             &nbsp;&nbsp;<a href="{% url run_wits0_latest object.pk%}"><button>View WITS0</button</a>

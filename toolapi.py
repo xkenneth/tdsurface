@@ -158,8 +158,8 @@ class ToolAPI :
         raw = self.toolcom.read_line()        
         return self.decruft(raw)
         
-    def get_pulse_pattern_profile(self) :
-        self.toolcom.write_line('RP')
+    def _getset_pulse_pattern_profile(self, cmd) :
+        self.toolcom.write_line(cmd)
         ppp = []
         for x in range(3) :            
             p = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]                    
@@ -170,24 +170,46 @@ class ToolAPI :
             ppp.append(l)
             
         return ppp
-            
     
-    def get_pulse_pattern_sequence_profile(self) :
-        self.toolcom.write_line('RQ')
+    def get_pulse_pattern_profile(self) :
+        return self._getset_pulse_pattern_profile('RP')
+        
+    def set_pulse_pattern_profile(self, seq, num, pat, cnt) :    
+        cmd = ' '.join(('WP',str(seq), hex(num)[2:], hex(pat)[2:], hex(cnt)[2:]))
+        return self._getset_pulse_pattern_profile(cmd)
+    
+    def _getset_pulse_pattern_sequence_profile(self,cmd) :
+        self.toolcom.write_line(cmd)
         ppsp = []
         
         s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         hl = self.decruft(self.toolcom.read_line()).split(' ')
-        t = [ int(hl[h]+hl[l], 16)/60000 for h in range(0,20,2) for l in range(1,20,2) ]
+        t = [ int(hl[l]+hl[l+1], 16) for l in range(0,20,2) ]
             
         for x in range(len(s) ) :
             ppsp.append((s[x],t[x]))        
             
         return ppsp    
+    
+    def get_pulse_pattern_sequence_profile(self) :
+        return self._getset_pulse_pattern_sequence_profile('RQ')
+        
+    def set_pulse_pattern_sequence_profile(self, num, seq, time) :
+        cmd = ' '.join(('WQ',str(num), hex(seq)[2:], hex(time)[2:]))
+        return self._getset_pulse_pattern_sequence_profile(cmd)
+        
+    
+    def _get_status_constant_profile(self,cmd) :
+        self.toolcom.write_line(cmd)        
+        scp = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        self.toolcom.read_line()    
+        return scp    
         
     def get_status_constant_profile(self) :
-        self.toolcom.write_line('RT')
-                
-        scp = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]                            
-            
-        return scp
+        return self._get_status_constant_profile('RT')
+    
+    def toggle_advanced_sequence_pattern_mode(self) :
+        return self._get_status_constant_profile('MY')
+        
