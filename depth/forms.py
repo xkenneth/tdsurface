@@ -82,3 +82,29 @@ class ToolNotesForm(forms.Form) :
 
 class SetTimeForm(forms.Form) :
     set_time_to = forms.DateTimeField(widget = DynarchDateTimeWidget(datetime_button_html))
+    
+    
+    
+class ToolCalibrationForm(forms.Form) :
+    
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+
+    accelerometer_x_offset = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    accelerometer_x_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)    
+    accelerometer_y_offset = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    accelerometer_y_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    accelerometer_z_offset = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    accelerometer_z_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)    
+
+    magnetometer_x_offset = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    magnetometer_x_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)    
+    magnetometer_y_offset = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    magnetometer_y_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    magnetometer_z_offset = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    magnetometer_z_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)    
+    
+    temperature_offset = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+    temperature_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)    

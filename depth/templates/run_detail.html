@@ -16,7 +16,7 @@ function download_click()
     $(this).attr("disabled","disabled");
     $("#run_download_cancel").removeAttr("disabled");
     window.setTimeout(status,1000);
-    $("#run_download_satus").html("Starting Download...");
+    //$("#run_download_satus").html("Starting Download...");
     $.get("{% url run_download_log object.pk %}");
     $(this).unbind('click', download_click);
     $(this).bind('click', cancel_click);
@@ -31,17 +31,15 @@ function install_events()
 $(document).ready(install_events);
  
 function status_callback(data, textStatus)
-{
-    $("#run_download_status").html(data);    
-    if(!data.match("Complete"))
-    {
-        window.setTimeout(status,2000);
-    }
+{    
+    $("#run_download_status").text(data.status);
+    $("#log_cnt").text(log_start_count + data.cnt);
+    window.setTimeout(status,2000);
 }
  
 function status()
 {
-   $.get("{% url run_download_status %}", status_callback);
+   $.getJSON("{% url run_download_status %}", status_callback);
 }
 </script>     
 {% endblock head %}
@@ -68,7 +66,7 @@ function status()
         <th>Well</th><td>{{ object.well_bore.well }} </td>
     </tr>
     <tr>
-        <th>Bore</th><td>{{ object.well_bore }} </td>
+        <th>Bore</th><td>{{ object.well_bore }}</td>
     </tr>
     <tr>
         <th>Active (RTD)</th>
@@ -80,7 +78,7 @@ function status()
         </td>
     </tr>
     <tr>
-        <th>Log Count</th><td>{{ object.toolmwdlog_set.count }}</td>
+        <th>Log Count</th><td><span id="log_cnt">{{ object.toolmwdlog_set.count }}</span></td>
     </tr>
     
 </table>

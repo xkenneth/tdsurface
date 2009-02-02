@@ -8,7 +8,10 @@ from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from tdsurface.shortcuts import get_object_or_None
-#from datetime import date
+
+from django.core import serializers
+from django.utils import simplejson
+
 import time
 import datetime
 
@@ -21,6 +24,12 @@ from django.conf import settings
 
 import threading
 import logging
+
+
+def test(request) :
+    data = simplejson.dumps({'test': 'foo', 'test2':'bar', })   
+    
+    return HttpResponse(data, mimetype="application/javascript")
 
 def mainmenu(request) :
     d = {}
@@ -223,6 +232,53 @@ def tool_update(request, object_id, extra_context=None,) :
 
     return render_to_response('tool_update_form.html', data, context_instance = RequestContext(request))
 
+
+def tool_calibration_update(request, object_id, template_name, extra_context=None,) :
+    
+    tool = Tool.objects.get(pk=object_id)
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+    
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+    
+    if request.method == 'POST': # If the form has been submitted...
+        if request.POST['form_id'] == 'tool_update_form' :
+            form = ToolCalibrationForm(request.POST) # A form bound to the POST data
+            if form.is_valid(): # All validation rules pass
+                #Save Calibration constants here
+                pass
+    else:
+        c = tapi.get_calibration_contants()
+        initial = {
+            'accelerometer_x_offset': c[2],
+            'accelerometer_x_gain': c[3],
+            'accelerometer_y_offset': c[4],
+            'accelerometer_y_gain': c[5],
+            'accelerometer_z_offset': c[6],
+            'accelerometer_z_gain': c[7],
+            'magnetometer_x_offset': c[8],
+            'magnetometer_x_gain': c[9],
+            'magnetometer_y_offset': c[10],
+            'magnetometer_y_gain': c[11],
+            'magnetometer_z_offset': c[12],
+            'magnetometer_z_gain': c[13],
+            'temperatrue_offset':c[14],
+            'temperature_gain': c[15],
+        }
+        form = ToolCalibrationForm(initial = initial)            
+    
+    data = {'form':form, 'object': tool, }
+    
+    for key, value in extra_context.items():
+        if callable(value):
+            data[key] = value()
+        else:
+            data[key] = value    
+
+    return render_to_response(template_name, data, context_instance = RequestContext(request))
+ 
         
     
 def run_activate(request, object_id) :    
@@ -295,23 +351,13 @@ def run_download_status(request) :
 
 def run_download_status_json(request) :
     
-    p = bool(Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS').value)
+    p = int(bool(Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS').value))
     c = int(Settings.objects.get(name='LOG_DOWNLOAD_CNT').value)
+    s = Settings.objects.get(name='LOG_DOWNLOAD_STATUS').value
         
-    if p :
-        if c > 0 :
-            return HttpResponse("Downloading Log: %d" % c )
-        elif c < 0 :
-            return HttpResponse("Error while downloading: %d" % c)
-        else :
-            return HttpResponse("Starting Download...")
-    elif  c == 0 :
-        return HttpResponse("Not Downloading")  # No download in process or completed
-    elif c < 0 :
-        return HttpResponse("Error: %d" % c)
-    else :
-        return HttpResponse("Download Complete")
-
+    data = simplejson.dumps({'downloading': p, 'cnt': c, 'status':s})   
+    
+    return HttpResponse(data, mimetype="application/javascript")    
 
 
 # Canceling does not work reliablly because the download process does not get
@@ -321,6 +367,10 @@ def run_download_cancel(request) :
     p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')
     p.value=''
     p.save()
+    
+    s = Settings.objects.get(name='LOG_DOWNLOAD_STATUS')
+    s.value='Download Canceled'
+    s.save()
     
     return HttpResponse("Canceling")
 
@@ -332,27 +382,44 @@ def _download_log(run_id) :
     p.save()
            
     c = Settings.objects.get(name='LOG_DOWNLOAD_CNT')
-    c.value=str('0')
+    c.value='0'
     c.save()       
                
     run = Run.objects.get(pk=run_id)
+    
+    s = Settings.objects.get(name='LOG_DOWNLOAD_STATUS')
+    s.value='Opening COM Port %s' % settings.COMPORT
+    s.save()
+    
+    try :    
+        tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    except :
+        s.value='Error opening port %s' % settings.COMPORT
+        s.save()
+        p.value=''
+        p.save()
+        return
         
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
-
+    
+    s.value='Checking Tool'
+    s.save()
     comcheck = tapi.echo('ABC123')
     if comcheck != 'ABC123' :
         p.value=''
         p.save()
         c.value = str(-1)
-        c.save()        
+        c.save()
+        s.value="Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck
+        s.save()
         tc.close()
         return
 
     def call_back(log_data) :
         
         c.value = str(int(c.value) + 1)
-        c.save()    
+        c.save()            
+        
         d = ToolMWDLog()        
         d.run_id = run_id
         d.raw_data = log_data.raw_data
@@ -370,14 +437,21 @@ def _download_log(run_id) :
         d.gamma2 = log_data.gamma2
         d.gamma3 = log_data.gamma3
         d.save()
-        
-        p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')
-        
+                
+        p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')        
         return bool(p.value)
 
+    s.value='Downloading'
+    s.save()
+    rc = tapi.get_log(call_back)
+    if rc == None :
+        s.value='Download Error'
+    elif rc == False :
+        s.value='Download Canceled'
+    else :
+        s.value = 'Download Complete'
+    s.save()
     
-    tapi.get_log(call_back)
-
     p.value=''
     p.save()
             
@@ -393,6 +467,10 @@ def run_start_download_log(request, object_id) :
     c, created = Settings.objects.get_or_create(name='LOG_DOWNLOAD_CNT')
     c.value=str('0')
     c.save()
+    
+    s, created = Settings.objects.get_or_create(name='LOG_DOWNLOAD_STATUS')
+    s.value=str('Starting Download')
+    s.save()
     
     t = threading.Thread(target = _download_log, args=[object_id])
     t.setDaemon(True)

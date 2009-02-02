@@ -11,6 +11,7 @@
 {% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
 
 {% block body %}
+Select A Tool
 <ul>
 {% for object in object_list %}    
 <li><a href="{% url tool_detail object.pk %}">{{ object }}</a></li>    

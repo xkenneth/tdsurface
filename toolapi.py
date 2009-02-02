@@ -84,26 +84,24 @@ class ToolAPI :
     
     def echo(self, s) :        
         self.toolcom.write_line('E ' + s)
-        raw = self.toolcom.read_line()        
-        return self.decruft(raw)
+        return self.decruft(self.toolcom.read_line())        
     
     def decruft(self, s) :
         s = s.strip(' >\n\r\0\t')  # Strip the line endings and beginning of line '>>'
         s = s.replace('\0', '')  # Remove null characters sent between each char in older firmwares      
         return(s)
         
-    def get_calibration_contants(self) :
-        self.raw_data = []
+    def get_calibration_contants(self) :        
         self.toolcom.write_line('RC')
-        raw = self.toolcom.read_line()        
-        s = self.decruft(raw)
-        return s.split(' ')
+        return [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         
     def get_log(self, call_back) :        
         self.toolcom.write_line('RL')
         
         bad_data_cnt = 0   #Safty valve in case the tool wigs out
         f_cnt = 0
+        canceled = False
+        error = False
         while True :
             if f_cnt > 2 :
                 break
@@ -125,14 +123,21 @@ class ToolAPI :
             
             f_cnt = 0            
             if not call_back( ToolLogData(s) ) :   # If call back returns false, cancel the download
+                canceled=True
                 break
             
             if bad_data_cnt > 10 :
+                error = True
                 break;
         
         self.toolcom.write('\x1b')
         time.sleep(2)
         self.toolcom.flush_input_buffer()
+        if error :
+            return None
+        if canceled :
+            return False
+        return True
         
 
     def get_sensor_readings(self) :        
@@ -142,8 +147,7 @@ class ToolAPI :
         sensor = ToolSensorData(s)
         return sensor
 
-    def purge_log(self) :
-        self.raw_data = []
+    def purge_log(self) :        
         self.toolcom.write_line('WE')
         for x in range(10) :
             if self.toolcom.in_waiting() :

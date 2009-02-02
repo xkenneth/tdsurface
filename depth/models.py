@@ -358,9 +358,8 @@ class RigStatus(models.Model) :
 admin.site.register(RigStatus)
 
 
-class Settings(models.Model) :
-    uid = UUIDField(primary_key=True, editable=False)
-    name = models.CharField(max_length=32)
+class Settings(models.Model) :    
+    name = models.CharField(primary_key=True, max_length=32)
     value = models.CharField(max_length=255, blank=True)
 
     class Meta:        
