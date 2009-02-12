@@ -1,11 +1,5 @@
 import serial
-
-DEBUG = True
-
-if DEBUG :
-    import logging
-    LOG_FILENAME = '/tmp/toolcom.log'
-    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG,)
+import logging
 
 
 class ToolCom :
@@ -20,15 +14,13 @@ class ToolCom :
         self.ser.write(s)
         
     def write_line(self, s) :
-        line = s + '\r'
-        if DEBUG :
-            logging.debug("out '%s'" % s)
+        line = s + '\r'        
+        logging.info("out:0:%s" % s)
         self.ser.write(line)
         
     def read_line(self) :
-        line = self.ser.readline()
-        if DEBUG :
-            logging.debug("in %d '%s'" % (self.in_waiting(), line))
+        line = self.ser.readline()        
+        logging.info("in:%d:%s" % (self.in_waiting(), line))
         return line
     
     def flush_input_buffer(self) :

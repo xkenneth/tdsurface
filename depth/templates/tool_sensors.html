@@ -1,0 +1,100 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+<script type="text/javascript" src="{{ MEDIA_URL}}scripts/bindows_gauges/bindows_gauges.js"></script>
+
+<script type="text/JavaScript">
+
+
+
+$(document).ready(im_ready);
+
+var azimuth_gauge = 0;
+var inclination_gauge = 0;
+var toolface_gauge = 0;
+var temp_gauge = 0;
+
+function sensors_callback(data, textStatus)
+{    
+    $("#temperature").text(data.temperature.toFixed(1));
+    $("#azimuth").text(data.azimuth.toFixed(1));
+    $("#inclination").text(data.inclination.toFixed(1));
+    $("#gravity").text(data.gravity.toFixed(1));
+    $("#magnetic").text(data.magnetic.toFixed(1));
+    $("#gamma_ray").text(data.gamma_ray.toFixed(1));
+    $("#tool_face").text(data.tool_face.toFixed(1));
+    
+    temp_gauge.needle2.setValue(data.temperature.toFixed(1));
+    temp_gauge.needle1.setValue((data.temperature.toFixed(1)-32.0)*5.0/9.0);
+    azimuth_gauge.needle.setValue(data.azimuth.toFixed(1)) 
+    inclination_gauge.needle.setValue(180.0 - data.inclination.toFixed(1))
+    toolface_gauge.needle.setValue(data.tool_face.toFixed(1)) 
+        
+    $.getJSON("{% url tool_sensors_json object.pk %}", sensors_callback);    
+}
+ 
+function get_sensors()
+{    
+    $.getJSON("{% url tool_sensors_json object.pk %}", sensors_callback);
+   
+}
+
+function im_ready()
+{    
+    azimuth_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/azimuth.xml", "azimuth_gauge_div");
+    inclination_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/inclination.xml", "inclination_gauge_div");
+    toolface_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/toolface.xml", "toolface_gauge_div");
+    temp_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/temperature.xml", "temp_gauge_div");
+    get_sensors();
+}
+</script>     
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Current Sensor Readings - {{ object }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table >
+    <tr>
+        <th colspan="7">Current Sensor Readings</th>
+    </tr>
+    <tr>            
+        <th>Temperature</th>
+        <th>Azimuth</th>
+        <th>Inclination</th>
+        <th>Tool Face</th>
+        <th>Gravity</th>
+        <th>Magnetometer</th>
+        <th>Gamma Ray</th>
+    </tr>
+    <tr>
+        <td align="center"> <span id="temperature">{{ sensor.temperature|floatformat }}</span>&deg;F</td>
+        <td align="center"><span id="azimuth">{{ sensor.azimuth|floatformat }}</span>&deg;</td>
+        <td align="center"><span id="inclination">{{ sensor.inclination|floatformat }}</span>&deg; </td>
+        <td align="center"><span id="tool_face">{{ sensor.tool_face|floatformat }}</span>&deg; </td>
+        <td align="center" id="gravity">{{ sensor.gravity|floatformat }} </td>
+        <td align="center" id="magnetic">{{ sensor.magnetic|floatformat }} </td>
+        <td align="center" id="gamma_ray">{{ sensor.gamma_ray|floatformat }} </td>        
+    </tr>
+    <tr>
+        <td><div id="temp_gauge_div" style="width: 200px; height: 200px"></div></td>
+        <td><div id="azimuth_gauge_div" style="width: 175px; height: 175px"></div></td>
+        <td><div id="inclination_gauge_div" style="width: 175px; height: 175px"></div></td>
+        <td><div id="toolface_gauge_div" style="width: 175px; height: 175px"></div></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    
+    
+</table>
+
+
+
+
+
+{% endblock body %}

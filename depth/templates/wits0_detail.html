@@ -20,10 +20,10 @@
             <a href="{% url run_wits0_latest run.pk 10 %}">10</a>
             <a href="{% url run_wits0_latest run.pk 100 %}">100</a>
             <a href="{% url run_wits0_latest run.pk 1000 %}">1000</a>
-            {% if num_skip %}
-            <a href="{% url run_wits0_latest run.pk num_latest %}{{ num_skip|add:neg_num_latest }}">&lt;&lt;</a>
+            {% if num_skip %}            
+            <a href="{% url run_wits0_latest run.pk num_latest num_skip|add:neg_num_latest %}">&lt;&lt;</a>
             {% endif %}
-            <a href="{% url run_wits0_latest run.pk num_latest %}{{ num_skip|add:num_latest }}">&gt;&gt;</a>
+            <a href="{% url run_wits0_latest run.pk num_latest num_skip|add:num_latest %}">&gt;&gt;</a>            
         </th>
     </tr>
     <tr>

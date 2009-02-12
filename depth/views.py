@@ -25,6 +25,7 @@ from django.conf import settings
 import threading
 import logging
 
+logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='/var/log/tdsurface.log',level=logging.DEBUG,)
 
 def test(request) :
     data = simplejson.dumps({'test': 'foo', 'test2':'bar', })   
@@ -52,12 +53,30 @@ def pull_calibration(request, object_id) :
     cal_vals = tapi.get_calibration_contants()
     d['calibration'] = cal_vals
     
-    ival = [int(x, 16) for x in cal_vals]
+   
     
     d['time_stamp'] = datetime.datetime.utcnow()
-    tc = ToolConfig(time_stamp = d['time_stamp'], tool=tool, calco0=ival[0], calco1=ival[1], calco2=ival[2], calco3=ival[3], calco4=ival[4], calco5=ival[5]
-                    , calco6=ival[6], calco7=ival[7], calco8=ival[8], calco9=ival[9], calco10=ival[10], calco11=ival[11], calco12=ival[12], calco13=ival[13], calco14=ival[14]
-                    , calco15=ival[15])
+    tc = ToolCalibration(time_stamp = d['time_stamp'],
+                         tool=tool,
+                         calibration_id=cal_vals[0],
+                         tool_serial_number=cal_vals[1],
+                         accelerometer_x_offset=cal_vals[2],
+                         accelerometer_x_gain=cal_vals[3],
+                         accelerometer_y_offset=cal_vals[4],
+                         accelerometer_y_gain=cal_vals[5],
+                         accelerometer_z_offset=cal_vals[6],
+                         accelerometer_z_gain=cal_vals[7],
+                         
+                         magnetometer_x_offset=cal_vals[8],
+                         magnetometer_x_gain=cal_vals[9],
+                         magnetometer_y_offset=cal_vals[10],
+                         magnetometer_y_gain=cal_vals[11],
+                         magnetometer_z_offset=cal_vals[12],
+                         magnetometer_z_gain=cal_vals[13],
+                         
+                         temperature_offset=cal_vals[14],
+                         temperature_gain=cal_vals[15],
+                        )                         
     tc.save()
     
     return render_to_response('calibration_results.html', d, context_instance = RequestContext(request))
@@ -115,16 +134,63 @@ def tool_status(request, object_id) :
     if comcheck != 'ABC123' :
         tc.close()
         return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
-            
+                
+    
     calibration = tapi.get_calibration_contants()
-    sensor = tapi.get_sensor_readings()
     log_address = tapi.get_current_log_address()
     bytes_in_log = int(log_address, 16) - int('D600', 16)
     scp = tapi.get_status_constant_profile()
+    sensor = tapi.get_sensor_readings()
     tool_timer = tapi.get_timer()    
     tc.close()
     
-    return render_to_response('tool_status.html', {'scp': scp, 'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'calibration': calibration, 'log_address': log_address, 'bytes_in_log': bytes_in_log}, context_instance = RequestContext(request))
+    return render_to_response('tool_status.html', {'calibration': calibration, 'scp': scp, 'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'log_address': log_address, 'bytes_in_log': bytes_in_log}, context_instance = RequestContext(request))
+
+
+def tool_sensors(request, object_id, extra_context=None) :
+    
+    tool = Tool.objects.get(pk=object_id)
+    
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+    
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        tc.close()
+        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+                
+    sensor = tapi.get_sensor_readings()
+    tc.close()
+    
+    data = {'sensor': sensor, 'object': tool}
+    if extra_context :
+        for key, value in extra_context.items():
+            if callable(value):
+                data[key] = value()
+            else:
+                data[key] = value    
+    
+    return render_to_response('tool_sensors.html', data, context_instance = RequestContext(request))
+    
+    
+def tool_sensors_json(request, object_id) :
+    
+    tool = Tool.objects.get(pk=object_id)
+    
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+    
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        tc.close()
+        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+                
+    sensor = tapi.get_sensor_readings()
+    tc.close()
+    
+    data = simplejson.dumps(sensor.__dict__)   
+    
+    return HttpResponse(data, mimetype="application/javascript")        
 
 
 def tool_pulse_pattern_profile(request, object_id) :
@@ -172,6 +238,7 @@ def tool_pulse_pattern_profile(request, object_id) :
     scp = tapi.get_status_constant_profile()
     tc.close()
     
+    # Debug values
     #ppp = [[(1, 1), (14, 1), (2, 1), (14, 1), (1, 1), (14, 1), (2, 1), (14, 1), (14, 3), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(33, 1), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]]
     #ppsp = [(0, 240000), (1, 256608), (65535, 196609), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608)]
     ##ppsp = [(0, 4), (1, 4), (65535, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3)]
@@ -236,20 +303,54 @@ def tool_update(request, object_id, extra_context=None,) :
 def tool_calibration_update(request, object_id, template_name, extra_context=None,) :
     
     tool = Tool.objects.get(pk=object_id)
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
-    
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
-        return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
-    
+        
     if request.method == 'POST': # If the form has been submitted...
-        if request.POST['form_id'] == 'tool_update_form' :
-            form = ToolCalibrationForm(request.POST) # A form bound to the POST data
-            if form.is_valid(): # All validation rules pass
-                #Save Calibration constants here
-                pass
+        
+        form = ToolCalibrationForm(request.POST) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass
+            # Open port after validation so the user does not have to wait so long to error messages
+            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+            tapi = ToolAPI(tc)
+    
+            comcheck = tapi.echo('ABC123')
+            if comcheck != 'ABC123' :
+                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+                
+            for k,v in form.cleaned_data.items() :                
+                cur_cal = tapi.set_calibration_contant(k,int(v))
+                
+            tcal = ToolCalibration()
+            tcal.tool = tool
+            tcal.time_stamp =  datetime.datetime.utcnow()
+            tcal.calibration_id = cur_cal[0]
+            tcal.tool_serial_number = cur_cal[1]
+            
+            tcal.accelerometer_x_offset = form.cleaned_data['accelerometer_x_offset']
+            tcal.accelerometer_x_gain = form.cleaned_data['accelerometer_x_gain']
+            tcal.accelerometer_y_offset = form.cleaned_data['accelerometer_y_offset']
+            tcal.accelerometer_y_gain = form.cleaned_data['accelerometer_y_gain']
+            tcal.accelerometer_z_offset = form.cleaned_data['accelerometer_z_offset']
+            tcal.accelerometer_z_gain = form.cleaned_data['accelerometer_z_gain']
+            
+            tcal.magnetometer_x_offset = form.cleaned_data['magnetometer_x_offset']
+            tcal.magnetometer_x_gain = form.cleaned_data['magnetometer_x_gain']
+            tcal.magnetometer_y_offset = form.cleaned_data['magnetometer_y_offset']
+            tcal.magnetometer_y_gain = form.cleaned_data['magnetometer_y_gain']
+            tcal.magnetometer_z_offset = form.cleaned_data['magnetometer_z_offset']
+            tcal.magnetometer_z_gain = form.cleaned_data['magnetometer_z_gain']
+            
+            tcal.temperature_offset = form.cleaned_data['temperature_offset']
+            tcal.temperature_gain = form.cleaned_data['temperature_gain']
+            
+            tcal.save()
     else:
+        tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+        tapi = ToolAPI(tc)
+    
+        comcheck = tapi.echo('ABC123')
+        if comcheck != 'ABC123' :
+            return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+        
         c = tapi.get_calibration_contants()
         initial = {
             'accelerometer_x_offset': c[2],
@@ -264,7 +365,7 @@ def tool_calibration_update(request, object_id, template_name, extra_context=Non
             'magnetometer_y_gain': c[11],
             'magnetometer_z_offset': c[12],
             'magnetometer_z_gain': c[13],
-            'temperatrue_offset':c[14],
+            'temperature_offset':c[14],
             'temperature_gain': c[15],
         }
         form = ToolCalibrationForm(initial = initial)            
@@ -353,9 +454,14 @@ def run_download_status_json(request) :
     
     p = int(bool(Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS').value))
     c = int(Settings.objects.get(name='LOG_DOWNLOAD_CNT').value)
-    s = Settings.objects.get(name='LOG_DOWNLOAD_STATUS').value
+    s = Settings.objects.get(name='LOG_DOWNLOAD_STATUS').value    
+    t = int(Settings.objects.get(name='LOG_DOWNLOAD_SIZE').value)
+    percent = 0
+    if t :
+        # Note: 28 bytes per log line
+        percent = c * 28 * 100 / t
         
-    data = simplejson.dumps({'downloading': p, 'cnt': c, 'status':s})   
+    data = simplejson.dumps({'downloading': p, 'cnt': c, 'status':s, 'percent':percent})   
     
     return HttpResponse(data, mimetype="application/javascript")    
 
@@ -415,8 +521,13 @@ def _download_log(run_id) :
         tc.close()
         return
 
+    b = Settings.objects.get(name='LOG_DOWNLOAD_SIZE')
+    b.value=str(tapi.get_bytes_in_log())
+    b.save()
+
+
     def call_back(log_data) :
-        
+                
         c.value = str(int(c.value) + 1)
         c.save()            
         
@@ -467,6 +578,10 @@ def run_start_download_log(request, object_id) :
     c, created = Settings.objects.get_or_create(name='LOG_DOWNLOAD_CNT')
     c.value=str('0')
     c.save()
+    
+    tot, created = Settings.objects.get_or_create(name='LOG_DOWNLOAD_SIZE')
+    tot.value=str('0')
+    tot.save()
     
     s, created = Settings.objects.get_or_create(name='LOG_DOWNLOAD_STATUS')
     s.value=str('Starting Download')

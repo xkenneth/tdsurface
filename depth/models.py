@@ -218,31 +218,35 @@ class ToolNotes(models.Model) :
 admin.site.register(ToolNotes)
 
 
-class ToolConfig(models.Model) :
+class ToolCalibration(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     time_stamp = models.DateTimeField()
     tool = models.ForeignKey(Tool)
-    calco0 = models.PositiveIntegerField()
-    calco1 = models.PositiveIntegerField()
-    calco2 = models.PositiveIntegerField()
-    calco3 = models.PositiveIntegerField()
-    calco4 = models.PositiveIntegerField()
-    calco5 = models.PositiveIntegerField()
-    calco6 = models.PositiveIntegerField()
-    calco7 = models.PositiveIntegerField()
-    calco8 = models.PositiveIntegerField()
-    calco9 = models.PositiveIntegerField()
-    calco10 = models.PositiveIntegerField()
-    calco11 = models.PositiveIntegerField()
-    calco12 = models.PositiveIntegerField()
-    calco13 = models.PositiveIntegerField()
-    calco14 = models.PositiveIntegerField()
-    calco15 = models.PositiveIntegerField()
     
+    calibration_id = models.PositiveIntegerField()
+    tool_serial_number = models.PositiveIntegerField()
+    
+    accelerometer_x_offset = models.PositiveIntegerField()
+    accelerometer_x_gain = models.PositiveIntegerField()
+    accelerometer_y_offset = models.PositiveIntegerField()
+    accelerometer_y_gain = models.PositiveIntegerField()
+    accelerometer_z_offset = models.PositiveIntegerField()
+    accelerometer_z_gain = models.PositiveIntegerField()
+    
+    magnetometer_x_offset = models.PositiveIntegerField()
+    magnetometer_x_gain = models.PositiveIntegerField()
+    magnetometer_y_offset = models.PositiveIntegerField()
+    magnetometer_y_gain = models.PositiveIntegerField()
+    magnetometer_z_offset = models.PositiveIntegerField()
+    magnetometer_z_gain = models.PositiveIntegerField()
+    
+    temperature_offset = models.PositiveIntegerField()
+    temperature_gain = models.PositiveIntegerField()
+        
     def __unicode__(self) :
         return str(self.tool) + " " + str(self.time_stamp)
         
-admin.site.register(ToolConfig)
+admin.site.register(ToolCalibration)
 
     
 class Run(models.Model) :
@@ -250,7 +254,7 @@ class Run(models.Model) :
     name = models.CharField(max_length=255, unique=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(blank=True, null=True)
-    tool_config = models.ForeignKey(ToolConfig, blank=True, null=True)
+    tool_calibration = models.ForeignKey(ToolCalibration, blank=True, null=True)
     well_bore = models.ForeignKey(WellBore)        
     
     def __unicode__(self) :

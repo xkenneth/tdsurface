@@ -19,57 +19,46 @@
 <table class="hilightrow">
     
     <tr>
-        <th colspan="2">Tool Timer (h:m:s)</th><td>{{ "rpn"|stnew|stpush:tool_timer|stpush:"3600"|stdiv|stfloor|stget }}:{{ "rpn"|stnew|stpush:tool_timer|stpush:"3600"|stmod|stpush:"60"|stdiv|stfloor|stget|leading_zeros:2 }}:{{ "rpn"|stnew|stpush:tool_timer|stpush:3600|stmod|stpush:60|stmod|stget|leading_zeros:2 }}</td>
+        <th colspan="2">Tool Serial Number</th><td align="right">{{ calibration.1 }}</td>
     </tr>
     <tr>
-        <th colspan="2">Bytes In MWD Log</th><td>{{ bytes_in_log }}</td>
+        <th colspan="2">Tool Timer (h:m:s)</th><td align="right">{{ "rpn"|stnew|stpush:tool_timer|stpush:"3600"|stdiv|stfloor|stget }}:{{ "rpn"|stnew|stpush:tool_timer|stpush:"3600"|stmod|stpush:"60"|stdiv|stfloor|stget|leading_zeros:2 }}:{{ "rpn"|stnew|stpush:tool_timer|stpush:3600|stmod|stpush:60|stmod|stget|leading_zeros:2 }}</td>
     </tr>
     <tr>
-        <th rowspan="3">Flags</th><th>Advanced Sequence Pattern</th><td>{% ifequal scp.3 1 %}<span style="color: darkgreen;">On</span>{% endifequal %}{% ifnotequal scp.3 1 %}<span style="color: darkred;">Off</span>{% endifnotequal %}</td>        
+        <th colspan="2">Bytes In MWD Log</th><td align="right">{{ bytes_in_log }} b</td>
+    </tr>
+    <tr>
+        <th rowspan="3">Flags</th><th>Advanced Sequence Pattern</th><td align="right">{% ifequal scp.3 1 %}<span style="color: darkgreen;">On</span>{% endifequal %}{% ifnotequal scp.3 1 %}<span style="color: darkred;">Off</span>{% endifnotequal %}</td>        
     </tr>    
     <tr>
-        <th>Tool Face Zeroing</th><td>{% ifequal scp.4 1 %}On{% endifequal %}{% ifnotequal scp.4 1 %}Off{% endifnotequal %}</td>        
+        <th>Tool Face Zeroing</th><td align="right">{% ifequal scp.4 1 %}<span style="color: darkgreen;">On</span>{% endifequal %}{% ifnotequal scp.4 1 %}<span style="color: darkred;">Off</span>{% endifnotequal %}</td>        
     </tr>
     <tr>
-        <th>Rotation Sensing</th><td>{% ifequal scp.5 1 %}On{% endifequal %}{% ifnotequal scp.5 1 %}Off{% endifnotequal %}</td>        
+        <th>Rotation Sensing</th><td align="right">{% ifequal scp.5 1 %}<span style="color: darkgreen;">On</span>{% endifequal %}{% ifnotequal scp.5 1 %}<span style="color: darkred;">Off</span>{% endifnotequal %}</td>        
     </tr>
     <tr>
         <th rowspan="7">Current Sensor Readings</th>
         
-        <th>Temperature</th><td>{{ sensor.temperature }} F</td>
+        <th>Temperature</th><td align="right">{{ sensor.temperature|floatformat }}&deg;F</td>
     </tr>
     <tr>
-        <th>Azimuth</th><td>{{ sensor.azimuth }} </td>
+        <th>Azimuth</th><td align="right">{{ sensor.azimuth|floatformat }}&deg; </td>
     </tr>
     <tr>
-        <th>Inclination</th><td>{{ sensor.inclination }} </td>
+        <th>Inclination</th><td align="right">{{ sensor.inclination|floatformat }}&deg; </td>
     </tr>
     <tr>
-        <th>Gravity</th><td>{{ sensor.gravity }} </td>
+        <th>Gravity</th><td align="right">{{ sensor.gravity|floatformat }} </td>
     </tr>
     <tr>
-        <th>Magnetometer</th><td>{{ sensor.magnetic }} </td>
+        <th>Magnetometer</th><td align="right">{{ sensor.magnetic|floatformat }} </td>
     </tr>
     <tr>
-        <th>Gamma Ray</th><td>{{ sensor.gamma_ray }} </td>
+        <th>Gamma Ray</th><td align="right">{{ sensor.gamma_ray|floatformat }} </td>
     </tr>
     <tr>
-        <th>Tool Face</th><td>{{ sensor.tool_face }} </td>
-    </tr>
-    <tr>
-        <th rowspan="4">Calibration Constants</th>
-        
-        <th>ID</th><td>{{ calibration.0 }} {{calibration.1}}</td>
-    </tr>
-    <tr>
-        <th>Accelerometer</th><td>{{ calibration.2 }} {{ calibration.3 }} {{ calibration.4 }} {{ calibration.5 }} {{ calibration.6 }} {{ calibration.7 }} </td>
-    </tr>
-    <tr>
-        <th>Magnetometer</th><td>{{ calibration.8 }} {{ calibration.9 }} {{ calibration.10 }} {{ calibration.11 }} {{ calibration.12 }} {{ calibration.13 }} </td>
-    </tr>
-    <tr>
-       <th>Temperature</th><td>{{ calibration.14 }} {{ calibration.15 }} </td>
-    </tr>
+        <th>Tool Face</th><td align="right">{{ sensor.tool_face|floatformat }}&deg; </td>
+    </tr>        
 </table>
 
 

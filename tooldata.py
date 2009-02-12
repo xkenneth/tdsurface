@@ -30,8 +30,8 @@ class ToolSensorData :
         self.status = i[3]
         self.inclination = i[4] * 180 / 10000.0
         self.azimuth = i[5] * 360 / 10000.0
-        self.gravity = i[6] / 10000.0
-        self.magnetic = i[7] / 10000.0
+        self.gravity = i[6] / 1000.0
+        self.magnetic = i[7] / 1000.0
         self.gamma_ray = pow(10, i[8]*2/10000.0 ) * 2
         self.tool_face = i[9] * 360 /10000.0
         self.gravity_x = i[10]

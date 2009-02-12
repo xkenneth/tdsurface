@@ -4,6 +4,25 @@ import datetime
 from tooldata import ToolLogData
 from tooldata import ToolSensorData
 
+calibration_map = {
+    'accelerometer_x_offset': 0,
+    'accelerometer_x_gain': 1,
+    'accelerometer_y_offset': 2,
+    'accelerometer_y_gain': 3,
+    'accelerometer_z_offset': 4,
+    'accelerometer_z_gain': 5,
+    'magnetometer_x_offset': 6,
+    'magnetometer_x_gain': 7,
+    'magnetometer_y_offset': 8,
+    'magnetometer_y_gain': 9,
+    'magnetometer_z_offset': 10,
+    'magnetometer_z_gain': 11,
+    'temperature_offset': 12,
+    'temperature_gain': 13
+}
+
+
+
 class ToolAPI :
     def __init__(self, toolcom) :
         self.toolcom = toolcom
@@ -95,6 +114,13 @@ class ToolAPI :
         self.toolcom.write_line('RC')
         return [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         
+    def set_calibration_contant(self, coeff, val) :
+        if type(coeff) != type(1) :
+            coeff = calibration_map[coeff]
+        cmd = ' '.join(('WC', hex(coeff)[2:], hex(val)[2:]))
+        self.toolcom.write_line(cmd)
+        return [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]        
+        
     def get_log(self, call_back) :        
         self.toolcom.write_line('RL')
         
@@ -161,6 +187,11 @@ class ToolAPI :
         self.toolcom.write_line('RS')
         raw = self.toolcom.read_line()        
         return self.decruft(raw)
+
+    def get_bytes_in_log(self) :    
+        log_address = self.get_current_log_address()
+        bytes_in_log = int(log_address, 16) - int('D600', 16)
+        return bytes_in_log
         
     def _getset_pulse_pattern_profile(self, cmd) :
         self.toolcom.write_line(cmd)
