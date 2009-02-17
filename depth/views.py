@@ -25,7 +25,7 @@ from django.conf import settings
 import threading
 import logging
 
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='/var/log/tdsurface.log',level=logging.DEBUG,)
+logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='/var/log/tdsurface/tdsurface.log',level=logging.DEBUG,)
 
 def test(request) :
     data = simplejson.dumps({'test': 'foo', 'test2':'bar', })   
@@ -610,4 +610,41 @@ def run_wits0_latest(request, run_id, num_latest=100, num_skip=0, extra_context=
             data[key] = value    
     
     return render_to_response('wits0_detail.html', data , context_instance = RequestContext(request)) 
+    
+def run_real_time_json(request, object_id, num_latest=5) :
+
+    run = Run.objects.get(pk=object_id)
+    num_latest=int(num_latest)
+
+    azimuth = []
+    [azimuth.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='A').order_by('-time_stamp')[:num_latest] ]
+    toolface = []
+    [toolface.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='F').order_by('-time_stamp')[:num_latest] ]
+    inclination = []
+    [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='I').order_by('-time_stamp')[:num_latest] ]
+    gamma = []
+    [gamma.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='R').order_by('-time_stamp')[:num_latest] ]
+    hole_depth = []
+    [hole_depth.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
+    bit_depth = []
+    [bit_depth.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=8).order_by('-time_stamp')[:num_latest] ]    
+    weight_on_bit = []
+    [weight_on_bit.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
+    
+    data =  {
+        'azimuth': azimuth,
+        'toolface': toolface,    
+        'inclination': inclination,
+        'gamma': gamma,
+        'hole_depth': hole_depth,
+        'bit_depth': bit_depth,        
+        'weight_on_bit': weight_on_bit,
+        }
+    
+    data = simplejson.dumps(data)   
+    
+    return HttpResponse(data, mimetype="application/javascript")
+    
+    
+    
     

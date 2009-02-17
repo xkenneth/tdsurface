@@ -1,5 +1,121 @@
 {% extends 'base.html' %}
 
+{% block head %}
+<script type="text/javascript" src="{{ MEDIA_URL}}scripts/bindows_gauges/bindows_gauges.js"></script>
+
+<script type="text/JavaScript">
+
+
+
+$(document).ready(im_ready);
+
+var azimuth_gauge = 0;
+var inclination_gauge = 0;
+var toolface_gauge = 0;
+//var temp_gauge = 0;
+
+function sensors_callback(data, textStatus)
+{
+    for (var i=0; i<Math.min(5,data.azimuth.length); i++)
+    {
+        if(i==0)
+        {
+            $("#azimuth").text(data.azimuth[i].toFixed(1));
+        }
+        needle = 'needle' + (i + 1);        
+        azimuth_gauge[needle].setValue(data.azimuth[i].toFixed(1));        
+    }
+    
+    for (var i=0; i<Math.min(5,data.toolface.length); i++)
+    {
+        if(i==0)
+        {
+            $("#toolface").text(data.toolface[i].toFixed(1));
+        }
+        needle = 'needle' + (i + 1);             
+        toolface_gauge[needle].setValue(data.toolface[i].toFixed(1));
+    }
+    
+    for (var i=0; i<Math.min(5,data.inclination.length); i++)
+    {
+        if(i==0)
+        {
+            $("#inclination").text(data.inclination[i].toFixed(1));
+        }
+        needle = 'needle' + (i + 1);             
+        inclination_gauge[needle].setValue(180.0 - data.inclination[i].toFixed(1));
+    }
+    
+    if( data.gamma.length)
+    {
+        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
+        for (var i=0; i<data.gamma.length; i++)
+        {
+            html += "<tr><td>" + data.gamma[i]['timestamp'] + '</td><td align="right">' + data.gamma[i]['value'] + '</td></tr>';
+            
+        }
+        html += '</table>';
+        $('#gamma_ray').html(html);
+    }
+    
+    if(data.hole_depth.length)
+    {
+        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
+        for (var i=0; i<data.hole_depth.length; i++)
+        {
+            html += "<tr><td>" + data.hole_depth[i]['timestamp'] + '</td><td align="right">' + data.hole_depth[i]['value'] + '</td></tr>';
+            
+        }
+        html += '</table>';
+        $('#hole_depth').html(html);
+    }
+    
+    if(data.bit_depth.length)
+    {
+        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
+        for (var i=0; i<data.bit_depth.length; i++)
+        {
+            html += "<tr><td>" + data.bit_depth[i]['timestamp'] + '</td><td align="right">' + data.bit_depth[i]['value'] + '</td></tr>';
+            
+        }
+        html += '</table>';
+        $('#bit_depth').html(html);
+    }
+    
+    if(data.weight_on_bit.length)
+    {
+        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
+        for (var i=0; i<data.weight_on_bit.length; i++)
+        {
+            html += "<tr><td>" + data.weight_on_bit[i]['timestamp'] + '</td><td align="right">' + data.weight_on_bit[i]['value'] + '</td></tr>';
+            
+        }
+        html += '</table>';
+        $('#weight_on_bit').html(html);
+    }
+    
+    window.setTimeout(get_sensors,10000);
+}
+ 
+function get_sensors()
+{    
+    $.getJSON("{% url run_real_time_json active_run 5 %}", sensors_callback);
+   
+}
+
+function im_ready()
+{    
+    azimuth_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/azimuth_multi.xml", "azimuth_gauge_div");
+    inclination_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/inclination_multi.xml", "inclination_gauge_div");
+    toolface_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/toolface_multi.xml", "toolface_gauge_div");
+    //temp_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/temperature.xml", "temp_gauge_div");
+    get_sensors();
+}
+</script>     
+{% endblock head %}
+
+
+
 {% block subtitle %}<h3>Depth</h3>{% endblock subtitle %}
 
 {% block navigation %}
@@ -13,3 +129,47 @@
         <li><a href="/admin/" target="_blank">Admin</a></li>
     </ul>
 {% endblock navigation %}
+
+{% block body %}
+<table >
+    <tr>
+        <th colspan="6">Active Run Real Time Readings</th>
+    </tr>
+    <tr>                    
+        <th>Azimuth</th>
+        <th>Inclination</th>
+        <th>Tool Face</th>
+    </tr>    
+    <tr>        
+        <td align="center"><span id="azimuth"></span>&deg;</td>
+        <td align="center"><span id="inclination"></span>&deg; </td>
+        <td align="center"><span id="toolface"></span>&deg; </td>
+    </tr>    
+    <tr>        
+        <td><div id="azimuth_gauge_div" style="width: 175px; height: 175px"></div></td>
+        <td><div id="inclination_gauge_div" style="width: 175px; height: 175px"></div></td>
+        <td><div id="toolface_gauge_div" style="width: 175px; height: 175px"></div></td>        
+    </tr>    
+    <tr>
+        <th>Hole Depth</th><th>Bit Depth</th><th>Weight-on-Bit</th>
+    </tr>
+    <tr>
+        <td id="hole_depth"></td>
+        <td id="bit_depth"></td>        
+        <td id="weight_on_bit"></td>
+    </tr>
+    <tr>
+        <th>Gravity</th>
+        <th>Magnetometer</th>
+        <th>Gamma Ray</th>
+    </tr>
+    <tr>
+        <td id="gravity"></td>
+        <td id="magnetic"></td>
+        <td valign="top" id="gamma_ray"></td>        
+    </tr>
+    
+    
+    
+</table>    
+{% endblock body %}

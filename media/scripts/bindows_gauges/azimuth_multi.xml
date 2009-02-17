@@ -36,11 +36,39 @@
 
         <Gauge2RadialScale startValue="0" endValue="360">
             <!-- Needle -->
-            <Gauge2RadialNeedle id="needle" value="0" stroke="#000000" strokeWidth="1"
+            <Gauge2RadialNeedle id="needle5" value="0" stroke="#000000" strokeWidth="1"
+                                innerRadius="90" innerWidth="100"
+                                outerRadius="190" outerWidth="5">
+                <Gauge2RadialNeedle.Filler>
+                    <Gauge2RadialGradientFiller color1="#FFFFFF" color2="#FF6666"/>
+                </Gauge2RadialNeedle.Filler>
+            </Gauge2RadialNeedle>
+            <Gauge2RadialNeedle id="needle4" value="0" stroke="#000000" strokeWidth="1"
+                                innerRadius="140" innerWidth="100"
+                                outerRadius="240" outerWidth="5">
+                <Gauge2RadialNeedle.Filler>
+                    <Gauge2RadialGradientFiller color1="#FFDDDD" color2="#FF5555"/>
+                </Gauge2RadialNeedle.Filler>
+            </Gauge2RadialNeedle>                        
+            <Gauge2RadialNeedle id="needle3" value="0" stroke="#000000" strokeWidth="1"
+                                innerRadius="190" innerWidth="100"
+                                outerRadius="290" outerWidth="5">
+                <Gauge2RadialNeedle.Filler>
+                    <Gauge2RadialGradientFiller color1="#FFAAAA" color2="#FF4444"/>
+                </Gauge2RadialNeedle.Filler>
+            </Gauge2RadialNeedle>
+            <Gauge2RadialNeedle id="needle2" value="0" stroke="#000000" strokeWidth="1"
                                 innerRadius="240" innerWidth="100"
                                 outerRadius="340" outerWidth="5">
                 <Gauge2RadialNeedle.Filler>
-                    <Gauge2RadialGradientFiller color1="#FFEEEE" color2="#FF2222"/>
+                    <Gauge2RadialGradientFiller color1="#FF6666" color2="#FF3333"/>
+                </Gauge2RadialNeedle.Filler>
+            </Gauge2RadialNeedle>
+            <Gauge2RadialNeedle id="needle1" value="0" stroke="#000000" strokeWidth="1"
+                                innerRadius="290" innerWidth="100"
+                                outerRadius="390" outerWidth="5">
+                <Gauge2RadialNeedle.Filler>
+                    <Gauge2RadialGradientFiller color1="#FF2222" color2="#FF2222"/>
                 </Gauge2RadialNeedle.Filler>
             </Gauge2RadialNeedle>
         </Gauge2RadialScale>

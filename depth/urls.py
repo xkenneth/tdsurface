@@ -41,7 +41,7 @@ urlpatterns = patterns('',
     (r'^run/notes/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run Note', 'navigation_template': 'run_menu.html'}, 'form_class': RunNotesForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'run_notes_create'),
         
     (r'^run/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'run_create'),
-    (r'^run/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../activate/%(uid)s/' }, 'run_createactive'),        
+    (r'^run/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../%(uid)s/activate/' }, 'run_createactive'),        
     (r'^run/(?P<run_id>[\d\-a-f]+)/update/$', 'tdsurface.depth.views.run_update', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, }, 'run_update'),    
     (r'^run/(?P<object_id>[\d\-a-f]+)/activate/$', 'tdsurface.depth.views.run_activate', {}, 'run_activate'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/detail/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),
@@ -54,8 +54,10 @@ urlpatterns = patterns('',
     (r'^run/(?P<run_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html',} }, 'run_wits0_latest'),
     (r'^run/(?P<run_id>[\d\-a-f]+)/wits0/log/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html',} }, 'run_wits0_latest'),
 
+    (r'^run/(?P<object_id>[\d\-a-f]+)/real_time_json/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_real_time_json', {}, 'run_real_time_json'),
+
     (r'^run/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html', 'active_run': get_active_run }, 'queryset': Run.objects.all(), 'template_name': 'run_list.html'}, 'run_list'),
          
-    (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}, 'home'),
+    (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html', 'extra_context': { 'active_run': get_active_run }}, 'home'),
     #(r'.*', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}),
 )

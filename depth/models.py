@@ -258,7 +258,7 @@ class Run(models.Model) :
     well_bore = models.ForeignKey(WellBore)        
     
     def __unicode__(self) :
-        return str(self.well_bore) + " " + str(self.start_time)
+        return str(self.name) + ' - ' + str(self.well_bore) + " " + str(self.start_time)
         
 admin.site.register(Run)
 
@@ -284,7 +284,7 @@ admin.site.register(PipeTally)
 
 
 class ToolMWDRealTime(models.Model) :
-    VALUE_TYPE_CHOICES = (('G','Gravity'),('M','Magnetic'),('T','Temperature'),('R','Gamma Ray'),('A','Azimuth'),('I','Inclination'),)
+    VALUE_TYPE_CHOICES = (('G','Gravity'),('M','Magnetic'),('T','Temperature'),('R','Gamma Ray'),('A','Azimuth'),('I','Inclination'),('F','Tool Face'),)
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)    
     time_stamp = models.DateTimeField( db_index=True)
