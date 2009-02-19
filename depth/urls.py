@@ -10,7 +10,9 @@ def get_active_run() :
 urlpatterns = patterns('',
     
     (r'^test/$', 'tdsurface.depth.views.test', {}, 'test'),
-    
+    (r'^test/matplotlib/$', 'tdsurface.depth.views.test_matplotlib', {}, 'test_matplotlib'),
+    (r'^test/matplotlib/weight_on_bit$', 'tdsurface.depth.views.test_matplotlib_weight_on_bit', {}, 'test_matplotlib_weight_on_bit'),
+        
     (r'^well/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'well_create'),
     (r'^well/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'well_update'),    
     (r'^well/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Wells', 'navigation_template': 'well_menu.html'}, 'queryset': Well.objects.all(), 'template_name': 'generic_list.html'}, 'well_list'),
