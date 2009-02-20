@@ -21,8 +21,8 @@ urlpatterns = patterns('',
     (r'^rig/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Rig', 'navigation_template': 'rig_menu.html'}, 'form_class': RigForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'rig_update'),    
     (r'^rig/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Rigs', 'navigation_template': 'rig_menu.html'}, 'queryset': Rig.objects.all(), 'template_name': 'generic_list.html'}, 'rig_list'),
         
-    (r'^wellbore/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'Update Well Bore', 'navigation_template': 'wellbore_menu.html'}, 'model': WellBore, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'wellbore_create'),
-    (r'^wellbore/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'New Well Bore', 'navigation_template': 'wellbore_menu.html'}, 'model': WellBore, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'wellbore_update'),    
+    (r'^wellbore/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Well Bore', 'navigation_template': 'wellbore_menu.html'}, 'model': WellBore, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'wellbore_create'),
+    (r'^wellbore/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Well Bore', 'navigation_template': 'wellbore_menu.html'}, 'model': WellBore, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'wellbore_update'),    
     (r'^wellbore/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Well Bores', 'navigation_template': 'wellbore_menu.html'}, 'queryset': WellBore.objects.all(), 'template_name': 'generic_list.html'}, 'wellbore_list'),
     
     (r'^tool/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Tool', 'navigation_template': 'tool_list_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'tool_create'),    
@@ -47,6 +47,8 @@ urlpatterns = patterns('',
     (r'^run/(?P<run_id>[\d\-a-f]+)/update/$', 'tdsurface.depth.views.run_update', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, }, 'run_update'),    
     (r'^run/(?P<object_id>[\d\-a-f]+)/activate/$', 'tdsurface.depth.views.run_activate', {}, 'run_activate'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/detail/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),
+
+    (r'^run/(?P<run_id>[\d\-a-f]+)/rolltest/$', 'tdsurface.depth.views.run_roll_test', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, }, 'run_roll_test'),    
 
     (r'^run/downloadlog/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_start_download_log', {}, 'run_download_log'),
     (r'^run/downloadstatus/$', 'tdsurface.depth.views.run_download_status_json', {}, 'run_download_status'),

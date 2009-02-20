@@ -107,4 +107,16 @@ class ToolCalibrationForm(forms.Form) :
     magnetometer_z_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)    
     
     temperature_offset = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
-    temperature_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)    
+    temperature_gain = forms.DecimalField(required=True, max_value=65535, min_value=0, max_digits=5, decimal_places=0)
+
+
+class RoleTestForm(forms.Form) :
+    
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+
+    comment = forms.CharField()
+
+    

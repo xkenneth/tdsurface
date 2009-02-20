@@ -11,7 +11,21 @@
 {% block subtitle %}<h3>{{ object }}</h3>{% endblock subtitle %}
 
 {% block body %}
-
+<table>
+    <tr>
+        <th>Tool Name
+        </th>
+        <td>{{ object }}</td>        
+    </tr>
+    <tr>
+        <th>Serial Number</th>
+        <td>{{ object.serial_number }}</td>
+    </tr>
+    <tr>
+        <th>Tool Type</th>
+        <td>{{ object.type }}</td>
+    </tr>
+</table>
 
 
 {% endblock body %}

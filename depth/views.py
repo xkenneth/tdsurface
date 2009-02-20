@@ -227,7 +227,43 @@ def tool_sensors(request, object_id, extra_context=None) :
                 data[key] = value    
     
     return render_to_response('tool_sensors.html', data, context_instance = RequestContext(request))
+
+
+def run_roll_test(request, run_id, extra_context=None) :
     
+    run = Run.objects.get(pk=run_id)
+
+    data = {'object': run}
+    if request.method == 'POST': # If the form has been submitted...
+        form = RoleTestForm(request.POST) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass                                            
+            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+            tapi = ToolAPI(tc)
+            
+            comcheck = tapi.echo('ABC123')
+            if comcheck != 'ABC123' :
+                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+                
+            sensor = tapi.get_sensor_readings()
+            tc.close()
+
+            
+            
+            data['sensor'] = sensor            
+    else:
+        form = RoleTestForm() # An unbound form
+
+    data['form'] = form
+        
+    if extra_context :
+        for key, value in extra_context.items():
+            if callable(value):
+                data[key] = value()
+            else:
+                data[key] = value    
+    
+    return render_to_response('run_role_test.html', data, context_instance = RequestContext(request))
+        
     
 def tool_sensors_json(request, object_id) :
     

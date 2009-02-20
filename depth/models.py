@@ -270,6 +270,26 @@ class RunNotes(models.Model) :
     notes = models.TextField(blank=True, null=True)
 
 admin.site.register(RunNotes)
+
+
+class RollTest(models.Model) :
+    uid = UUIDField(primary_key=True, editable=False)
+    run = models.ForeignKey(Run)
+    time_stamp = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)    
+    comment = models.CharField(max_length=255, blank=True, null=True)
+    azimuth = models.DecimalField(max_digits=10, decimal_places=1)
+    inclination = models.DecimalField(max_digits=10, decimal_places=1)
+    toolface = models.DecimalField(max_digits=10, decimal_places=1)
+    temperature = models.DecimalField(max_digits=10, decimal_places=1)
+    azimuth = models.DecimalField(max_digits=10, decimal_places=1)
+    gravity = models.DecimalField(max_digits=10, decimal_places=1)
+    magnetic = models.DecimalField(max_digits=10, decimal_places=1)
+    gamma = models.DecimalField(max_digits=10, decimal_places=1)
+
+    def __unicode__(self) :
+        return str(self.run) + ' - ' + str(self.comment) + " " + str(self.time_stamp)
+    
+admin.site.register(RollTest)
     
     
 class PipeTally(models.Model) :
