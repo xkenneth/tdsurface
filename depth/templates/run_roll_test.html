@@ -13,6 +13,7 @@ var azimuth_gauge = 0;
 var inclination_gauge = 0;
 var toolface_gauge = 0;
 var temp_gauge = 0;
+var capture = 0;
 
 function sensors_callback(data, textStatus)
 {    
@@ -29,25 +30,41 @@ function sensors_callback(data, textStatus)
     azimuth_gauge.needle.setValue(data.azimuth.toFixed(1)) 
     inclination_gauge.needle.setValue(180.0 - data.inclination.toFixed(1))
     toolface_gauge.needle.setValue(data.tool_face.toFixed(1)) 
-        
-    $.getJSON("{% url tool_sensors_json object.tool_calibration.tool.pk %}", sensors_callback);    
+
+    if(capture)
+    {        
+        document.capture_form.submit();
+    }
+    else
+    {    
+        $.getJSON("{% url tool_sensors_json object.tool_calibration.tool.pk %}", sensors_callback);
+    }
 }
  
 function get_sensors()
 {    
-    $.getJSON("{% url tool_sensors_json object.tool_calibration.tool.pk %}", sensors_callback);
-   
+    $.getJSON("{% url tool_sensors_json object.tool_calibration.tool.pk %}", sensors_callback);   
+}
+
+function capture_click()
+{
+    capture=1;
+    $("#capture_button").text("Please Wait");
+    $(this).attr("disabled","disabled");
 }
 
 function im_ready()
-{    
+{
+    $("#capture_button").click(capture_click); 
     azimuth_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/azimuth.xml", "azimuth_gauge_div");
     inclination_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/inclination.xml", "inclination_gauge_div");
     toolface_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/toolface.xml", "toolface_gauge_div");
     temp_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/temperature.xml", "temp_gauge_div");
     get_sensors();
 }
-</script>     
+</script>    
+    
+
 {% endblock head %}
 
 {% block navigation %}
@@ -93,9 +110,9 @@ function im_ready()
     
 </table>
 
-<form action="." method="POST">
+<form name="capture_form" id="capture_form" action="." method="POST">
 {{ form.as_p }}
-<input type="submit" value="Capture Sensor Data">
+<button id="capture_button">Capture Sensor Data</button>
 </form>
 
 <table>
@@ -111,10 +128,17 @@ function im_ready()
         <th>Gamma Ray</th>
     </tr>
 
-{% for rt in object.roletest %}
+{% for rt in rolltest %}
 <tr>
 <td>{{ rt.time_stamp }}</td>
 <td>{{ rt.comment }}</td>
+<td>{{ rt.temperature }}</td>
+<td>{{ rt.azimuth }}</td>
+<td>{{ rt.inclination }}</td>
+<td>{{ rt.toolface }}</td>
+<td>{{ rt.gravity }}</td>
+<td>{{ rt.magnetic }}</td>
+<td>{{ rt.gamma }}</td>
 </tr>
 {% endfor %}
 

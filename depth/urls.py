@@ -44,19 +44,20 @@ urlpatterns = patterns('',
         
     (r'^run/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'run_create'),
     (r'^run/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../%(uid)s/activate/' }, 'run_createactive'),        
-    (r'^run/(?P<run_id>[\d\-a-f]+)/update/$', 'tdsurface.depth.views.run_update', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, }, 'run_update'),    
+    (r'^run/(?P<object_id>[\d\-a-f]+)/update/$', 'tdsurface.depth.views.run_update', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_detail_menu.html'}, }, 'run_update'),    
     (r'^run/(?P<object_id>[\d\-a-f]+)/activate/$', 'tdsurface.depth.views.run_activate', {}, 'run_activate'),
-    (r'^run/(?P<object_id>[\d\-a-f]+)/detail/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/detail/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_detail_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),
 
-    (r'^run/(?P<run_id>[\d\-a-f]+)/rolltest/$', 'tdsurface.depth.views.run_roll_test', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_menu.html'}, }, 'run_roll_test'),    
+    (r'^run/(?P<object_id>[\d\-a-f]+)/rolltest/$', 'tdsurface.depth.views.run_roll_test', {'extra_context': {'subtitle':'Run Roll Test', 'navigation_template': 'run_detail_menu.html'}, }, 'run_rolltest'),    
 
-    (r'^run/downloadlog/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_start_download_log', {}, 'run_download_log'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/download/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Download Log', 'navigation_template': 'run_detail_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_download.html'}, 'run_download'),
+    (r'^run/downloadstart/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.run_start_download_log', {}, 'run_download_start'),
     (r'^run/downloadstatus/$', 'tdsurface.depth.views.run_download_status_json', {}, 'run_download_status'),
     (r'^run/downloadcancel/$', 'tdsurface.depth.views.run_download_cancel', {}, 'run_download_cancel'),
     
-    (r'^run/(?P<run_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/(?P<num_skip>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html',} }, 'run_wits0_latest'),
-    (r'^run/(?P<run_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html',} }, 'run_wits0_latest'),
-    (r'^run/(?P<run_id>[\d\-a-f]+)/wits0/log/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_menu.html',} }, 'run_wits0_latest'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/(?P<num_skip>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_detail_menu.html',} }, 'run_wits0_latest'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_detail_menu.html',} }, 'run_wits0_latest'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/log/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_detail_menu.html',} }, 'run_wits0_latest'),
 
     (r'^run/(?P<object_id>[\d\-a-f]+)/real_time_json/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_real_time_json', {}, 'run_real_time_json'),
 

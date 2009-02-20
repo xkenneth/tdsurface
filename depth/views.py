@@ -229,9 +229,9 @@ def tool_sensors(request, object_id, extra_context=None) :
     return render_to_response('tool_sensors.html', data, context_instance = RequestContext(request))
 
 
-def run_roll_test(request, run_id, extra_context=None) :
+def run_roll_test(request, object_id, extra_context=None) :
     
-    run = Run.objects.get(pk=run_id)
+    run = Run.objects.get(pk=object_id)
 
     data = {'object': run}
     if request.method == 'POST': # If the form has been submitted...
@@ -243,11 +243,20 @@ def run_roll_test(request, run_id, extra_context=None) :
             comcheck = tapi.echo('ABC123')
             if comcheck != 'ABC123' :
                 return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
-                
+
             sensor = tapi.get_sensor_readings()
             tc.close()
 
-            
+            rt = RollTest(run=run,
+                          temperature= '%.1f' % sensor.temperature,
+                          comment = form.cleaned_data['comment'],
+                          azimuth = '%.1f' % sensor.azimuth,
+                          inclination = '%.1f' % sensor.inclination,
+                          toolface = '%.1f' % sensor.tool_face,                                                    
+                          gravity = '%.1f' % sensor.gravity,
+                          magnetic = '%.1f' % sensor.magnetic,
+                          gamma = '%.1f' % sensor.gamma_ray)
+            rt.save()                
             
             data['sensor'] = sensor            
     else:
@@ -261,8 +270,10 @@ def run_roll_test(request, run_id, extra_context=None) :
                 data[key] = value()
             else:
                 data[key] = value    
+
+    data['rolltest'] = RollTest.objects.filter(run=run).order_by('-time_stamp')
     
-    return render_to_response('run_role_test.html', data, context_instance = RequestContext(request))
+    return render_to_response('run_roll_test.html', data, context_instance = RequestContext(request))
         
     
 def tool_sensors_json(request, object_id) :
@@ -487,14 +498,14 @@ def run_activate(request, object_id) :
     return HttpResponseRedirect(reverse('run_list'))
 
 
-def run_update(request, run_id, extra_context=None,) :
+def run_update(request, object_id, extra_context=None,) :
     
-    run = Run.objects.get(pk=run_id)
+    run = Run.objects.get(pk=object_id)
     
     if request.method == 'POST': # If the form has been submitted...
         if request.POST['form_id'] == 'run_update_form' :
             run_form = RunForm(request.POST, instance=run) # A form bound to the POST data
-            run_notes_form = RunNotesForm(initial = {'run': run_id,})
+            run_notes_form = RunNotesForm(initial = {'run': run.pk,})
             if run_form.is_valid(): # All validation rules pass
                 run_form.save()            
                 return HttpResponseRedirect(reverse('run_update', args=[run.pk]))
@@ -507,11 +518,11 @@ def run_update(request, run_id, extra_context=None,) :
                 return HttpResponseRedirect(reverse('run_update', args=[run.pk]))
     else:
         run_form = RunForm(instance = run)
-        run_notes_form = RunNotesForm(initial = {'run': run_id,})
+        run_notes_form = RunNotesForm(initial = {'run': run.pk,})
 
     run_notes = RunNotes.objects.filter(run=run).order_by('time_stamp')
     
-    data = {'run_form':run_form, 'run':run, 'run_notes_form': run_notes_form, 'run_notes': run_notes }
+    data = {'run_form':run_form, 'run':run, 'object':run, 'run_notes_form': run_notes_form, 'run_notes': run_notes }
     
     for key, value in extra_context.items():
         if callable(value):
@@ -684,8 +695,8 @@ def run_start_download_log(request, object_id) :
     t.start()
     return HttpResponse("Download Started")
         
-def run_wits0_latest(request, run_id, num_latest=100, num_skip=0, extra_context={}) :
-    run = Run.objects.get(pk=run_id)
+def run_wits0_latest(request, object_id, num_latest=100, num_skip=0, extra_context={}) :
+    run = Run.objects.get(pk=object_id)
 
     num_latest=int(num_latest)
     neg_num_latest = -num_latest
@@ -693,7 +704,7 @@ def run_wits0_latest(request, run_id, num_latest=100, num_skip=0, extra_context=
 
     wits = WITS0.objects.filter(run=run).order_by('-time_stamp','recid','itemid')[num_skip: num_skip+num_latest]
     
-    data = {'wits':wits, 'num_latest':num_latest, 'neg_num_latest':neg_num_latest, 'num_skip':num_skip, 'run':run, }
+    data = {'wits':wits, 'num_latest':num_latest, 'neg_num_latest':neg_num_latest, 'num_skip':num_skip, 'run':run, 'object':run }
     
     for key, value in extra_context.items():
         if callable(value):
