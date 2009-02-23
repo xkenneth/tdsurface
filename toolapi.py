@@ -247,4 +247,13 @@ class ToolAPI :
     
     def toggle_advanced_sequence_pattern_mode(self) :
         return self._get_status_constant_profile('MY')
-        
+
+    def toggle_tool_face_zeroing(self) :
+        return self._get_status_constant_profile('STR')
+
+    def toggle_rotation_sensing(self) :
+        return self._get_status_constant_profile('ORR')
+
+    def set_logging_interval(self, time) :
+        cmd = ' '.join(('TR', hex(time)[2:]))
+        return self._get_status_constant_profile(cmd)

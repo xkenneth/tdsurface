@@ -51,12 +51,18 @@ $(document).ready(install_events);
 {% block subtitle %}<h3>Tool Configuration - {{ object }}</h3>{% endblock subtitle %}
 
 {% block body %}
-<ul>
-    <li><button onclick="location='{% url tool_pullcal object.pk %}';">Pull Calibration Constants</button> <button onclick="location='{% url tool_calibration_update object.pk %}';">Update Calibration Constants</button></li>
-    <li><button id="reset_timer_button">Reset Tool Timer</button></li>
-    <li><button id="purge_log_button">Purge Tool MWD Log</button></li>
-    <li><button onclick="location='{% url tool_pulse_pattern_profile object.pk %}';">Pulse Pattern Profile</button></li>
+<ul style="list-style: none; margin-left: 0; padding-left:0;">
+    <li style="padding-bottom: 10px;"><button onclick="location='{% url tool_pullcal object.pk %}';">Store Calibration Constants</button></li>
+    <li style="padding-bottom: 10px;"><button onclick="location='{% url tool_calibration_update object.pk %}';">Update Calibration Constants</button></li>
+    <li style="padding-bottom: 10px;"><button id="reset_timer_button">Reset Tool Timer</button></li>
+    <li style="padding-bottom: 10px;"><button id="purge_log_button">Purge Tool MWD Log</button></li>
+    <li style="padding-bottom: 10px;"><button onclick="location='{% url tool_pulse_pattern_profile object.pk %}';">Pulse Pattern Profile</button></li>
 </ul>
+
+<form action="." method="POST">
+{{ form.as_p }}
+<input type="submit" value="Save Configuration">
+</form>
 
 
 {% endblock body %}

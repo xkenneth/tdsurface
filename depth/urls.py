@@ -27,7 +27,7 @@ urlpatterns = patterns('',
     
     (r'^tool/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Tool', 'navigation_template': 'tool_list_menu.html'}, 'model': Tool, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'tool_create'),    
     (r'^tool/update/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.tool_update', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, }, 'tool_update'),    
-    (r'^tool/config/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, 'model': Tool, 'template_name': 'toolconfig_form.html', 'post_save_redirect': '../../' }, 'tool_config'),
+    (r'^tool/config/(?P<object_id>[\d\-a-f]+)/$', 'tdsurface.depth.views.tool_config', {'extra_context': {'subtitle':'Update Tool', 'navigation_template': 'tool_menu.html'}, }, 'tool_config'),
     (r'^tool/config/(?P<object_id>[\d\-a-f]+)/pulsepatternprofile/$', 'tdsurface.depth.views.tool_pulse_pattern_profile', {}, 'tool_pulse_pattern_profile'),
     (r'^tool/config/(?P<object_id>[\d\-a-f]+)/pullcal/$', 'tdsurface.depth.views.pull_calibration', {}, 'tool_pullcal'),
     (r'^tool/config/(?P<object_id>[\d\-a-f]+)/updatecal/$', 'tdsurface.depth.views.tool_calibration_update', {'extra_context': {'subtitle':'Update Calibration Constants', 'navigation_template': 'tool_menu.html'}, 'template_name': 'calibration_form.html', }, 'tool_calibration_update'),

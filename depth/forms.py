@@ -120,3 +120,14 @@ class RoleTestForm(forms.Form) :
     comment = forms.CharField()
 
     
+class ToolConfigForm(forms.Form) :
+
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+
+    advanced_squence_pattern = forms.BooleanField(required=False)
+    tool_face_zeroing = forms.BooleanField(required=False)
+    rotation_sensing = forms.BooleanField(required=False)
+    logging_interval = forms.IntegerField(label='Logging Interval (ms)',max_value=3600000, min_value=0)

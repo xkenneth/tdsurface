@@ -93,6 +93,18 @@ function sensors_callback(data, textStatus)
         html += '</table>';
         $('#weight_on_bit').html(html);
     }
+
+    if(data.mud_flow_in.length)
+    {
+        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
+        for (var i=0; i<data.mud_flow_in.length; i++)
+        {
+            html += "<tr><td>" + data.mud_flow_in[i]['timestamp'] + '</td><td align="right">' + data.mud_flow_in[i]['value'] + '</td></tr>';
+            
+        }
+        html += '</table>';
+        $('#mud_flow_in').html(html);
+    }
     
     window.setTimeout(get_sensors,10000);
 }
@@ -139,11 +151,13 @@ function im_ready()
         <th>Azimuth</th>
         <th>Inclination</th>
         <th>Tool Face</th>
+        <th>Gamma Ray</th>
     </tr>    
     <tr>        
         <td align="center"><span id="azimuth"></span>&deg;</td>
         <td align="center"><span id="inclination"></span>&deg; </td>
         <td align="center"><span id="toolface"></span>&deg; </td>
+        <td rowspan="2" valign="top" id="gamma_ray"></td>     
     </tr>    
     <tr>        
         <td><div id="azimuth_gauge_div" style="width: 175px; height: 175px"></div></td>
@@ -151,25 +165,14 @@ function im_ready()
         <td><div id="toolface_gauge_div" style="width: 175px; height: 175px"></div></td>        
     </tr>    
     <tr>
-        <th>Hole Depth</th><th>Bit Depth</th><th>Weight-on-Bit</th>
+        <th>Hole Depth</th><th>Bit Depth</th><th>Weight-on-Bit</th><th>Mud Flow In</th>
     </tr>
     <tr>
         <td id="hole_depth"></td>
         <td id="bit_depth"></td>        
         <td id="weight_on_bit"></td>
+        <td id="mud_flow_in"></td>
     </tr>
-    <tr>
-        <th>Gravity</th>
-        <th>Magnetometer</th>
-        <th>Gamma Ray</th>
-    </tr>
-    <tr>
-        <td id="gravity"></td>
-        <td id="magnetic"></td>
-        <td valign="top" id="gamma_ray"></td>        
-    </tr>
-    
-    
     
 </table>    
 {% endblock body %}

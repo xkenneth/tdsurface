@@ -196,11 +196,75 @@ def tool_status(request, object_id) :
     log_address = tapi.get_current_log_address()
     bytes_in_log = int(log_address, 16) - int('D600', 16)
     scp = tapi.get_status_constant_profile()
+    logging_interval = (0x10000*scp[88]) + scp[89]
     sensor = tapi.get_sensor_readings()
     tool_timer = tapi.get_timer()    
     tc.close()
     
-    return render_to_response('tool_status.html', {'calibration': calibration, 'scp': scp, 'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'log_address': log_address, 'bytes_in_log': bytes_in_log}, context_instance = RequestContext(request))
+    return render_to_response('tool_status.html', {'calibration': calibration, 'scp': scp, 'logging_interval': logging_interval, 'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'log_address': log_address, 'bytes_in_log': bytes_in_log}, context_instance = RequestContext(request))
+
+
+def tool_config(request, object_id, extra_context=None) :
+    
+    tool = Tool.objects.get(pk=object_id)
+
+    data = {'object': tool}
+    if request.method == 'POST': # If the form has been submitted...
+        form = ToolConfigForm(request.POST) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass                                            
+            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+            tapi = ToolAPI(tc)
+            
+            comcheck = tapi.echo('ABC123')
+            if comcheck != 'ABC123' :
+                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+
+            scp = tapi.get_status_constant_profile()
+            logging_interval = (0x10000*scp[88]) + scp[89]
+            if logging_interval != form.cleaned_data['logging_interval'] :
+                tapi.set_logging_interval(form.cleaned_data['logging_interval'])
+
+            if bool(scp[3]) != form.cleaned_data['advanced_squence_pattern'] :
+                tapi.toggle_advanced_sequence_pattern_mode()
+
+            if bool(scp[4]) != form.cleaned_data['tool_face_zeroing'] :
+                tapi.toggle_tool_face_zeroing()
+
+            if bool(scp[5]) != form.cleaned_data['rotation_sensing'] :
+                tapi.toggle_rotation_sensing()
+            
+            tc.close()
+           
+    else:
+        tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+        tapi = ToolAPI(tc)
+            
+        comcheck = tapi.echo('ABC123')
+        if comcheck != 'ABC123' :
+            return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+
+        scp = tapi.get_status_constant_profile()
+        initial = {'advanced_squence_pattern': bool(scp[3]),
+                   'tool_face_zeroing': bool(scp[4]),
+                   'rotation_sensing': bool(scp[5]),
+                   'logging_interval': (0x10000*scp[88]) + scp[89],                   
+                  }
+
+        form = ToolConfigForm(initial = initial) # An unbound form
+
+    data['form'] = form
+        
+    if extra_context :
+        for key, value in extra_context.items():
+            if callable(value):
+                data[key] = value()
+            else:
+                data[key] = value    
+
+    
+    
+    return render_to_response('tool_config_form.html', data, context_instance = RequestContext(request))
+
 
 
 def tool_sensors(request, object_id, extra_context=None) :
@@ -733,6 +797,8 @@ def run_real_time_json(request, object_id, num_latest=5) :
     [bit_depth.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=8).order_by('-time_stamp')[:num_latest] ]    
     weight_on_bit = []
     [weight_on_bit.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
+    mud_flow_in = []
+    [mud_flow_in.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
     
     data =  {
         'azimuth': azimuth,
@@ -742,6 +808,7 @@ def run_real_time_json(request, object_id, num_latest=5) :
         'hole_depth': hole_depth,
         'bit_depth': bit_depth,        
         'weight_on_bit': weight_on_bit,
+        'mud_flow_in': mud_flow_in,
         }
     
     data = simplejson.dumps(data)   

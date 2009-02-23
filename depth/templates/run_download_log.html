@@ -1,0 +1,105 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+  <link type="text/css" rel="stylesheet" href="{{ MEDIA_URL}}scripts/jquery/ui/theme/ui.all.css" />  
+  <script src="{{ MEDIA_URL}}scripts/jquery/ui/jquery-ui-personalized.js"></script>
+
+<script type="text/JavaScript">
+
+var log_start_count={{ object.toolmwdlog_set.count }};
+
+function cancel_click()
+{
+    $.get("{% url run_download_cancel %}");
+    $(this).attr("disabled","disabled");
+}
+
+function download_click()
+{    
+    $(this).attr("disabled","disabled");
+    $("#run_download_cancel").removeAttr("disabled");
+    window.setTimeout(status,1000);    
+    $.get("{% url run_download_log object.pk %}");
+    $(this).unbind('click', download_click);
+    $(this).bind('click', cancel_click);
+    $("#progressbar").progressbar({ value: 0 });
+}
+
+function install_events()
+{
+    $("#run_download_log").click(download_click);
+    $("#run_download_cancel").click(cancel_click);    
+}
+
+$(document).ready(install_events);
+ 
+function status_callback(data, textStatus)
+{    
+    $("#run_download_status").text(data.status);
+    $("#log_cnt").text(log_start_count + data.cnt);    
+    $("#progressbar").progressbar("option", "value", data.percent*1);
+    $("#progresspercent").text( data.percent +'% complete');
+    if(data.downloading)
+    {
+        window.setTimeout(status,2000);
+    }
+    else
+    {
+        $('#run_download_cancel').attr("disabled","disabled");
+    }
+}
+ 
+function status()
+{
+   $.getJSON("{% url run_download_status %}", status_callback);
+}
+</script>     
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table class="hilightrow">
+    <tr>
+        <th>Run</th><td>{{ object.name }} </td>
+    </tr>
+    <tr>
+        <th>Start Time</th><td>{{ object.start_time}} </td>
+    </tr>
+    <tr>
+        <th>End Time</th><td>{{ object.end_time }} </td>
+    </tr>
+    <tr>
+        <th>Well</th><td>{{ object.well_bore.well }} </td>
+    </tr>
+    <tr>
+        <th>Bore</th><td>{{ object.well_bore }}</td>
+    </tr>
+    <tr>
+        <th>Active (RTD)</th>
+        <td>
+            {% ifequal active_run object.pk %}<img src="{{ MEDIA_URL }}/images/action_check.png" alt="Active">{% endifequal %}
+            {% ifnotequal active_run object.pk %}
+                <a href="{% url run_activate object.pk %}"><button>Activate</button></a>
+            {% endifnotequal %}
+        </td>
+    </tr>
+    <tr>
+        <th>Log Count</th><td><span id="log_cnt">{{ object.toolmwdlog_set.count }}</span></td>
+    </tr>
+    
+</table>
+
+<button id="run_download_log">Download Log</button>&nbsp;&nbsp;&nbsp;<button id="run_download_cancel" disabled="disabled">Cancel Download</button>
+
+
+<div id="run_download_status"></div>
+<div id="progressbar" style="width:200px;" ></div>
+<div id="progresspercent" style="width:200px;" ></div>
+
+{% endblock body %}
