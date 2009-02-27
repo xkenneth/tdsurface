@@ -48,6 +48,9 @@ urlpatterns = patterns('',
     (r'^run/(?P<object_id>[\d\-a-f]+)/activate/$', 'tdsurface.depth.views.run_activate', {}, 'run_activate'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/detail/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_detail_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),
 
+    (r'^run/(?P<object_id>[\d\-a-f]+)/pipetally/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Pipe Tally', 'navigation_template': 'run_detail_menu.html', },'queryset': Run.objects.all(), 'template_name': 'run_pipe_tally.html'}, 'run_pipe_tally'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/pipetally_grid/$', 'tdsurface.depth.views.run_pipe_tally_grid', {}, 'run_pipe_tally_grid'),
+
     (r'^run/(?P<object_id>[\d\-a-f]+)/rolltest/$', 'tdsurface.depth.views.run_roll_test', {'extra_context': {'subtitle':'Run Roll Test', 'navigation_template': 'run_detail_menu.html'}, }, 'run_rolltest'),    
 
     (r'^run/(?P<object_id>[\d\-a-f]+)/download/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Download Log', 'navigation_template': 'run_detail_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_download.html'}, 'run_download'),

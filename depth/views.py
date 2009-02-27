@@ -815,7 +815,45 @@ def run_real_time_json(request, object_id, num_latest=5) :
     
     return HttpResponse(data, mimetype="application/javascript")
     
+def run_pipe_tally_grid(request, object_id) :
+
+    page = int(request.GET['page'])
+    rows = int(request.GET['rows'])
     
+    sort_order= ''
+    if request.GET['sord'] == 'desc' :
+        sort_order= '-'
+    
+    pt = PipeTally.objects.filter(run=object_id).order_by(sort_order+request.GET['sidx'])
+    records = len(pt)
+    total_pages = records/rows;
+    if records % rows :
+        total_pages += 1
+        
+    data={
+        'total': total_pages,
+        'page': page,
+        'records': records,
+        'rows' : [ ],
+        }
+
+    for r in pt[(page-1)*rows:page*rows] :
+        rd = {}
+        rd["id"] = r.pk        
+        rd['order'] = str(r.order)        
+        rd['duration'] = str(r.duration)
+        if r.duration == None :
+            rd['duration'] = ''
+        rd['pipe_length'] = str(r.pipe_length)
+        rd['units'] = r.length_units
+        rd['note'] = r.note
+        data['rows'].append(rd)
+
+    data = simplejson.dumps(data)   
+    #data = """{"total": 1, "page": 1, "records": 3, "rows": [{ "cell": ["test1", "0", "30", "ft", "test"], "id": "1"}, {"cell": ["test2", "0", "29.7", "ft", ""], "id": "2"}, {"cell": ["test1", "0", "29.7", "ft", "Notes"], "id": "3"}]}"""
+    return HttpResponse(data, mimetype="application/javascript")
+
+        
 
     
     

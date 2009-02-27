@@ -295,10 +295,11 @@ admin.site.register(RollTest)
 class PipeTally(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
-    time_stamp = models.DateTimeField(blank=True, null=True)
+    order = models.PositiveIntegerField()
     duration = models.PositiveIntegerField(blank=True, null=True)
-    length = models.DecimalField(max_digits=10, decimal_places=3)
+    pipe_length = models.DecimalField(max_digits=10, decimal_places=3, blank=False, null=False, default=0)
     length_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
+    note = models.TextField(blank=True, null=True)
 
 admin.site.register(PipeTally)
 
