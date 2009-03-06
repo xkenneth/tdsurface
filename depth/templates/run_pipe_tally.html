@@ -12,19 +12,150 @@
 
 <script type="text/javascript">
 
+var lastSel = 0;
+
+function onSelectRow(id)
+{    
+    if(id && id!==lastSel)
+    { 
+        jQuery('#pt_grid').restoreRow(lastSel); 
+        lastSel=id; 
+    }
+    
+}
+
+function onEditRow(eventObject)
+{
+    var sr = jQuery("#pt_grid").getGridParam("selrow");
+    if( sr != null )
+    {
+        jQuery('#pt_grid').editRow(sr, false); 
+    }
+    else
+    {
+        alert("Please Select Row");
+    }
+}
+
+function deleteRowCallBack(data, testStatus)
+{
+    var page = jQuery("#pt_grid").getGridParam("page");            
+    jQuery("#pt_grid").setGridParam({ "page": page });
+    jQuery("#pt_grid").trigger("reloadGrid");    
+}
+
+function onDeleteRow(eventObject)
+{
+    var sr = jQuery("#pt_grid").getGridParam("selrow");
+    if( sr != null )
+    {
+        jQuery("#pt_grid").delRowData(sr);
+        jQuery.post("{% url run_pipe_tally_grid_delete object.pk %}", {'id':sr}, deleteRowCallBack );
+    }
+    else
+    {
+        alert("Please Select Row To DELETE.");
+    }
+}
+
+function onAddRow(eventObject)
+{    
+    var sr = jQuery("#pt_grid").getGridParam("selrow");
+    if( sr != null )
+    {
+        var order = jQuery("#pt_grid").getCell(sr,'order');
+        var units = jQuery("#pt_grid").getCell(sr,'units');
+        order = 1+parseInt(order);   
+        jQuery("#pt_grid").addRowData('new',{'order':''+order,'pipe_length':'','units':units,'duration':'','note':''},'after',sr);
+        jQuery("#pt_grid").resetSelection();
+        jQuery("#pt_grid").setSelection('new');
+        jQuery('#pt_grid').editRow('new', false);            
+    }
+    else
+    {                
+        jQuery("#pt_grid").addRowData('new',{'order':'end','pipe_length':'','units':'ft','duration':'','note':''},'last');
+        jQuery("#pt_grid").resetSelection();
+        jQuery("#pt_grid").setSelection('new');
+        jQuery('#pt_grid').editRow('new', false);
+    }
+}
+
+function saveRowSuccess(response)
+{
+    var page = jQuery("#pt_grid").getGridParam("page");            
+    jQuery("#pt_grid").setGridParam({ "page": page });
+    jQuery("#pt_grid").trigger("reloadGrid");
+    return true;
+}
+
+function onSaveRow(eventObject)
+{
+    var sr = jQuery("#pt_grid").getGridParam("selrow");
+    if( sr != null )
+    {
+        var order = jQuery("#pt_grid").getCell(sr,'order');
+        jQuery("#pt_grid").saveRow(sr, successfunc=saveRowSuccess, url=null, extraparam = {'order': order}); 
+    }
+    else
+    {
+        alert("Please Select Row");
+    }
+        
+}
+
+function onMoveRowUp(eventObject)
+{
+    var sr = jQuery("#pt_grid").getGridParam("selrow");
+    if( sr != null )
+    {
+        var order = jQuery("#pt_grid").getCell(sr,'order');
+        order -= 1;
+        if(order > 0)
+        {
+            jQuery("#pt_grid").setCell(sr,'order',order);
+            jQuery('#pt_grid').editRow(sr, false);            
+            jQuery("#pt_grid").saveRow(sr, successfunc=saveRowSuccess, url=null, extraparam = {'order': order}); 
+        }
+    }
+    else
+    {
+        alert("Please Select Row");
+    }
+    
+}
+
+function onMoveRowDown(eventObject)
+{
+    var sr = jQuery("#pt_grid").getGridParam("selrow");
+    if( sr != null )
+    {        
+        var order = jQuery("#pt_grid").getCell(sr,'order');
+        order = parseInt(order) + 1;
+        jQuery("#pt_grid").setCell(sr,'order',order);
+        jQuery('#pt_grid').editRow(sr, false);        
+        jQuery("#pt_grid").saveRow(sr, successfunc=saveRowSuccess, url=null, extraparam = {'order': order});       
+    }
+    else
+    {
+        alert("Please Select Row");
+    }
+        
+}
+
+
 function imready()
 {
     $("#pt_grid").jqGrid({
     url:'{% url run_pipe_tally_grid object.pk %}',
     datatype: 'json',    
     mtype: 'GET',
-    //colNames:['Order','Duration', 'Length','Units','Notes'],
+    height: 200,  
     colModel :[
-      {name:'order', label:'Order', width:60, align:'right'},      
-      {name:'pipe_length', label:'Length', width:75, align:'right', sortable:false},
-      {name:'units', label:'Units', width:50, align:'right', sortable:false},
-      {name:'duration', label:'Duration', width:75, align:'right', sortable:false},     
-      {name:'note', label:'Notes', width:300, sortable:false} ],
+      {name:'order', label:'Order', width:60, align:'right', editable:false},      
+      {name:'pipe_length', label:'Length', width:80, align:'right', sortable:false, editable:true, edittype:'text'},
+      {name:'units', label:'Units', width:60, align:'right', sortable:false, editable:true, edittype:'select', editoptions:{value: "ft:ft;m:m"}},
+      {name:'duration', label:'Duration', width:80, align:'right', sortable:false, editable:true, edittype:'text'},     
+      {name:'note', label:'Notes', width:400, sortable:false, editable:true, edittype:'textarea'} ],
     pager: jQuery('#pager'),
     rowNum:10,
     rowList:[10,50,100],
@@ -40,9 +171,18 @@ function imready()
       records: "records",
       repeatitems: false,      
       id: "id",
-    }
-    
-  });
+        },
+    onSelectRow: onSelectRow,
+    editurl: '{% url run_pipe_tally_grid_edit object.pk %}',
+    scrollrows: true
+    });
+
+    $("#pt_addrow").click(onAddRow);
+    $("#pt_editrow").click(onEditRow);
+    $("#pt_saverow").click(onSaveRow);
+    $("#pt_moveup").click(onMoveRowUp);
+    $("#pt_movedown").click(onMoveRowDown);
+    $("#pt_delrow").click(onDeleteRow);
 
 }
 
@@ -64,13 +204,14 @@ th
 {% include navigation_template %}
 {% endblock navigation %}
 
-{% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
+{% block subtitle %}<h3>{{ object }} - Pipe Tally</h3>{% endblock subtitle %}
 
 {% block body %}
 
 
 <table id="pt_grid" class="scroll"></table>
-<div id="pager" class="scroll" style="text-align:center;"></div>
-
+<div id="pager" class="scroll" style="text-align:center;"></div> 
+<button id="pt_editrow">Edit Row</button>  <button id="pt_saverow">Save Row</button>  <button id="pt_addrow">Add Row</button>
+<button id="pt_moveup">Up</button>  <button id="pt_movedown">Down</button>  <button id="pt_delrow">Delete Row</button>
 
 {% endblock body %}

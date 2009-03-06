@@ -185,6 +185,9 @@ def tool_status(request, object_id) :
     
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
+
+    time.sleep(1)
+    tc.flush_input_buffer();
     
     comcheck = tapi.echo('ABC123')
     if comcheck != 'ABC123' :
@@ -854,7 +857,69 @@ def run_pipe_tally_grid(request, object_id) :
     return HttpResponse(data, mimetype="application/javascript")
 
         
+def run_pipe_tally_grid_edit(request, object_id) :    
+    run = Run.objects.get(pk=object_id)
+    
+    if request.method=='POST' :
+        if request.POST['id'] == 'new' :
+            order = request.POST['order']
+            if order == 'end' :
+                order = 9999
+            order = int(order)
+                           
+            pt = PipeTally(run = run,
+                           order = order,                           
+                           pipe_length = request.POST['pipe_length'],
+                           length_units = request.POST['units'],
+                           note = request.POST['note'])
+            if request.POST['duration'] :
+                pt.duration = request.POST['duration']
+            
+            ptl = PipeTally.objects.filter(run=object_id).order_by('order')
+            max_order = 0
+            for x in ptl :
+                if x.order >= pt.order :
+                    x.order += 1                
+                    x.save()
+                if x.order > max_order :
+                    max_order = x.order            
 
+            if pt.order >= max_order :
+                pt.order = max_order + 1
+            pt.save()    
+            
+        else :            
+            pt = PipeTally.objects.get(pk = request.POST['id'])            
+            order = int(request.POST['order'])
+            if pt.order != order :
+                ptl = PipeTally.objects.filter(order = order)
+                if len(ptl) :
+                    ptl[0].order = pt.order
+                    ptl[0].save()                
+            pt.order = order
+            pt.length_units = request.POST['units']
+            if request.POST['duration'] :
+                pt.duration = request.POST['duration']
+            pt.note = request.POST['note']
+            pt.save()                
+        
+            
+    data = simplejson.dumps(pt.pk)       
+    return HttpResponse(data, mimetype="application/javascript")            
+    #return HttpResponse(str(pt.pk), mimetype="test/plain")
     
+
+def run_pipe_tally_grid_delete(request, object_id) :    
+    run = Run.objects.get(pk=object_id)
     
-    
+    if request.method=='POST' :        
+        pt = PipeTally.objects.get(pk = request.POST['id'])
+        order = pt.order
+        pt.delete()
+        ptl = PipeTally.objects.filter(run=object_id).order_by('order')
+        for x in ptl :
+            if x.order > order :
+                x.order -= 1                
+                x.save()
+            
+        return HttpResponse('true', mimetype="application/javascript")            
