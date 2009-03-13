@@ -1,0 +1,22 @@
+{% extends 'mainmenu.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Generate LAS file from MWD Tool Log</h3>{% endblock subtitle %}
+
+{% block body %}
+Select curves to include.<br>
+Note: The first curve will be Elapsed Time.
+<form method="POST" action=".">
+{{ form.as_p }}
+<input id="submit" value="Generate LAS File" type="submit">
+</form>
+
+{% endblock body %}
