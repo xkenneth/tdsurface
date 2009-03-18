@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.contrib.localflavor.us.models import USStateField
 import uuid
 
+from math import sqrt
+
 LENGTH_UNIT_CHOICES = (('m','meters'), ('ft','feet'))
 TEMP_UNIT_CHOICES = (('F','Fahrenheit'), ('C','Celsius'))
 
@@ -346,9 +348,78 @@ class ToolMWDLog(models.Model) :
     depth = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, db_index=True)
     depth_units = models.CharField(max_length=2, null=True, blank=True, choices = LENGTH_UNIT_CHOICES)
 
-    def gravity_x_calibrated(self) :
-        return round((self.gravity_x - self.run.tool_calibration.accelerometer_x_offset)/(1.0 * self.run.tool_calibration.accelerometer_x_gain),3)
-        
+    def _calibrate(self, value, offset, gain, flip) :
+        return round(flip * (value - offset)/(1.0 * gain),3)
+
+    def _gammaxfer(self, gamma) :
+        return round((pow(10, gamma*2/10000.0 ) * 2),1)
+
+    def gamma0_cps(self):
+        return self._gammaxfer(self.gamma0)
+
+    def gamma1_cps(self):
+        return self._gammaxfer(self.gamma1)
+
+    def gamma2_cps(self):
+        return self._gammaxfer(self.gamma2)
+
+    def gamma3_cps(self):
+        return self._gammaxfer(self.gamma3)
+
+    def temperature_f(self) :
+        """Already calibrated, but needs to be detransfered"""
+        return round(self.temperature*500/10000.0, 1)
+
+    def temperature_c(self) :
+        """Already calibrated, but needs to be detransfered"""
+        return round(((self.temperature*500/10000.0) - 32 ) * 5 / 9, 1)
+    
+    def gravity_x_calibrated(self, run=None) :
+        """When looping of a list of ToolMWDLog it is best to pass a run in
+        otherwize the ORM queries the constants and flips every time through the loop.
+        """
+        if not run :
+            run = self.run
+        flip = run.tool_calibration.tool.type.invert_gravity_x * -1    
+        return self._calibrate(self.gravity_x, run.tool_calibration.accelerometer_x_offset, run.tool_calibration.accelerometer_x_gain, flip)
+
+    def gravity_y_calibrated(self, run=None) :
+        if not run :
+            run = self.run
+        flip = run.tool_calibration.tool.type.invert_gravity_y * -1    
+        return self._calibrate(self.gravity_y, run.tool_calibration.accelerometer_y_offset, run.tool_calibration.accelerometer_y_gain, flip)
+
+    def gravity_z_calibrated(self, run=None) :
+        if not run :
+            run = self.run
+        flip = run.tool_calibration.tool.type.invert_gravity_z * -1    
+        return self._calibrate(self.gravity_z, run.tool_calibration.accelerometer_z_offset, run.tool_calibration.accelerometer_z_gain, flip)
+
+    def magnetic_x_calibrated(self, run=None) :
+        if not run :
+            run = self.run
+        flip = run.tool_calibration.tool.type.invert_magnetic_x * -1    
+        return self._calibrate(self.magnetic_x, run.tool_calibration.magnetometer_x_offset, run.tool_calibration.magnetometer_x_gain, flip)
+
+    def magnetic_y_calibrated(self, run=None) :
+        if not run :
+            run = self.run
+        flip = run.tool_calibration.tool.type.invert_magnetic_y * -1    
+        return self._calibrate(self.magnetic_y, run.tool_calibration.magnetometer_y_offset, run.tool_calibration.magnetometer_y_gain, flip)
+
+    def magnetic_z_calibrated(self, run=None) :
+        if not run :
+            run = self.run
+        flip = run.tool_calibration.tool.type.invert_magnetic_z * -1    
+        return self._calibrate(self.magnetic_z, run.tool_calibration.magnetometer_z_offset, run.tool_calibration.magnetometer_z_gain, flip)
+
+    def total_gravity(self, run=None) :
+        return round(sqrt(pow(self.gravity_x_calibrated(run),2)+pow(self.gravity_y_calibrated(run),2)+pow(self.gravity_z_calibrated(run),2)),3)
+
+    def total_magnetic(self, run=None) :
+        return round(sqrt(pow(self.magnetic_x_calibrated(run),2)+pow(self.magnetic_y_calibrated(run),2)+pow(self.magnetic_z_calibrated(run),2)),3)
+
+    
 admin.site.register(ToolMWDLog)
 
 

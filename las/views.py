@@ -12,7 +12,7 @@ from tdsurface.depth.models import ToolMWDLog
 from tdsurface.depth.models import Run
 from tdsurface.las.forms import *
 
-from math import sqrt
+
 
 def las_test(request) :
     """Generates a test LAS file from test data"""
@@ -87,11 +87,16 @@ def las_from_mwdlog(request, object_id) :
                 curve_headers.append(d)
                 curves.append(LasCurve(d,[l.status for l in mwdlog])) 
 
-            if form.cleaned_data['temperature'] :
+            if form.cleaned_data['temperature_f'] :
                 d = Descriptor(mnemonic="TMP", unit="degF", description="Temperature")
                 curve_headers.append(d)
-                curves.append(LasCurve(d,[l.temperature*500/10000.0 for l in mwdlog]))                 
-            
+                curves.append(LasCurve(d,[l.temperature_f() for l in mwdlog]))
+
+            if form.cleaned_data['temperature_c'] :
+                d = Descriptor(mnemonic="TMP", unit="degC", description="Temperature")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,[l.temperature_c() for l in mwdlog]))
+                
             if form.cleaned_data['gamma_ray_0'] :
                 d = Descriptor(mnemonic="GR0", unit="CPS", description="Gamma Rate counts/second first quarter logging cycle")
                 curve_headers.append(d)
@@ -112,15 +117,15 @@ def las_from_mwdlog(request, object_id) :
                 curve_headers.append(d)
                 curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma3*2/10000.0 ) * 2),1)  for l in mwdlog]))
 
-            #Apply calibration contants
-            if form.cleaned_data['gravity_x'] or form.cleaned_data['total_gravity'] :
-                gravity_x_calibrated = [round((l.gravity_x-run.tool_calibration.accelerometer_x_offset)/(1.0*run.tool_calibration.accelerometer_x_gain),3) for l in mwdlog]
+            
+            if form.cleaned_data['gravity_x'] or form.cleaned_data['total_gravity'] :                
+                gravity_x_calibrated = [l.gravity_x_calibrated(run) for l in mwdlog]                
 
             if form.cleaned_data['gravity_y'] or form.cleaned_data['total_gravity'] :
-                gravity_y_calibrated = [round((l.gravity_y-run.tool_calibration.accelerometer_y_offset)/(1.0*run.tool_calibration.accelerometer_y_gain),3) for l in mwdlog]
+                gravity_y_calibrated = [l.gravity_y_calibrated(run) for l in mwdlog]                
 
-            if form.cleaned_data['gravity_y'] or form.cleaned_data['total_gravity'] :
-                gravity_z_calibrated = [round((l.gravity_z-run.tool_calibration.accelerometer_z_offset)/(1.0*run.tool_calibration.accelerometer_z_gain),3) for l in mwdlog]
+            if form.cleaned_data['gravity_z'] or form.cleaned_data['total_gravity'] :
+                gravity_z_calibrated = [l.gravity_z_calibrated(run) for l in mwdlog]                
 
             if form.cleaned_data['gravity_x'] :
                 d = Descriptor(mnemonic="GX", unit="", description="Gravity x calibrated")
@@ -141,17 +146,17 @@ def las_from_mwdlog(request, object_id) :
             if form.cleaned_data['total_gravity'] :
                 d = Descriptor(mnemonic="GT", unit="", description="Total Gravity")
                 curve_headers.append(d)                
-                curves.append(LasCurve(d,[round(sqrt(pow(gravity_x_calibrated[c],2)+pow(gravity_y_calibrated[c],2)+pow(gravity_z_calibrated[c],2)),3) for c in range(len(mwdlog))]))  
-
-            #Apply calibration contants
-            if form.cleaned_data['magnetic_x'] or form.cleaned_data['total_magnetic'] :
-                magnetic_x_calibrated = [round((l.magnetic_x-run.tool_calibration.accelerometer_x_offset)/(1.0*run.tool_calibration.accelerometer_x_gain),3) for l in mwdlog]
-
-            if form.cleaned_data['magnetic_y'] or form.cleaned_data['total_magnetic'] :
-                magnetic_y_calibrated = [round((l.magnetic_y-run.tool_calibration.accelerometer_y_offset)/(1.0*run.tool_calibration.accelerometer_y_gain),3) for l in mwdlog]
+                #curves.append(LasCurve(d,[round(sqrt(pow(gravity_x_calibrated[c],2)+pow(gravity_y_calibrated[c],2)+pow(gravity_z_calibrated[c],2)),3) for c in range(len(mwdlog))]))
+                curves.append(LasCurve(d,[ l.total_gravity(run) for l in mwdlog]))
+            
+            if form.cleaned_data['magnetic_x'] or form.cleaned_data['total_magnetic'] :                
+                magnetic_x_calibrated = [l.magnetic_x_calibrated(run) for l in mwdlog]
 
             if form.cleaned_data['magnetic_y'] or form.cleaned_data['total_magnetic'] :
-                magnetic_z_calibrated = [round((l.magnetic_z-run.tool_calibration.accelerometer_z_offset)/(1.0*run.tool_calibration.accelerometer_z_gain),3) for l in mwdlog]
+                magnetic_y_calibrated = [l.magnetic_y_calibrated(run) for l in mwdlog]
+
+            if form.cleaned_data['magnetic_z'] or form.cleaned_data['total_magnetic'] :
+                magnetic_z_calibrated = [l.magnetic_z_calibrated(run) for l in mwdlog]
 
             if form.cleaned_data['magnetic_x'] :
                 d = Descriptor(mnemonic="HX", unit="mT", description="Magnetic x calibrated")
@@ -172,7 +177,8 @@ def las_from_mwdlog(request, object_id) :
             if form.cleaned_data['total_magnetic'] :
                 d = Descriptor(mnemonic="HT", unit="", description="Total Magnetic")
                 curve_headers.append(d)                
-                curves.append(LasCurve(d,[round(sqrt(pow(magnetic_x_calibrated[c],2)+pow(magnetic_y_calibrated[c],2)+pow(magnetic_z_calibrated[c],2)),3) for c in range(len(mwdlog))]))  
+                #curves.append(LasCurve(d,[round(sqrt(pow(magnetic_x_calibrated[c],2)+pow(magnetic_y_calibrated[c],2)+pow(magnetic_z_calibrated[c],2)),3) for c in range(len(mwdlog))]))
+                curves.append(LasCurve(d,[ l.total_magnetic(run) for l in mwdlog ]))
 
 
             
