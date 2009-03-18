@@ -737,15 +737,15 @@ def run_real_time_json(request, object_id, num_latest=5) :
     num_latest=int(num_latest)
 
     azimuth = []
-    [azimuth.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='A').order_by('-time_stamp')[:num_latest] ]
+    [azimuth.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='azimuth').order_by('-time_stamp')[:num_latest] ]
     toolface = []
-    [toolface.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='F').order_by('-time_stamp')[:num_latest] ]
+    [toolface.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='toolface').order_by('-time_stamp')[:num_latest] ]
     inclination = []
-    [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='I').order_by('-time_stamp')[:num_latest] ]
+    [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='inclination').order_by('-time_stamp')[:num_latest] ]
     gamma = []
-    [gamma.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='R').order_by('-time_stamp')[:num_latest] ]
+    [gamma.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='gammaray').order_by('-time_stamp')[:num_latest] ]
     temperature = []
-    [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='T').order_by('-time_stamp')[:num_latest] ]
+    [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='temperature').order_by('-time_stamp')[:num_latest] ]
 
     hole_depth = []
     [hole_depth.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
