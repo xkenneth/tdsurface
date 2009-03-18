@@ -13,7 +13,9 @@ from django.core import serializers
 from django.utils import simplejson
 
 import time
-import datetime
+from time import mktime
+from datetime import datetime
+from datetime import timedelta
 
 from tdsurface.depth.models import *
 from tdsurface.depth.forms import *
@@ -28,64 +30,12 @@ import logging
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='/var/log/tdsurface/tdsurface.log',level=logging.DEBUG,)
 
 
-import matplotlib
-matplotlib.use("Agg") # do this before pylab so you don'tget the default back end.
-
-import pylab
-import matplotlib.numerix as N
-
-def test_matplotlib(request) :
-    # Generate and plot some simple data:
-    x = N.arange(0, 2*N.pi, 0.1)
-    y = N.sin(x)+1
-
-    pylab.ylim(8,0)
-    pylab.plot(y,x)
-    F = pylab.gcf()
-
-    # Now check everything with the defaults:
-    DPI = F.get_dpi()    
-    DefaultSize = F.get_size_inches()
-    F.set_size_inches( (2, 5) )
-    filename = settings.MEDIA_ROOT + '/images/test1.png'
-    F.savefig(filename)
-     
-    data = simplejson.dumps({'filename': filename})   
-    
-    return HttpResponse(data, mimetype="application/javascript")
 
 def test(request) :
     data = simplejson.dumps({'test': 'foo', 'test2':'bar', })   
     
     return HttpResponse(data, mimetype="application/javascript")
 
-def test_matplotlib_weight_on_bit(request) :
-    x = []
-    y = []
-    
-    r = WITS0.objects.filter(recid=1,itemid=17, value__gt=0).order_by('-time_stamp')[:300]
-        
-    [x.append(v.value) for v in r]
-    [y.append(v.time_stamp) for v in r]
-
-    pylab.ylim(10,0)
-    #pylab.xlim(0,40)
-    pylab.grid(True)
-    pylab
-    pylab.plot(x,y)    
-    F = pylab.gcf()
-
-    # Now check everything with the defaults:
-    DPI = F.get_dpi()    
-    #DefaultSize = F.get_size_inches()
-    F.set_size_inches( (2, 5) )
-    filename = settings.MEDIA_ROOT + '/images/test1.png'
-    F.savefig(filename)
-     
-    data = simplejson.dumps({'filename': filename})   
-    
-    #return HttpResponse(data, mimetype="application/javascript")
-    return HttpResponseRedirect('/tdsurface/media/images/test1.png')
 
 
 def mainmenu(request) :
@@ -111,7 +61,7 @@ def pull_calibration(request, object_id) :
     
    
     
-    d['time_stamp'] = datetime.datetime.utcnow()
+    d['time_stamp'] = datetime.utcnow()
     tc = ToolCalibration(time_stamp = d['time_stamp'],
                          tool=tool,
                          calibration_id=cal_vals[0],
@@ -157,7 +107,7 @@ def set_time(request, object_id) :
             
             return render_to_response('timeset_results.html', {'tool_time': tool_time,'object': tool,}, context_instance = RequestContext(request))
     else:
-        form = SetTimeForm(initial = {'set_time_to': datetime.datetime.utcnow(),}) # An unbound form
+        form = SetTimeForm(initial = {'set_time_to': datetime.utcnow(),}) # An unbound form
 
     return render_to_response('generic_form.html', {'form': form,}, context_instance = RequestContext(request))
 
@@ -173,7 +123,7 @@ def reset_timer(request, object_id) :
         tc.close()
         return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
         
-    tapi.set_time(datetime.datetime(2001,1,1,0,0,0)) # Set the timer to 0 using tool base time (2001-01-01 00:00:00) (year & month are ignored on the timer)
+    tapi.set_time(datetime(2001,1,1,0,0,0)) # Set the timer to 0 using tool base time (2001-01-01 00:00:00) (year & month are ignored on the timer)
     
     tc.close()
     
@@ -491,7 +441,7 @@ def tool_calibration_update(request, object_id, template_name, extra_context=Non
                 
             tcal = ToolCalibration()
             tcal.tool = tool
-            tcal.time_stamp =  datetime.datetime.utcnow()
+            tcal.time_stamp =  datetime.utcnow()
             tcal.calibration_id = cur_cal[0]
             tcal.tool_serial_number = cur_cal[1]
             
@@ -794,6 +744,9 @@ def run_real_time_json(request, object_id, num_latest=5) :
     [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='I').order_by('-time_stamp')[:num_latest] ]
     gamma = []
     [gamma.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='R').order_by('-time_stamp')[:num_latest] ]
+    temperature = []
+    [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='T').order_by('-time_stamp')[:num_latest] ]
+
     hole_depth = []
     [hole_depth.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
     bit_depth = []
@@ -808,6 +761,7 @@ def run_real_time_json(request, object_id, num_latest=5) :
         'toolface': toolface,    
         'inclination': inclination,
         'gamma': gamma,
+        'temperature': temperature,
         'hole_depth': hole_depth,
         'bit_depth': bit_depth,        
         'weight_on_bit': weight_on_bit,
@@ -923,3 +877,39 @@ def run_pipe_tally_grid_delete(request, object_id) :
                 x.save()
             
         return HttpResponse('true', mimetype="application/javascript")            
+
+
+
+
+def wits0_depth_to_mwdlog(request, object_id) :
+    run = Run.objects.get(pk=object_id)
+
+    mwdlogs = ToolMWDLog.objects.filter(run=run)
+
+    for l in mwdlogs :
+        time_stamp = run.start_time + timedelta(seconds=l.seconds)
+        try :
+            
+            lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
+            higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
+        except:
+            continue
+
+        # Linear Interpolation where x = seconds and y = depth    
+        x = time.mktime(time_stamp.timetuple())
+        xa = time.mktime(lower.time_stamp.timetuple())
+        xb = time.mktime(higher.time_stamp.timetuple())
+
+        ya = float(lower.value)
+        yb = float(higher.value)
+        
+        y = ya + ((x - xa) * (yb - ya))/(xb - xa)
+
+        l.depth=str(y)
+        l.depth_units='ft'
+        l.save()
+
+    return HttpResponseRedirect(reverse('las_from_mwdlog', args=[object_id]))    
+
+
+    

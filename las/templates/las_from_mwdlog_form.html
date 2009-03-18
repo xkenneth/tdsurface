@@ -3,6 +3,36 @@
 {% block head %}
     <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
     {{ form.media }}
+
+<script type="text/JavaScript">
+
+
+function wits0_depth_2_mwdlog_click()
+{
+    $(this).html('Please Wait');
+    $(this).attr("disabled","disabled");
+    location='{% url run_wits0_depth_to_mwdlog object.pk %}';
+}
+
+function manual_depth_2_mwdlog_click()
+{
+    $(this).html('Please Wait');
+    $(this).attr("disabled","disabled");
+    location='{% url run_manual_depth_to_mwdlog object.pk %}';
+}
+
+
+function install_events()
+{
+    $("#wits0_depth_2_mwdlog").click(wits0_depth_2_mwdlog_click);
+    $("#manual_depth_2_mwdlog").click(manual_depth_2_mwdlog_click);
+}
+
+$(document).ready(install_events);
+ 
+</script>    
+
+    
 {% endblock head %}
 
 {% block navigation %}
@@ -12,8 +42,15 @@
 {% block subtitle %}<h3>Generate LAS file from MWD Tool Log</h3>{% endblock subtitle %}
 
 {% block body %}
+
+<ul style="list-style: none; margin-left: 0; padding-left:0;">
+    <li style="padding-bottom: 10px;"><button id="wits0_depth_2_mwdlog">WITS0 Depth >> MWD Log</button></li>
+    <li style="padding-bottom: 10px;"><button id="manual_depth_2_mwdlog">Manual Depth >> MWD Log</button></li>
+</ul>
+
+
 Select curves to include.<br>
-Note: The first curve will be Elapsed Time.
+Note: The first curve will be Depth.
 <form method="POST" action=".">
 {{ form.as_p }}
 <input id="submit" value="Generate LAS File" type="submit">

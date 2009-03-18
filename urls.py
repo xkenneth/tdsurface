@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     (r'^admin/(.*)', admin.site.root),
     (r'^tdsurface/depth/', include('tdsurface.depth.urls')),
+    (r'^tdsurface/las/', include('tdsurface.las.urls')),
     (r'^tdsurface/media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 )
 

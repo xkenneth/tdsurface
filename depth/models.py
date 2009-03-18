@@ -191,9 +191,15 @@ class ToolType(models.Model) :
     TOOL_INTERFACE_CHOICES = (('S','Serial'),('C','CAN-Bus'))
     type = models.CharField(max_length=32, unique=True)
     interface = models.CharField(max_length=1, choices = TOOL_INTERFACE_CHOICES)
+    invert_magnetic_x = models.BooleanField(default=0)
+    invert_magnetic_y = models.BooleanField(default=0)
+    invert_magnetic_z = models.BooleanField(default=0)
+    invert_gravity_x = models.BooleanField(default=0)
+    invert_gravity_y = models.BooleanField(default=0)
+    invert_gravity_z = models.BooleanField(default=0)
     
     def __unicode__(self) :
-        return self.type + self.interface
+        return self.type
 
 admin.site.register(ToolType)
 
@@ -305,7 +311,7 @@ admin.site.register(PipeTally)
 
 
 class ToolMWDRealTime(models.Model) :
-    VALUE_TYPE_CHOICES = (('G','Gravity'),('M','Magnetic'),('T','Temperature'),('R','Gamma Ray'),('A','Azimuth'),('I','Inclination'),('F','Tool Face'),)
+    VALUE_TYPE_CHOICES = (('G','Gravity'),('M','Magnetic'),('T','Temperature'),('R','Gamma Ray'),('A','Azimuth'),('I','Inclination'),('F','Tool Face'),('S', 'Status'))
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)    
     time_stamp = models.DateTimeField( db_index=True)
@@ -314,6 +320,8 @@ class ToolMWDRealTime(models.Model) :
     value_x = models.IntegerField(blank=True, null=True)
     value_y = models.IntegerField(blank=True, null=True)
     value_z = models.IntegerField(blank=True, null=True)
+    depth = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, db_index=True)
+    depth_units = models.CharField(max_length=2, null=True, blank=True, choices = LENGTH_UNIT_CHOICES)
     
 admin.site.register(ToolMWDRealTime)
     
@@ -321,7 +329,7 @@ admin.site.register(ToolMWDRealTime)
 class ToolMWDLog(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)    
     run = models.ForeignKey(Run)
-    seconds = models.IntegerField()
+    seconds = models.IntegerField(db_index=True)
     raw_data = models.CharField(max_length=255, blank=True, null=True)
     status = models.IntegerField()
     gravity_x = models.IntegerField()
@@ -335,7 +343,12 @@ class ToolMWDLog(models.Model) :
     gamma1 = models.IntegerField()
     gamma2 = models.IntegerField()
     gamma3 = models.IntegerField()
+    depth = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, db_index=True)
+    depth_units = models.CharField(max_length=2, null=True, blank=True, choices = LENGTH_UNIT_CHOICES)
 
+    def gravity_x_calibrated(self) :
+        return round((self.gravity_x - self.run.tool_calibration.accelerometer_x_offset)/(1.0 * self.run.tool_calibration.accelerometer_x_gain),3)
+        
 admin.site.register(ToolMWDLog)
 
 
@@ -343,8 +356,9 @@ class ManualDepth(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     run = models.ForeignKey(Run)
     time_stamp = models.DateTimeField(db_index=True)
-    depth = models.DecimalField(max_digits=10, decimal_places=3)
+    depth = models.DecimalField(max_digits=10, decimal_places=3, db_index=True)
     depth_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
+    notes = models.TextField(blank=True, null=True)
 
     def __unicode__(self) :
         return str(self.time_stamp) + " " + str(self.depth)

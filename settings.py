@@ -79,7 +79,9 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'tdsurface.depth'
+    'tdsurface.depth',
+    'tdsurface.las',
+    'tdsurface.manual_depth',
 )
 
 STATIC_DOC_ROOT = os.path.join(os.getcwd(),'media')

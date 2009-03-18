@@ -10,6 +10,8 @@ class LasFromMWDLogForm(forms.Form) :
                 'all': (form_css,)
         }
 
+    # depth_source = forms.ChoiceField(required=True, choices=[('wits0','WITS0'), ('manualdepth','Manual Depth')])
+    elapsed_time = forms.BooleanField(required=False)
     status = forms.BooleanField(required=False)
     temperature = forms.BooleanField(required=False)    
     gamma_ray_0 = forms.BooleanField(required=False)

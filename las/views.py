@@ -52,12 +52,12 @@ def las_from_mwdlog(request, object_id) :
         if form.is_valid(): # All validation rules pass    
             
 
-            mwdlog = ToolMWDLog.objects.filter(run=object_id, seconds__lt=200000000).order_by('seconds')
+            mwdlog = ToolMWDLog.objects.filter(run=object_id, depth__gt=0).order_by('depth')
 
-            mwdlog_agg = ToolMWDLog.objects.filter(run=object_id, seconds__lt=200000000).aggregate(Min('seconds'), Max('seconds'))
+            mwdlog_agg = ToolMWDLog.objects.filter(run=object_id, depth__gt=0).aggregate(Min('depth'), Max('depth'))
             well_headers = [
-                Descriptor(mnemonic="STRT", unit="S", data=str(mwdlog_agg['seconds__min'])),
-                Descriptor(mnemonic="STOP", unit="S", data=str(mwdlog_agg['seconds__max'])),
+                Descriptor(mnemonic="STRT", unit="FT", data=str(mwdlog_agg['depth__min'])),
+                Descriptor(mnemonic="STOP", unit="FT", data=str(mwdlog_agg['depth__max'])),
                 Descriptor(mnemonic="STEP", unit="S", data="0"),
                 Descriptor(mnemonic="NULL", data = "9999", description="Null Value"),
                 Descriptor(mnemonic="COMP", data=run.well_bore.well.operator, description="Company"),
@@ -74,9 +74,14 @@ def las_from_mwdlog(request, object_id) :
                 Descriptor(mnemonic="DATE", data=run.start_time.date().isoformat(), description="Log Start Date")
                 ]
 
-            curve_headers = [Descriptor(mnemonic="ETIM", unit="S", description="Elapsed Time"),]
-            curves = [LasCurve(Descriptor(mnemonic="ETIM", unit="S", description="Elapsed Time"), [l.seconds for l in mwdlog])]
+            curve_headers = [Descriptor(mnemonic="DEPT", unit="ft", description="Bit Depth"),]
+            curves = [LasCurve(Descriptor(mnemonic="DEPT", unit="ft", description="Bit Depth"), [l.depth for l in mwdlog])]
 
+            if form.cleaned_data['elapsed_time'] :
+                d = Descriptor(mnemonic="ETIM", unit="S", description="Elapsed Time")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,[l.seconds for l in mwdlog]))
+                
             if form.cleaned_data['status'] :
                 d = Descriptor(mnemonic="STAT", unit="", description="Tool Status")
                 curve_headers.append(d)
@@ -103,7 +108,7 @@ def las_from_mwdlog(request, object_id) :
                 curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma2*2/10000.0 ) * 2),1)  for l in mwdlog]))
 
             if form.cleaned_data['gamma_ray_3'] :
-                d = Descriptor(mnemonic="GR3", unit="CPS", description="Gamma counts/second forth quarter logging cycle")
+                d = Descriptor(mnemonic="GR3", unit="CPS", description="Gamma Ray counts/second forth quarter logging cycle")
                 curve_headers.append(d)
                 curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma3*2/10000.0 ) * 2),1)  for l in mwdlog]))
 
@@ -178,4 +183,4 @@ def las_from_mwdlog(request, object_id) :
     else:
         form = LasFromMWDLogForm() # An unbound form
 
-    return render_to_response('las_from_mwdlog_form.html', {'form': form, 'object_id': object_id, 'run':run }, context_instance = RequestContext(request))    
+    return render_to_response('las_from_mwdlog_form.html', {'form': form, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    

@@ -10,9 +10,7 @@ def get_active_run() :
 urlpatterns = patterns('',
     
     (r'^test/$', 'tdsurface.depth.views.test', {}, 'test'),
-    (r'^test/matplotlib/$', 'tdsurface.depth.views.test_matplotlib', {}, 'test_matplotlib'),
-    (r'^test/matplotlib/weight_on_bit$', 'tdsurface.depth.views.test_matplotlib_weight_on_bit', {}, 'test_matplotlib_weight_on_bit'),
-        
+    
     (r'^well/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'well_create'),
     (r'^well/update/(?P<object_id>[\d\-a-f]+)/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'well_update'),    
     (r'^well/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Wells', 'navigation_template': 'well_menu.html'}, 'queryset': Well.objects.all(), 'template_name': 'generic_list.html'}, 'well_list'),
@@ -52,6 +50,12 @@ urlpatterns = patterns('',
     (r'^run/(?P<object_id>[\d\-a-f]+)/pipetally/grid/$', 'tdsurface.depth.views.run_pipe_tally_grid', {}, 'run_pipe_tally_grid'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/pipetally/grid/edit/$', 'tdsurface.depth.views.run_pipe_tally_grid_edit', {}, 'run_pipe_tally_grid_edit'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/pipetally/grid/delete/$', 'tdsurface.depth.views.run_pipe_tally_grid_delete', {}, 'run_pipe_tally_grid_delete'),
+
+    (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'navigation_template': 'run_detail_menu.html', },'queryset': Run.objects.all(), 'template_name': 'run_manual_depth_grid.html'}, 'run_manual_depth'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/grid/$', 'tdsurface.manual_depth.views.run_manual_depth_grid', {}, 'run_manual_depth_grid'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/grid/edit/$', 'tdsurface.manual_depth.views.run_manual_depth_grid_edit', {}, 'run_manual_depth_grid_edit'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/grid/delete/$', 'tdsurface.manual_depth.views.run_manual_depth_grid_delete', {}, 'run_manual_depth_grid_delete'),
+    
     
     (r'^run/(?P<object_id>[\d\-a-f]+)/rolltest/$', 'tdsurface.depth.views.run_roll_test', {'extra_context': {'subtitle':'Run Roll Test', 'navigation_template': 'run_detail_menu.html'}, }, 'run_rolltest'),    
 
@@ -63,6 +67,9 @@ urlpatterns = patterns('',
     (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/(?P<num_skip>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_detail_menu.html',} }, 'run_wits0_latest'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_detail_menu.html',} }, 'run_wits0_latest'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/log/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_detail_menu.html',} }, 'run_wits0_latest'),
+
+    (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/depth/mwdlog/$', 'tdsurface.depth.views.wits0_depth_to_mwdlog', {}, 'run_wits0_depth_to_mwdlog'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/mwdlog/$', 'tdsurface.manual_depth.views.manual_depth_to_mwdlog', {}, 'run_manual_depth_to_mwdlog'),
 
     (r'^run/(?P<object_id>[\d\-a-f]+)/real_time_json/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_real_time_json', {}, 'run_real_time_json'),
 

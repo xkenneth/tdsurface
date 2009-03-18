@@ -9,10 +9,11 @@
 
 $(document).ready(im_ready);
 
+var temperature_gauge = 0;
 var azimuth_gauge = 0;
 var inclination_gauge = 0;
 var toolface_gauge = 0;
-//var temp_gauge = 0;
+
 
 function sensors_callback(data, textStatus)
 {
@@ -44,6 +45,16 @@ function sensors_callback(data, textStatus)
         }
         needle = 'needle' + (i + 1);             
         inclination_gauge[needle].setValue(180.0 - data.inclination[i].toFixed(1));
+    }
+
+    if( data.temperature.length )
+    {
+        c = (data.temperature[0].toFixed(1) - 32) * 5/9
+        temperature_gauge['needle2'].setValue(data.temperature[0].toFixed(1));
+        $("#temperature_f").text(data.temperature[0].toFixed(1));
+
+        temperature_gauge['needle1'].setValue(c.toFixed(1));
+        $("#temperature_c").text(c.toFixed(1));
     }
     
     if( data.gamma.length)
@@ -110,17 +121,18 @@ function sensors_callback(data, textStatus)
 }
  
 function get_sensors()
-{    
+{
+    {% if active_run %} 
     $.getJSON("{% url run_real_time_json active_run 5 %}", sensors_callback);
-   
+    {% endif %}
 }
 
 function im_ready()
-{    
+{
+    temperature_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/temperature_dh.xml", "temperature_gauge_div"); 
     azimuth_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/azimuth_multi.xml", "azimuth_gauge_div");
     inclination_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/inclination_multi.xml", "inclination_gauge_div");
-    toolface_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/toolface_multi.xml", "toolface_gauge_div");
-    //temp_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/temperature.xml", "temp_gauge_div");
+    toolface_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/toolface_multi.xml", "toolface_gauge_div");    
     get_sensors();
 }
 </script>     
@@ -143,36 +155,51 @@ function im_ready()
 {% endblock navigation %}
 
 {% block body %}
-<table >
+
+{% if active_run %}
+<table border="0">
     <tr>
-        <th colspan="6">Active Run Real Time Readings</th>
+        <th colspan="5">Active Run Real Time Readings</th>
     </tr>
-    <tr>                    
+    <tr>
+        <th>Temperature</th>              
         <th>Azimuth</th>
         <th>Inclination</th>
-        <th>Tool Face</th>
-        <th>Gamma Ray</th>
+        <th>Tool Face</th>        
     </tr>    
-    <tr>        
+    <tr>
+        <td align="center"><span id="temperature_c"></span>C&deg;  <span id="temperature_f"></span>F&deg;</td>
         <td align="center"><span id="azimuth"></span>&deg;</td>
         <td align="center"><span id="inclination"></span>&deg; </td>
         <td align="center"><span id="toolface"></span>&deg; </td>
-        <td rowspan="2" valign="top" id="gamma_ray"></td>     
+             
     </tr>    
-    <tr>        
+    <tr>
+        <td><div id="temperature_gauge_div" style="width: 175px; height: 175px"></div></td>
         <td><div id="azimuth_gauge_div" style="width: 175px; height: 175px"></div></td>
         <td><div id="inclination_gauge_div" style="width: 175px; height: 175px"></div></td>
         <td><div id="toolface_gauge_div" style="width: 175px; height: 175px"></div></td>        
     </tr>    
     <tr>
-        <th>Hole Depth</th><th>Bit Depth</th><th>Weight-on-Bit</th><th>Mud Flow In</th>
+        <th>Hole Depth</th>
+        <th>Bit Depth</th>
+        <th>Weight-on-Bit</th>
+        <th>Mud Flow In</th>        
     </tr>
     <tr>
         <td id="hole_depth"></td>
         <td id="bit_depth"></td>        
         <td id="weight_on_bit"></td>
         <td id="mud_flow_in"></td>
+        
+    </tr>
+    <tr>
+        <th>Gamma Ray</th>
+    </tr>
+    <tr>
+        <td id="gamma_ray"></td>
     </tr>
     
-</table>    
+</table>
+{% endif %}
 {% endblock body %}

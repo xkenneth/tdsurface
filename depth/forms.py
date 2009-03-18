@@ -49,8 +49,8 @@ class RunForm(ModelForm) :
                 'all': (form_css,)
         }
 
-    start_time = forms.DateTimeField(widget = DynarchDateTimeWidget(datetime_button_html))
-    end_time = forms.DateTimeField(required=False, widget = DynarchDateTimeWidget(datetime_button_html))
+    start_time = forms.DateTimeField(label="Start Time (UTC)", widget = DynarchDateTimeWidget(datetime_button_html))
+    end_time = forms.DateTimeField(label = "End Time (UTC)", required=False, widget = DynarchDateTimeWidget(datetime_button_html))
 
 class RunNotesForm(forms.Form) :
     
