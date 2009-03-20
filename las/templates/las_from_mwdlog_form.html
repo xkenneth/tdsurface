@@ -21,11 +21,28 @@ function manual_depth_2_mwdlog_click()
     location='{% url run_manual_depth_to_mwdlog object.pk %}';
 }
 
+function wits0_depth_2_rtlog_click()
+{
+    $(this).html('Please Wait');
+    $(this).attr("disabled","disabled");
+    location='{% url run_wits0_depth_to_rtlog object.pk %}';
+}
+
+function manual_depth_2_rtlog_click()
+{
+    $(this).html('Please Wait');
+    $(this).attr("disabled","disabled");
+    location='{% url run_manual_depth_to_rtlog object.pk %}';
+}
+
 
 function install_events()
 {
     $("#wits0_depth_2_mwdlog").click(wits0_depth_2_mwdlog_click);
     $("#manual_depth_2_mwdlog").click(manual_depth_2_mwdlog_click);
+
+    $("#wits0_depth_2_rtlog").click(wits0_depth_2_rtlog_click);
+    $("#manual_depth_2_rtlog").click(manual_depth_2_rtlog_click);
 }
 
 $(document).ready(install_events);
@@ -43,17 +60,52 @@ $(document).ready(install_events);
 
 {% block body %}
 
+<table cellpadding="5">
+    <tr>
+        <th>
+        Tool Log
+        </th>
+        <th>
+        Real Time Log
+        </th>
+    </tr>
+    <tr>
+        <td>
+
 <ul style="list-style: none; margin-left: 0; padding-left:0;">
-    <li style="padding-bottom: 10px;"><button id="wits0_depth_2_mwdlog">WITS0 Depth >> MWD Log</button></li>
-    <li style="padding-bottom: 10px;"><button id="manual_depth_2_mwdlog">Manual Depth >> MWD Log</button></li>
+    <li style="padding-bottom: 10px;"><button id="wits0_depth_2_mwdlog">WITS0 Depth >> Tool Log</button></li>
+    <li style="padding-bottom: 10px;"><button id="manual_depth_2_mwdlog">Manual Depth >> Tool Log</button></li>
 </ul>
 
-
+        </td>
+        <td>
+<ul style="list-style: none; margin-left: 0; padding-left:0;">
+    <li style="padding-bottom: 10px;"><button id="wits0_depth_2_rtlog">WITS0 Depth >> Real Time Log</button></li>
+    <li style="padding-bottom: 10px;"><button id="manual_depth_2_rtlog">Manual Depth >> Real Time Log</button></li>
+</ul>        
+        </td>
+    </tr>
+    <tr>
+        <td valign="top">
 Select curves to include.<br>
 Note: The first curve will be Depth.
-<form method="POST" action=".">
-{{ form.as_p }}
+<form method="POST" action="{% url las_from_mwdlog object.pk%}" >
+{{ mwdform.as_p }}
 <input id="submit" value="Generate LAS File" type="submit">
 </form>
+
+        </td>
+        <td valign="top">
+Select curves to include.<br>
+Note: The first curve will be Depth.
+<form method="POST" action="{% url las_from_rtlog object.pk%}">
+{{ rtform.as_p }}
+<input id="submit" value="Generate LAS File" type="submit">
+</form>        
+        </td>
+    </tr>
+</table>
+
+
 
 {% endblock body %}

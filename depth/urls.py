@@ -70,6 +70,8 @@ urlpatterns = patterns('',
 
     (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/depth/mwdlog/$', 'tdsurface.depth.views.wits0_depth_to_mwdlog', {}, 'run_wits0_depth_to_mwdlog'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/mwdlog/$', 'tdsurface.manual_depth.views.manual_depth_to_mwdlog', {}, 'run_manual_depth_to_mwdlog'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/depth/rtlog/$', 'tdsurface.depth.views.wits0_depth_to_rtlog', {}, 'run_wits0_depth_to_rtlog'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/rtlog/$', 'tdsurface.manual_depth.views.manual_depth_to_rtlog', {}, 'run_manual_depth_to_rtlog'),
 
     (r'^run/(?P<object_id>[\d\-a-f]+)/real_time_json/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_real_time_json', {}, 'run_real_time_json'),
 

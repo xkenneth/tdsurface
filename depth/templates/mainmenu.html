@@ -116,6 +116,18 @@ function sensors_callback(data, textStatus)
         html += '</table>';
         $('#mud_flow_in').html(html);
     }
+
+    if(data.rop.length)
+    {
+        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
+        for (var i=0; i<data.rop.length; i++)
+        {
+            html += "<tr><td>" + data.rop[i]['timestamp'] + '</td><td align="right">' + data.rop[i]['value'] + '</td></tr>';
+            
+        }
+        html += '</table>';
+        $('#rop').html(html);
+    }
     
     window.setTimeout(get_sensors,10000);
 }
@@ -195,9 +207,11 @@ function im_ready()
     </tr>
     <tr>
         <th>Gamma Ray</th>
+        <th>Rate of Penetration (avg)</th>
     </tr>
     <tr>
         <td id="gamma_ray"></td>
+        <td id="rop"></td>
     </tr>
     
 </table>

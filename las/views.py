@@ -9,10 +9,11 @@ from las.headers import *
 from datetime import date, datetime
 
 from tdsurface.depth.models import ToolMWDLog
+from tdsurface.depth.models import ToolMWDRealTime
 from tdsurface.depth.models import Run
 from tdsurface.las.forms import *
 
-
+LASNULL = '-9999'
 
 def las_test(request) :
     """Generates a test LAS file from test data"""
@@ -59,7 +60,7 @@ def las_from_mwdlog(request, object_id) :
                 Descriptor(mnemonic="STRT", unit="FT", data=str(mwdlog_agg['depth__min'])),
                 Descriptor(mnemonic="STOP", unit="FT", data=str(mwdlog_agg['depth__max'])),
                 Descriptor(mnemonic="STEP", unit="S", data="0"),
-                Descriptor(mnemonic="NULL", data = "9999", description="Null Value"),
+                Descriptor(mnemonic="NULL", data = LASNULL, description="Null Value"),
                 Descriptor(mnemonic="COMP", data=run.well_bore.well.operator, description="Company"),
                 Descriptor(mnemonic="WELL", data=run.well_bore.well.name, description="Well Name"),
                 Descriptor(mnemonic="FLD", data=run.well_bore.well.field, description="Field Name"),
@@ -189,4 +190,110 @@ def las_from_mwdlog(request, object_id) :
     else:
         form = LasFromMWDLogForm() # An unbound form
 
-    return render_to_response('las_from_mwdlog_form.html', {'form': form, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    
+    rtform = LasFromRTLogForm()
+    return render_to_response('las_from_mwdlog_form.html', {'mwdform': form, 'rtform': rtform, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    
+
+
+def las_from_rtlog(request, object_id) :
+    """Generates a LAS file of the Real Time Log for a given run"""
+
+    run = Run.objects.get(pk=object_id)
+    if request.method == 'POST': # If the form has been submitted...
+        form = LasFromRTLogForm(request.POST) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass    
+            
+            type = []
+            rtlog = ToolMWDRealTime.objects.filter(run=object_id, depth__gt=0).order_by('depth')
+
+            rtlog_agg = ToolMWDRealTime.objects.filter(run=object_id, depth__gt=0).aggregate(Min('depth'), Max('depth'))
+            well_headers = [
+                Descriptor(mnemonic="STRT", unit="FT", data=str(rtlog_agg['depth__min'])),
+                Descriptor(mnemonic="STOP", unit="FT", data=str(rtlog_agg['depth__max'])),
+                Descriptor(mnemonic="STEP", unit="S", data="0"),
+                Descriptor(mnemonic="NULL", data = LASNULL, description="Null Value"),
+                Descriptor(mnemonic="COMP", data=run.well_bore.well.operator, description="Company"),
+                Descriptor(mnemonic="WELL", data=run.well_bore.well.name, description="Well Name"),
+                Descriptor(mnemonic="FLD", data=run.well_bore.well.field, description="Field Name"),
+                Descriptor(mnemonic="LOC", data=' ', description="Location"),
+                Descriptor(mnemonic="CNTY", data=run.well_bore.well.county, description="County"),
+                Descriptor(mnemonic="STAT", data=run.well_bore.well.state, description="State"),
+                Descriptor(mnemonic="CTRY", data=run.well_bore.well.country, description="Country"),
+                Descriptor(mnemonic="SRVC", data="TeleDrill", description="Service Company"),
+                Descriptor(mnemonic="API", data=run.well_bore.well.api_number, description="API Number"),
+                Descriptor(mnemonic="RUN", data=str(run).replace(':',' '), description="Run Name"),
+                Descriptor(mnemonic="RUNID", data=run.pk, description="Run Id"),
+                Descriptor(mnemonic="DATE", data=run.start_time.date().isoformat(), description="Log Start Date")
+                ]
+
+            curves = [LasCurve(Descriptor(mnemonic="DEPT", unit="ft", description="Bit Depth"), [])]
+            curve_headers = [Descriptor(mnemonic="DEPT", unit="ft", description="Bit Depth"),]
+                
+            if form.cleaned_data['status'] :
+                d = Descriptor(mnemonic="STAT", unit="", description="Tool Status")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,[])) 
+                type.append('status')
+                
+            if form.cleaned_data['temperature_f'] :
+                d = Descriptor(mnemonic="TMP", unit="degF", description="Temperature")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,[]))
+                type.append('temperature')
+
+            if form.cleaned_data['temperature_c'] :
+                d = Descriptor(mnemonic="TMP", unit="degC", description="Temperature")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,[]))
+                
+            if form.cleaned_data['gamma_ray'] :
+                d = Descriptor(mnemonic="GR", unit="CPS", description="Gamma Rate counts/second")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,[]))
+                type.append('gammaray')
+                                    
+            if form.cleaned_data['gravity'] :
+                d = Descriptor(mnemonic="GT", unit="", description="Total Gravity")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[]))
+                type.append('g')
+                        
+            if form.cleaned_data['magnetic'] :
+                d = Descriptor(mnemonic="HT", unit="", description="Total Magnetic")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[]))
+                type.append('H')
+
+            if form.cleaned_data['azimuth'] :
+                d = Descriptor(mnemonic="AZI", unit="DEG", description="Azimuth")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[]))
+                type.append('azimuth')
+
+            if form.cleaned_data['inclination'] :
+                d = Descriptor(mnemonic="INCL", unit="DEG", description="Inclination")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[]))
+                type.append('inclination')
+
+            if form.cleaned_data['tool_face'] :
+                d = Descriptor(mnemonic="TF", unit="DEG", description="Tool Face")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[]))
+                type.append('toolface')
+
+                        
+            
+            for l in rtlog :
+                for c in curve_headers :
+                    pass
+                        
+            
+            lf = LasFile(VersionHeader("2.0", False), WellHeader(well_headers), CurveHeader(curve_headers), ParameterHeader([]), curves)
+
+            return HttpResponse(lf.to_las(), mimetype="text/plain")
+
+    else:
+        logform = LasFromMWDLogForm() # An unbound form
+
+    mwdform = LasFromMWDLogForm()
+    return render_to_response('las_from_mwdlog_form.html', {'mwdform': mwdform, 'rtform': form, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    

@@ -755,6 +755,8 @@ def run_real_time_json(request, object_id, num_latest=5) :
     [weight_on_bit.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
     mud_flow_in = []
     [mud_flow_in.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
+    rop = []
+    [rop.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=13).order_by('-time_stamp')[:num_latest] ]
     
     data =  {
         'azimuth': azimuth,
@@ -766,6 +768,7 @@ def run_real_time_json(request, object_id, num_latest=5) :
         'bit_depth': bit_depth,        
         'weight_on_bit': weight_on_bit,
         'mud_flow_in': mud_flow_in,
+        'rop': rop,
         }
     
     data = simplejson.dumps(data)   
@@ -912,4 +915,32 @@ def wits0_depth_to_mwdlog(request, object_id) :
     return HttpResponseRedirect(reverse('las_from_mwdlog', args=[object_id]))    
 
 
+def wits0_depth_to_rtlog(request, object_id) :
+    run = Run.objects.get(pk=object_id)
+
+    logs = ToolMWDRealTime.objects.filter(run=run)
+
+    for l in logs :
+        time_stamp = l.time_stamp
+        try :            
+            lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
+            higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
+        except:
+            continue
+
+        # Linear Interpolation where x = seconds and y = depth    
+        x = time.mktime(time_stamp.timetuple())
+        xa = time.mktime(lower.time_stamp.timetuple())
+        xb = time.mktime(higher.time_stamp.timetuple())
+
+        ya = float(lower.value)
+        yb = float(higher.value)
+        
+        y = ya + ((x - xa) * (yb - ya))/(xb - xa)
+
+        l.depth=str(y)
+        l.depth_units='ft'
+        l.save()
+
+    return HttpResponseRedirect(reverse('las_from_mwdlog', args=[object_id]))    
     
