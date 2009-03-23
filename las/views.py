@@ -99,7 +99,7 @@ def las_from_mwdlog(request, object_id) :
                 curves.append(LasCurve(d,[l.temperature_c() for l in mwdlog]))
                 
             if form.cleaned_data['gamma_ray_0'] :
-                d = Descriptor(mnemonic="GR0", unit="CPS", description="Gamma Rate counts/second first quarter logging cycle")
+                d = Descriptor(mnemonic="GR0", unit="CPS", description="Gamma Ray counts/second first quarter logging cycle")
                 curve_headers.append(d)
                 curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma0*2/10000.0 ) * 2),1)  for l in mwdlog]))
             
@@ -203,6 +203,7 @@ def las_from_rtlog(request, object_id) :
         if form.is_valid(): # All validation rules pass    
             
             type = []
+        
             rtlog = ToolMWDRealTime.objects.filter(run=object_id, depth__gt=0).order_by('depth')
 
             rtlog_agg = ToolMWDRealTime.objects.filter(run=object_id, depth__gt=0).aggregate(Min('depth'), Max('depth'))
@@ -239,14 +240,9 @@ def las_from_rtlog(request, object_id) :
                 curve_headers.append(d)
                 curves.append(LasCurve(d,[]))
                 type.append('temperature')
-
-            if form.cleaned_data['temperature_c'] :
-                d = Descriptor(mnemonic="TMP", unit="degC", description="Temperature")
-                curve_headers.append(d)
-                curves.append(LasCurve(d,[]))
                 
             if form.cleaned_data['gamma_ray'] :
-                d = Descriptor(mnemonic="GR", unit="CPS", description="Gamma Rate counts/second")
+                d = Descriptor(mnemonic="GR", unit="CPS", description="Gamma Ray counts/second")
                 curve_headers.append(d)
                 curves.append(LasCurve(d,[]))
                 type.append('gammaray')
@@ -282,12 +278,44 @@ def las_from_rtlog(request, object_id) :
                 type.append('toolface')
 
                         
-            
+            data = {}    
             for l in rtlog :
-                for c in curve_headers :
-                    pass
+                data.setdefault(l.depth,{}).setdefault(l.type,[]).append(float(l.value))
+
+            l = data.items()
+            l.sort()
+            for k,v in l :
+                curves[0].data.append(k)
+                for c in curves[1:] :
+                    if c.descriptor.mnemonic == 'AZI' :
+                        vl = v.get('azimuth',(LASNULL,))                        
+                                                
+                    if c.descriptor.mnemonic == 'INCL' :                        
+                        vl = v.get('inlination',(LASNULL,))                                                
                         
-            
+                    if c.descriptor.mnemonic == 'TF' :                        
+                        vl = v.get('toolface',(LASNULL,))                                                
+                        
+                    if c.descriptor.mnemonic == 'STAT' :                        
+                        vl = v.get('status',(LASNULL,))                                                
+                        
+                    if c.descriptor.mnemonic == 'TMP' :                        
+                        vl = v.get('temperature',(LASNULL,))                                                
+                        
+                    if c.descriptor.mnemonic == 'GR' :                        
+                        vl = v.get('gammaray',(LASNULL,))                                                
+                        
+                    if c.descriptor.mnemonic == 'GT' :                        
+                        vl = v.get('g',(LASNULL,))                                                
+                        
+                    if c.descriptor.mnemonic == 'HT' :                        
+                        vl = v.get('H',(LASNULL,))                                                
+
+                    if len(vl)>1 :
+                        c.data.append(sum(vl)/len(vl))
+                    else :
+                        c.data.append(vl[0])
+                                                    
             lf = LasFile(VersionHeader("2.0", False), WellHeader(well_headers), CurveHeader(curve_headers), ParameterHeader([]), curves)
 
             return HttpResponse(lf.to_las(), mimetype="text/plain")

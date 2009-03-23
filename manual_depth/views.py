@@ -61,12 +61,11 @@ def manual_depth_to_rtlog(request, object_id) :
 
     for l in logs :
         time_stamp = l.time_stamp
-        #try :
-            
-        lower = ManualDepth.objects.filter(run=run, time_stamp__lte = time_stamp ).order_by('-time_stamp')[0]
-        higher = ManualDepth.objects.filter(run=run, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
-        #except:
-        #    continue
+        try :
+            lower = ManualDepth.objects.filter(run=run, time_stamp__lte = time_stamp ).order_by('-time_stamp')[0]
+            higher = ManualDepth.objects.filter(run=run, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
+        except:
+            continue
 
         # Linear Interpolation where x = seconds and y = depth    
         x = mktime(time_stamp.timetuple())

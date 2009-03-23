@@ -49,14 +49,14 @@ function sensors_callback(data, textStatus)
 
     if( data.temperature.length )
     {
-        c = (data.temperature[0].toFixed(1) - 32) * 5/9
+        c = (data.temperature[0].toFixed(1) - 32) * 5/9;
         temperature_gauge['needle2'].setValue(data.temperature[0].toFixed(1));
         $("#temperature_f").text(data.temperature[0].toFixed(1));
 
         temperature_gauge['needle1'].setValue(c.toFixed(1));
         $("#temperature_c").text(c.toFixed(1));
     }
-    
+
     if( data.gamma.length)
     {
         html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
@@ -68,67 +68,23 @@ function sensors_callback(data, textStatus)
         html += '</table>';
         $('#gamma_ray').html(html);
     }
-    
-    if(data.hole_depth.length)
-    {
-        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
-        for (var i=0; i<data.hole_depth.length; i++)
-        {
-            html += "<tr><td>" + data.hole_depth[i]['timestamp'] + '</td><td align="right">' + data.hole_depth[i]['value'] + '</td></tr>';
-            
-        }
-        html += '</table>';
-        $('#hole_depth').html(html);
-    }
-    
-    if(data.bit_depth.length)
-    {
-        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
-        for (var i=0; i<data.bit_depth.length; i++)
-        {
-            html += "<tr><td>" + data.bit_depth[i]['timestamp'] + '</td><td align="right">' + data.bit_depth[i]['value'] + '</td></tr>';
-            
-        }
-        html += '</table>';
-        $('#bit_depth').html(html);
-    }
-    
-    if(data.weight_on_bit.length)
-    {
-        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
-        for (var i=0; i<data.weight_on_bit.length; i++)
-        {
-            html += "<tr><td>" + data.weight_on_bit[i]['timestamp'] + '</td><td align="right">' + data.weight_on_bit[i]['value'] + '</td></tr>';
-            
-        }
-        html += '</table>';
-        $('#weight_on_bit').html(html);
-    }
 
-    if(data.mud_flow_in.length)
+    html = "<table><tr><th>Time Stamp</th><th>Hole Depth</th><th>Bit Depth</th><th>Weight-on-Bit</th><th>Mud Flow In</th><th>ROP</th></tr>";            
+    for(var i=0; i<data.hole_depth.length; i++)
     {
-        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
-        for (var i=0; i<data.mud_flow_in.length; i++)
-        {
-            html += "<tr><td>" + data.mud_flow_in[i]['timestamp'] + '</td><td align="right">' + data.mud_flow_in[i]['value'] + '</td></tr>';
-            
-        }
-        html += '</table>';
-        $('#mud_flow_in').html(html);
+        html += "<tr>";
+        html += "<td>" + data.hole_depth[i]['timestamp'] + '</td>';
+        html += '<td align="right">' + data.hole_depth[i]['value'] + '</td>';
+        html += '<td align="right">' + data.bit_depth[i]['value'] + '</td>';
+        html += '<td align="right">' + data.weight_on_bit[i]['value'] + '</td>';
+        html += '<td align="right">' + data.mud_flow_in[i]['value'] + '</td>';
+        html += '<td align="right">' + data.rop[i]['value'] + '</td>';
+        html += '</tr>';
     }
-
-    if(data.rop.length)
-    {
-        html = '<table><tr><th>Time Stamp</th><th>Value</th></tr>';    
-        for (var i=0; i<data.rop.length; i++)
-        {
-            html += "<tr><td>" + data.rop[i]['timestamp'] + '</td><td align="right">' + data.rop[i]['value'] + '</td></tr>';
-            
-        }
-        html += '</table>';
-        $('#rop').html(html);
-    }
+    html += "<table>";
+    $('#wits0').html(html);             
     
+        
     window.setTimeout(get_sensors,10000);
 }
  
@@ -171,13 +127,15 @@ function im_ready()
 {% if active_run %}
 <table border="0">
     <tr>
-        <th colspan="5">Active Run Real Time Readings</th>
+        <th colspan="4">Active Run Real Time Readings</th>
+        <th>Gamma Ray</th>
     </tr>
     <tr>
         <th>Temperature</th>              
         <th>Azimuth</th>
         <th>Inclination</th>
-        <th>Tool Face</th>        
+        <th>Tool Face</th>
+        <td rowspan="4" id="gamma_ray" valign="top"></td>        
     </tr>    
     <tr>
         <td align="center"><span id="temperature_c"></span>C&deg;  <span id="temperature_f"></span>F&deg;</td>
@@ -193,27 +151,12 @@ function im_ready()
         <td><div id="toolface_gauge_div" style="width: 175px; height: 175px"></div></td>        
     </tr>    
     <tr>
-        <th>Hole Depth</th>
-        <th>Bit Depth</th>
-        <th>Weight-on-Bit</th>
-        <th>Mud Flow In</th>        
+        <th colspan="4">WITS0 Data</th>
     </tr>
     <tr>
-        <td id="hole_depth"></td>
-        <td id="bit_depth"></td>        
-        <td id="weight_on_bit"></td>
-        <td id="mud_flow_in"></td>
-        
+        <td colspan="4" id="wits0">
+        </td>
     </tr>
-    <tr>
-        <th>Gamma Ray</th>
-        <th>Rate of Penetration (avg)</th>
-    </tr>
-    <tr>
-        <td id="gamma_ray"></td>
-        <td id="rop"></td>
-    </tr>
-    
 </table>
 {% endif %}
 {% endblock body %}

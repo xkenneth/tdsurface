@@ -36,8 +36,7 @@ class LasFromRTLogForm(forms.Form) :
         }
     
     status = forms.BooleanField(required=False)
-    temperature_f = forms.BooleanField(required=False)
-    temperature_c = forms.BooleanField(required=False)    
+    temperature_f = forms.BooleanField(required=False)    
     gamma_ray = forms.BooleanField(required=False)
     azimuth = forms.BooleanField(required=False)
     inclination = forms.BooleanField(required=False)

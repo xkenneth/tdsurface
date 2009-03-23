@@ -743,20 +743,21 @@ def run_real_time_json(request, object_id, num_latest=5) :
     inclination = []
     [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='inclination').order_by('-time_stamp')[:num_latest] ]
     gamma = []
-    [gamma.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='gammaray').order_by('-time_stamp')[:num_latest] ]
+    [gamma.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='gammaray').order_by('-time_stamp')[:num_latest*10] ]
     temperature = []
     [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='temperature').order_by('-time_stamp')[:num_latest] ]
 
+
     hole_depth = []
-    [hole_depth.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
+    [hole_depth.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
     bit_depth = []
-    [bit_depth.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=8).order_by('-time_stamp')[:num_latest] ]    
+    [bit_depth.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=8).order_by('-time_stamp')[:num_latest] ]    
     weight_on_bit = []
-    [weight_on_bit.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
+    [weight_on_bit.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
     mud_flow_in = []
-    [mud_flow_in.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
+    [mud_flow_in.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
     rop = []
-    [rop.append({'timestamp': x.time_stamp.strftime('%H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=13).order_by('-time_stamp')[:num_latest] ]
+    [rop.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=13).order_by('-time_stamp')[:num_latest] ]
     
     data =  {
         'azimuth': azimuth,
