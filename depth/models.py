@@ -545,5 +545,8 @@ class WITS0(models.Model) :
         except :
             return None
         return desc
-    
+
+    def __unicode__(self) :
+        return self.description() + " " + str(self.value)
+        
 admin.site.register(WITS0) 

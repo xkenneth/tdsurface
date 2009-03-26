@@ -83,9 +83,22 @@ function sensors_callback(data, textStatus)
     }
     html += "<table>";
     $('#wits0').html(html);             
+
+
+    var img = new Image();
+    var uniq = new Date();
+    uniq = uniq.getTime(); // Generate time string
+    $(img).load(function () {
+            //$(this).css('display', 'none'); // .hide() doesn't work in Safari when the element isn't on the DOM already
+            $(this).hide();
+            $('#loader').empty().append(this);
+            $(this).fadeIn();
+            //$(this).show();
+        }).error(function () {
+            //alert("Error loading Gamma Ray graph");
+        }).attr('src', '{% url plot_realtime_gammaray active_run %}'+'?'+uniq);
     
-        
-    window.setTimeout(get_sensors,10000);
+    window.setTimeout(get_sensors,60000);
 }
  
 function get_sensors()
@@ -127,15 +140,16 @@ function im_ready()
 {% if active_run %}
 <table border="0">
     <tr>
-        <th colspan="4">Active Run Real Time Readings</th>
-        <th>Gamma Ray</th>
+        <td valign="top">
+<table border="0">
+    <tr>
+        <th colspan="4">Active Run Real Time Readings</th>        
     </tr>
     <tr>
         <th>Temperature</th>              
         <th>Azimuth</th>
         <th>Inclination</th>
         <th>Tool Face</th>
-        <td rowspan="4" id="gamma_ray" valign="top"></td>        
     </tr>    
     <tr>
         <td align="center"><span id="temperature_c"></span>C&deg;  <span id="temperature_f"></span>F&deg;</td>
@@ -158,5 +172,11 @@ function im_ready()
         </td>
     </tr>
 </table>
+
+        </td>
+        <td valign="top"> <div id="loader"></div></td>
+    </tr>
+</table>
+
 {% endif %}
 {% endblock body %}
