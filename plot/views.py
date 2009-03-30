@@ -70,42 +70,37 @@ from datetime import timedelta
 from time import mktime
 from django.db.models import Avg, Max, Min, Count
 from django.shortcuts import render_to_response
+import pytz
 
 def plot_realtime_gammaray(request, object_id) :
 
     run = Run.objects.get(pk=object_id)
-    
-    x1 = []
-    x2 = []
-    y = []
+    wltz = pytz.timezone(run.well_bore.well.timezone)
+    depths = []    
+    times = []
 
-    hoursago = datetime.utcnow() - timedelta(hours=12)
-    r = ToolMWDRealTime.objects.filter(run=run, type='gammaray', value__gt=0, value__lt=500, time_stamp__gt=hoursago).order_by('-time_stamp')
-    ragg = ToolMWDRealTime.objects.filter(run=run, type='gammaray', value__gt=0, value__lt=500, time_stamp__gt=hoursago).aggregate(Min('time_stamp'), Max('time_stamp'))
+    ragg = ToolMWDRealTime.objects.filter(run=run, type='gammaray').aggregate(Max('time_stamp'))
+    hoursago = (ragg['time_stamp__max'] or datetime.utcnow()) - timedelta(hours=12)
+    r = ToolMWDRealTime.objects.filter(run=run, type='gammaray', time_stamp__gt=hoursago).order_by('-time_stamp')    
 
-    interval=5
-
-    # System goes to 100% memory used 0-1 points are plotted
+    # System goes to 100% memory used if 0-1 points are plotted
     if len(r) < 2 :
         return render_to_response('message.html', {'message': 'No Data to graph'})
     
-    delta = ragg['time_stamp__max'] - ragg['time_stamp__min']
-    minutes = (delta.seconds+(delta.days*24*60*60))/60
-    interval = max(minutes/10,interval)    
-    #print '%d:%d' % (minutes, interval)
-    
-    [x1.append(v.value) for v in r]    
-    [y.append(v.time_stamp) for v in r]    
+    [depths.append(v.value) for v in r]    
+    [times.append(v.time_stamp) for v in r]    
 
     def depth_formatter(time_stamp, arg2) :
-        time_stamp=matplotlib.dates.num2date(time_stamp)
-        time_stamp=time_stamp.replace(tzinfo=None)     
+        time_stamp = matplotlib.dates.num2date(time_stamp)
+        time_stamp = time_stamp.replace(tzinfo=None)
+        wlt = pytz.utc.localize(time_stamp).astimezone(wltz).replace(tzinfo=None)
+        ftime = wlt.strftime('%H:%M')
         
         try :            
             lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
             higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
         except:            
-            return 'No Depth'
+            return '%s / No Dpth' % ftime
 
         # Linear Interpolation where x = seconds and y = depth    
         x = mktime(time_stamp.timetuple())
@@ -117,38 +112,29 @@ def plot_realtime_gammaray(request, object_id) :
         
         depth = ya + ((x - xa) * (yb - ya))/(xb - xa)
         
-        return time_stamp.strftime('%H:%M') + ' ' + str(int(depth))
+        return '%s / %s' % (ftime, str(int(depth)) )
 
     fig = Figure()
     canvas = FigureCanvas(fig)
-    #ax = fig.add_subplot(111)
-    #ax = fig.add_axes([0.23, 0.08 ,0.7 ,0.87])
-    ax = fig.add_axes([0.40, 0.08 ,0.55 ,0.85])
-    ax.plot(x1, y)
+    ax = fig.add_axes([0.4, 0.08 ,0.55 ,0.85])
+    ax.plot(depths, times)
     ax.set_title('Gamma Ray')
     ax.grid(True)
     ax.set_xlabel('Gamma Ray (counts/sec)')
     ax.set_ylabel('Time / Depth (ft)')    
     formatter = dates.DateFormatter('%H:%M') 
-    ax.yaxis.set_major_formatter(FuncFormatter(depth_formatter))
-    #ax.yaxis.set_major_locator( MinuteLocator( interval=interval ) )
+    ax.yaxis.set_major_formatter(FuncFormatter(depth_formatter))    
+    ax.yaxis.set_major_locator( LinearLocator( numticks=10 ) )
     ax.xaxis.set_major_locator( LinearLocator( numticks=5 ) )
     
     fontsize=8
-    #for tick in ax.xaxis.get_major_ticks():
-    #    tick.label1.set_fontsize(fontsize)
-    #for tick in ax.yaxis.get_major_ticks():
-    #    tick.label1.set_fontsize(fontsize)
 
     for o in fig.findobj(text.Text) :
-        o.set_fontsize(8)
-
-    #fig.subplots_adjust(left=0.25)    
-    fig.set_size_inches( (2.5, 5) )
+        o.set_fontsize(fontsize)
+    
+    fig.set_size_inches( (3, 5) )
         
     filename = settings.MEDIA_ROOT + '/images/gammaray_rt.png'
     fig.savefig(filename)
-     
-    #data = simplejson.dumps({'filename': filename})       
-    #return HttpResponse(data, mimetype="application/javascript")
+         
     return HttpResponseRedirect('/tdsurface/media/images/gammaray_rt.png')

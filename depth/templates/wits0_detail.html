@@ -11,6 +11,7 @@
 {% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
 
 {% block body %}
+{% load utc2tz %}
 
 <table class="hilightrow">
     <tr>
@@ -36,7 +37,7 @@
     
 {% for wit in wits %}    
     <tr>
-        <td>{{ wit.time_stamp }} </td>
+        <td>{{ wit.time_stamp|utc2tz:run.well_bore.well.timezone }} </td>
         <td align="right">{{ wit.recid}} </td>
         <td align="right">{{ wit.itemid }} </td>
         <td>{{ wit.description|default:"Unknown" }} </td>

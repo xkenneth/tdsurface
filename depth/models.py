@@ -2,11 +2,13 @@ from django.db import models
 from django.contrib import admin
 from django.contrib.localflavor.us.models import USStateField
 import uuid
+from pytz import common_timezones
 
 from math import sqrt
 
 LENGTH_UNIT_CHOICES = (('m','meters'), ('ft','feet'))
 TEMP_UNIT_CHOICES = (('F','Fahrenheit'), ('C','Celsius'))
+TIMEZONE_CHOICES =  [(x,x) for x in common_timezones if x.startswith( 'US/' )]
 
 WITS0_NAMES = {1:{
     1:'Well Identifier',
@@ -146,7 +148,7 @@ class Well(models.Model) :
     country = models.CharField(max_length=255, null=True, blank=True)
     state = USStateField(blank=True, null=True)
     county = models.CharField(max_length=255, null=True, blank=True)    
-    timezone = models.CharField(max_length=255, null=True, blank=True)
+    timezone = models.CharField(max_length=255, null=True, blank=False, choices = TIMEZONE_CHOICES)
     operator = models.CharField(max_length=255, null=True, blank=True)
     division = models.CharField(max_length=255, null=True, blank=True)
     interest = models.PositiveIntegerField(blank=True, null=True)

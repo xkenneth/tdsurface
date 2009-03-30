@@ -63,16 +63,17 @@ function status()
 {% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
 
 {% block body %}
+{% load utc2tz %}
 
 <table class="hilightrow">
     <tr>
         <th>Run</th><td>{{ object.name }} </td>
     </tr>
     <tr>
-        <th>Start Time</th><td>{{ object.start_time}} </td>
+        <th>Start Time</th><td>{{ object.start_time|utc2tz:object.well_bore.well.timezone}} </td>
     </tr>
     <tr>
-        <th>End Time</th><td>{{ object.end_time }} </td>
+        <th>End Time</th><td>{{ object.end_time|utc2tz:object.well_bore.well.timezone }} </td>
     </tr>
     <tr>
         <th>Well</th><td>{{ object.well_bore.well }} </td>

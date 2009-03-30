@@ -74,6 +74,7 @@ function im_ready()
 {% block subtitle %}<h3>Roll Test - {{ object }} - {{ object.tool_calibration.tool }}</h3>{% endblock subtitle %}
 
 {% block body %}
+{% load utc2tz %}
 
 <table >
     <tr>
@@ -130,7 +131,7 @@ function im_ready()
 
 {% for rt in rolltest %}
 <tr>
-<td>{{ rt.time_stamp }}</td>
+<td>{{ rt.time_stamp|utc2tz:object.well_bore.well.timezone  }}</td>
 <td>{{ rt.comment }}</td>
 <td>{{ rt.temperature }}</td>
 <td>{{ rt.azimuth }}</td>

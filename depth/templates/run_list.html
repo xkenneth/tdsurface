@@ -12,6 +12,8 @@
 
 {% block body %}
 
+{% load utc2tz %}
+
 <table class="hilightrow">
     <tr>
         <th>Run</th>
@@ -26,8 +28,8 @@
 {% for object in object_list %}    
     <tr>
         <td><a href="{% url run_detail object.pk %}">{{ object.name }}</a> </td>
-        <td><a href="{% url run_detail object.pk %}">{{ object.start_time}}</a> </td>
-        <td><a href="{% url run_detail object.pk %}">{{ object.end_time }}</a> </td>
+        <td><a href="{% url run_detail object.pk %}">{{ object.start_time|utc2tz:object.well_bore.well.timezone }}</a> </td>
+        <td><a href="{% url run_detail object.pk %}">{{ object.end_time|utc2tz:object.well_bore.well.timezone }}</a> </td>
         <td><a href="{% url run_detail object.pk %}">{{ object.well_bore.well }}</a> </td>
         <td><a href="{% url run_detail object.pk %}">{{ object.well_bore }}</a> </td>        
         <td>

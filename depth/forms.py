@@ -52,6 +52,19 @@ class RunForm(ModelForm) :
     start_time = forms.DateTimeField(label="Start Time (UTC)", widget = DynarchDateTimeWidget(datetime_button_html))
     end_time = forms.DateTimeField(label = "End Time (UTC)", required=False, widget = DynarchDateTimeWidget(datetime_button_html))
 
+class RunFormForm(forms.Form) :
+    
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+
+    name = forms.CharField()
+    start_time = forms.DateTimeField(label="Start Time", widget = DynarchDateTimeWidget(datetime_button_html))
+    end_time = forms.DateTimeField(label = "End Time", required=False, widget = DynarchDateTimeWidget(datetime_button_html))
+    tool_calibration = forms.ChoiceField(choices = [('','---------')] + [(x.pk,x) for x in ToolCalibration.objects.all().order_by('-time_stamp')])
+    well_bore = forms.ChoiceField(choices=[('','---------')] + [(x.pk,x) for x in WellBore.objects.all().order_by('well')])
+
 class RunNotesForm(forms.Form) :
     
     class Media:

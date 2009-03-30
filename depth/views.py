@@ -16,6 +16,8 @@ import time
 from time import mktime
 from datetime import datetime
 from datetime import timedelta
+from pytz import timezone
+import pytz
 
 from tdsurface.depth.models import *
 from tdsurface.depth.forms import *
@@ -32,9 +34,9 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='/v
 
 
 def test(request) :
-    data = simplejson.dumps({'test': 'foo', 'test2':'bar', })   
-    
-    return HttpResponse(data, mimetype="application/javascript")
+    form = RunFormForm()
+        
+    return render_to_response('generic_form.html', {'form': form,}, context_instance = RequestContext(request))
 
 
 
@@ -514,17 +516,69 @@ def run_activate(request, object_id) :
         
     return HttpResponseRedirect(reverse('run_list'))
 
+def run_create(request, template_name,
+        post_save_redirect, extra_context=None) :
 
+    if request.method == 'POST' :
+        run_form = RunFormForm(request.POST)
+        if run_form.is_valid():
+            well_bore = WellBore.objects.get(pk=run_form.cleaned_data['well_bore'])           
+            ltz = timezone(well_bore.well.timezone)
+            start_time = run_form.cleaned_data['start_time']
+            if start_time :
+                start_time = ltz.localize(start_time).astimezone(pytz.utc).replace(tzinfo=None)
+                
+            end_time = run_form.cleaned_data['end_time']
+            if end_time :
+                end_time = ltz.localize(end_time).astimezone(pytz.utc).replace(tzinfo=None)
+            
+            new_run = Run(name=run_form.cleaned_data['name'],
+                          start_time=start_time,
+                          end_time=end_time,
+                          well_bore=well_bore,
+                          tool_calibration_id = run_form.cleaned_data['tool_calibration'])
+            new_run.save()                            
+            #return render_to_response('message.html', {'message': 'Post Save', 'navigation_template': 'run_menu.html' }, context_instance = RequestContext(request))
+            return HttpResponseRedirect(post_save_redirect % new_run.__dict__)
+    else :
+        run_form = RunFormForm()
+
+    data = { 'form':run_form }
+    for key, value in extra_context.items():
+        if callable(value):
+            data[key] = value()
+        else:
+            data[key] = value    
+    
+    return render_to_response(template_name , data, context_instance = RequestContext(request))
+
+        
 def run_update(request, object_id, extra_context=None,) :
     
     run = Run.objects.get(pk=object_id)
     
     if request.method == 'POST': # If the form has been submitted...
         if request.POST['form_id'] == 'run_update_form' :
-            run_form = RunForm(request.POST, instance=run) # A form bound to the POST data
-            run_notes_form = RunNotesForm(initial = {'run': run.pk,})
-            if run_form.is_valid(): # All validation rules pass
-                run_form.save()            
+            run_form = RunFormForm(request.POST) # A form bound to the POST data
+            run_notes_form = RunNotesForm()
+            if run_form.is_valid(): # All validation rules pass                
+                well_bore = WellBore.objects.get(pk=run_form.cleaned_data['well_bore'])
+                # Convert user entered Well Local Time to to UTC
+                wlt = timezone(well_bore.well.timezone)                
+                start_time = run_form.cleaned_data['start_time']
+                if start_time :
+                    start_time = wlt.localize(start_time).astimezone(pytz.utc).replace(tzinfo=None)
+                    
+                end_time = run_form.cleaned_data['end_time']
+                if end_time :
+                    end_time = wlt.localize(end_time).astimezone(pytz.utc).replace(tzinfo=None)
+                
+                run.name=run_form.cleaned_data['name']
+                run.start_time=start_time
+                run.end_time=end_time
+                run.well_bore=well_bore
+                run.tool_calibration_id = run_form.cleaned_data['tool_calibration']
+                run.save()           
                 return HttpResponseRedirect(reverse('run_update', args=[run.pk]))
         else :
             run_notes_form = RunNotesForm(request.POST) # A form bound to the POST data
@@ -534,8 +588,23 @@ def run_update(request, object_id, extra_context=None,) :
                 run_notes.save()
                 return HttpResponseRedirect(reverse('run_update', args=[run.pk]))
     else:
-        run_form = RunForm(instance = run)
-        run_notes_form = RunNotesForm(initial = {'run': run.pk,})
+        # Converted DB UTC to well local time
+        wlt = timezone(run.well_bore.well.timezone)
+        start_time = run.start_time
+        if start_time :
+            start_time = pytz.utc.localize(start_time).astimezone(wlt).replace(tzinfo=None)
+        end_time = run.end_time
+        if end_time :
+            end_time = pytz.utc.localize(end_time).astimezone(wlt).replace(tzinfo=None)
+        initial = {
+                    'name':run.name,
+                    'start_time':start_time,
+                    'end_time':end_time,
+                    'well_bore':run.well_bore_id,
+                    'tool_calibration':run.tool_calibration_id                    
+                  }
+        run_form = RunFormForm(initial=initial)
+        run_notes_form = RunNotesForm()
 
     run_notes = RunNotes.objects.filter(run=run).order_by('time_stamp')
     
@@ -546,7 +615,7 @@ def run_update(request, object_id, extra_context=None,) :
             data[key] = value()
         else:
             data[key] = value    
-
+    
     return render_to_response('run_update_form.html', data, context_instance = RequestContext(request))
 
 
@@ -735,7 +804,8 @@ def run_real_time_json(request, object_id, num_latest=5) :
 
     run = Run.objects.get(pk=object_id)
     num_latest=int(num_latest)
-
+    wltz = pytz.timezone(run.well_bore.well.timezone)
+    
     azimuth = []
     [azimuth.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='azimuth').order_by('-time_stamp')[:num_latest] ]
     toolface = []
@@ -743,21 +813,22 @@ def run_real_time_json(request, object_id, num_latest=5) :
     inclination = []
     [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='inclination').order_by('-time_stamp')[:num_latest] ]
     gamma = []
-    [gamma.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='gammaray').order_by('-time_stamp')[:num_latest*10] ]
+    
+    [gamma.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='gammaray').order_by('-time_stamp')[:num_latest*10] ]
     temperature = []
     [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='temperature').order_by('-time_stamp')[:num_latest] ]
 
 
     hole_depth = []
-    [hole_depth.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
+    [hole_depth.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
     bit_depth = []
-    [bit_depth.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=8).order_by('-time_stamp')[:num_latest] ]    
+    [bit_depth.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=8).order_by('-time_stamp')[:num_latest] ]    
     weight_on_bit = []
-    [weight_on_bit.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
+    [weight_on_bit.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
     mud_flow_in = []
-    [mud_flow_in.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
+    [mud_flow_in.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
     rop = []
-    [rop.append({'timestamp': x.time_stamp.strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=13).order_by('-time_stamp')[:num_latest] ]
+    [rop.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=13).order_by('-time_stamp')[:num_latest] ]
     
     data =  {
         'azimuth': azimuth,

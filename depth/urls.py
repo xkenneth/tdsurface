@@ -39,9 +39,11 @@ urlpatterns = patterns('',
     (r'^tool/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Tools', 'navigation_template': 'tool_list_menu.html'}, 'queryset': Tool.objects.all(), 'template_name': 'tool_list.html'}, 'tool_list'),
     
     (r'^run/notes/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run Note', 'navigation_template': 'run_menu.html'}, 'form_class': RunNotesForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'run_notes_create'),
-        
-    (r'^run/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'run_create'),
-    (r'^run/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../%(uid)s/activate/' }, 'run_createactive'),        
+
+    (r'^run/create/$', 'tdsurface.depth.views.run_create', {'extra_context': {'subtitle':'New Run', 'navigation_template': 'run_menu.html'}, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'run_create'),
+    (r'^run/createactive/$', 'tdsurface.depth.views.run_create', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'template_name': 'generic_form.html', 'post_save_redirect': '../%(uid)s/activate/' }, 'run_createactive'),            
+    #(r'^run/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'run_create'),
+    #(r'^run/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Run', 'navigation_template': 'run_menu.html'}, 'form_class': RunForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../%(uid)s/activate/' }, 'run_createactive'),        
     (r'^run/(?P<object_id>[\d\-a-f]+)/update/$', 'tdsurface.depth.views.run_update', {'extra_context': {'subtitle':'Update Run', 'navigation_template': 'run_detail_menu.html'}, }, 'run_update'),    
     (r'^run/(?P<object_id>[\d\-a-f]+)/activate/$', 'tdsurface.depth.views.run_activate', {}, 'run_activate'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/detail/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'subtitle':'Run Detail', 'navigation_template': 'run_detail_menu.html', 'active_run': get_active_run },'queryset': Run.objects.all(), 'template_name': 'run_detail.html'}, 'run_detail'),

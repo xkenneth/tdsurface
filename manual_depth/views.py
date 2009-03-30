@@ -18,6 +18,7 @@ from datetime import timedelta
 
 from tdsurface.depth.models import *
 
+import pytz
 
 def manual_depth_to_mwdlog(request, object_id) :
     run = Run.objects.get(pk=object_id)
@@ -90,6 +91,9 @@ def manual_depth_to_rtlog(request, object_id) :
 
 def run_manual_depth_grid(request, object_id) :
 
+    run = Run.objects.get(pk=object_id)
+    wltz = pytz.timezone(run.well_bore.well.timezone)
+    
     page = int(request.GET['page'])
     rows = int(request.GET['rows'])
     
@@ -111,9 +115,10 @@ def run_manual_depth_grid(request, object_id) :
         }
 
     for r in pt[(page-1)*rows:page*rows] :
+        wlt = pytz.utc.localize(r.time_stamp).astimezone(wltz).replace(tzinfo=None)
         rd = {}
         rd['id'] = r.pk        
-        rd['time_stamp'] = str(r.time_stamp)                
+        rd['time_stamp'] = str(wlt)                
         rd['depth'] = str(r.depth)
         rd['depth_units'] = r.depth_units
         rd['notes'] = r.notes
@@ -125,12 +130,15 @@ def run_manual_depth_grid(request, object_id) :
         
 def run_manual_depth_grid_edit(request, object_id) :    
     run = Run.objects.get(pk=object_id)
+    wltz = pytz.timezone(run.well_bore.well.timezone)
     
     if request.method=='POST' :
+        wlt = datetime.strptime(request.POST['time_stamp'],'%Y-%m-%d %H:%M:%S')
+        time_stamp = wltz.localize(wlt).astimezone(pytz.utc).replace(tzinfo=None)   
         if request.POST['id'] == 'new' :
-                           
+                        
             md = ManualDepth(run = run,
-                           time_stamp = request.POST['time_stamp'],                           
+                           time_stamp = time_stamp,                           
                            depth = request.POST['depth'],
                            depth_units = request.POST['depth_units'],
                            notes = request.POST['notes'])
@@ -138,7 +146,7 @@ def run_manual_depth_grid_edit(request, object_id) :
             
         else :            
             md = ManualDepth.objects.get(pk = request.POST['id'])
-            md.time_stamp = request.POST['time_stamp']            
+            md.time_stamp = time_stamp
             md.depth = request.POST['depth']
             md.depth_units = request.POST['depth_units']            
             md.notes = request.POST['notes']

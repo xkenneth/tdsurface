@@ -98,7 +98,7 @@ function sensors_callback(data, textStatus)
             //alert("Error loading Gamma Ray graph");
         }).attr('src', '{% url plot_realtime_gammaray active_run %}'+'?'+uniq);
     
-    window.setTimeout(get_sensors,60000);
+    window.setTimeout(get_sensors,30000);
 }
  
 function get_sensors()

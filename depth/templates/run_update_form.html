@@ -13,6 +13,7 @@
 {% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
 
 {% block body %}
+{% load utc2tz %}
 
 <form id="run_update_form" method="POST" action=".">
     <input id="form_id" name="form_id" value="run_update_form" type="hidden">
@@ -31,7 +32,7 @@
     </tr>    
 {% for note in run_notes %}    
     <tr>
-        <td valign="top">{{ note.time_stamp }} </td>
+        <td valign="top">{{ note.time_stamp|utc2tz:note.run.well_bore.well.timezone }} </td>
         <td valign="top"><pre>{{ note.notes }}</pre></td>        
     </tr>
 {% endfor %}
