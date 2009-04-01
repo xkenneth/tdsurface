@@ -522,7 +522,9 @@ def run_create(request, template_name,
     if request.method == 'POST' :
         run_form = RunFormForm(request.POST)
         if run_form.is_valid():
-            well_bore = WellBore.objects.get(pk=run_form.cleaned_data['well_bore'])           
+            print 'well_bore', run_form.cleaned_data['well_bore']
+            #well_bore = WellBore.objects.get(pk=run_form.cleaned_data['well_bore'])
+            well_bore = run_form.cleaned_data['well_bore']
             ltz = timezone(well_bore.well.timezone)
             start_time = run_form.cleaned_data['start_time']
             if start_time :
@@ -536,7 +538,7 @@ def run_create(request, template_name,
                           start_time=start_time,
                           end_time=end_time,
                           well_bore=well_bore,
-                          tool_calibration_id = run_form.cleaned_data['tool_calibration'])
+                          tool_calibration = run_form.cleaned_data['tool_calibration'])
             new_run.save()                            
             #return render_to_response('message.html', {'message': 'Post Save', 'navigation_template': 'run_menu.html' }, context_instance = RequestContext(request))
             return HttpResponseRedirect(post_save_redirect % new_run.__dict__)

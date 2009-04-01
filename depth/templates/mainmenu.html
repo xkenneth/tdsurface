@@ -75,10 +75,33 @@ function sensors_callback(data, textStatus)
         html += "<tr>";
         html += "<td>" + data.hole_depth[i]['timestamp'] + '</td>';
         html += '<td align="right">' + data.hole_depth[i]['value'] + '</td>';
-        html += '<td align="right">' + data.bit_depth[i]['value'] + '</td>';
-        html += '<td align="right">' + data.weight_on_bit[i]['value'] + '</td>';
-        html += '<td align="right">' + data.mud_flow_in[i]['value'] + '</td>';
-        html += '<td align="right">' + data.rop[i]['value'] + '</td>';
+        html += '<td align="right">';
+        if(data.bit_depth.length > i)
+        {
+            html += data.bit_depth[i]['value'];
+        }
+        html += '</td>';
+        html += '<td align="right">';
+        if(data.weight_on_bit.length > i)
+        {
+            html += data.weight_on_bit[i]['value'];
+        }
+        html += '</td>';
+        html += '<td align="right">';
+        if(data.mud_flow_in.length > i)
+        {
+            html += data.mud_flow_in[i]['value'];
+        }
+        html += '</td>';
+        html += '<td align="right">';
+        if(data.rop.length > i)
+        {
+            html += data.rop[i]['value'];
+        }
+        html += '</td>';
+        //html += '<td align="right">' + data.weight_on_bit[i]['value'] + '</td>';
+        //html += '<td align="right">' + data.mud_flow_in[i]['value'] + '</td>';
+        //html += '<td align="right">' + data.rop[i]['value'] + '</td>';
         html += '</tr>';
     }
     html += "<table>";
