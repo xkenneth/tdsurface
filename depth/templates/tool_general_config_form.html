@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+    
+<script type="text/JavaScript">
+ 
+</script>    
+        
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Tool General Configuration - {{ object }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<form action="." method="POST">
+{{ form.as_p }}
+<input type="submit" value="Save Configuration">
+</form>
+
+
+{% endblock body %}

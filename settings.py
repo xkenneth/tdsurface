@@ -83,6 +83,7 @@ INSTALLED_APPS = (
     'tdsurface.las',
     'tdsurface.manual_depth',
     'tdsurface.plot',
+    'tdsurface.bha',
 )
 
 STATIC_DOC_ROOT = os.path.join(os.getcwd(),'media')

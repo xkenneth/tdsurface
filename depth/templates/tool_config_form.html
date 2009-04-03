@@ -56,13 +56,6 @@ $(document).ready(install_events);
     <li style="padding-bottom: 10px;"><button onclick="location='{% url tool_calibration_update object.pk %}';">Update Calibration Constants</button></li>
     <li style="padding-bottom: 10px;"><button id="reset_timer_button">Reset Tool Timer</button></li>
     <li style="padding-bottom: 10px;"><button id="purge_log_button">Purge Tool MWD Log</button></li>
-    <li style="padding-bottom: 10px;"><button onclick="location='{% url tool_pulse_pattern_profile object.pk %}';">Pulse Pattern Profile</button></li>
 </ul>
-
-<form action="." method="POST">
-{{ form.as_p }}
-<input type="submit" value="Save Configuration">
-</form>
-
 
 {% endblock body %}

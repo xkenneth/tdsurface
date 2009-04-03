@@ -115,7 +115,7 @@ $(document).ready(ready);
 {% endblock head %}
 
 {% block navigation %}
-{% include 'tool_menu.html' %}
+{% include 'tool_config_menu.html' %}
 {% endblock navigation %}
 
 {% block subtitle %}<h3>Pulse Pattern Profile - {{ object }}</h3>{% endblock subtitle %}
@@ -129,8 +129,8 @@ $(document).ready(ready);
 <table>
     <tr>
         <th>Advanced Sequence Patterns</th>
-        <td><input type="hidden" name="scp_adv_seq_cur" value="{{ scp.3 }}" >
-            <input type="checkbox" id="scp_adv_seq" name="scp_adv_seq" {% ifequal scp.3 1 %}checked="checked"{% endifequal %} ></td>
+        <td><input type="hidden" name="scp_adv_seq_cur" value="{{ scp.advanced_squence_pattern }}" >
+            <input type="checkbox" id="scp_adv_seq" name="scp_adv_seq" {% ifequal scp.advanced_squence_pattern 1 %}checked="checked"{% endifequal %} ></td>
     </tr>
 </table>
     

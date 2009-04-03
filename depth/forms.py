@@ -135,7 +135,7 @@ class RoleTestForm(forms.Form) :
     comment = forms.CharField()
 
     
-class ToolConfigForm(forms.Form) :
+class ToolGeneralConfigForm(forms.Form) :
 
     class Media:
         css = {
@@ -146,3 +146,17 @@ class ToolConfigForm(forms.Form) :
     tool_face_zeroing = forms.BooleanField(required=False)
     rotation_sensing = forms.BooleanField(required=False)
     logging_interval = forms.IntegerField(label='Logging Interval (ms)',max_value=3600000, min_value=0)
+
+class ToolMotorConfigForm(forms.Form) :
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+
+    open_position_offset = forms.IntegerField(widget=forms.TextInput(attrs={'size':'4'}))
+    open_acceleration_delay = forms.IntegerField(min_value=1, max_value=10, widget=forms.TextInput(attrs={'size':'4'}))
+    open_max_acceleration = forms.IntegerField(min_value=0, max_value=15, widget=forms.TextInput(attrs={'size':'4'}))
+    
+    shut_position_offset = forms.IntegerField(widget=forms.TextInput(attrs={'size':'4'}))    
+    shut_acceleration_delay = forms.IntegerField(min_value=1, max_value=10, widget=forms.TextInput(attrs={'size':'4'}))
+    shut_max_acceleration = forms.IntegerField(min_value=0, max_value=15, widget=forms.TextInput(attrs={'size':'4'}))

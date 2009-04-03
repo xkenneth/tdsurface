@@ -41,4 +41,32 @@ class ToolSensorData :
         self.magnetic_y = i[14]
         self.magnetic_z = i[15]
         self.temperature = i[16] * 500 / 10000.0
-        self.pressure = i[17]        
+        self.pressure = i[17]
+
+def signedint(x,bits) :
+    s = pow(2,bits-1)    
+    if x >= s :
+        # Less than 0
+        x = (pow(2,bits) - x) * -1
+    return x
+
+class StatusConstantProfile :
+    def __init__(self, scp) :
+        self.raw_data = scp
+        self.advanced_squence_pattern = bool(scp[3])
+        self.tool_face_zeroing = bool(scp[4])
+        self.rotation_sensing = bool(scp[5])
+        self.logging_interval = (0x10000*scp[88]) + scp[89]
+        self.motor_open_position_offset = signedint(scp[65],16)
+        self.motor_shut_position_offset = signedint(scp[66],16)
+        self.motor_open_max_acceleration = scp[75]
+        self.motor_shut_max_acceleration = scp[76]
+        self.motor_open_acceleration_delay = scp[69]
+        self.motor_shut_acceleration_delay = scp[70]
+
+class MotorStatus :
+    def __init__(self, s) :
+        self.raw_data = s
+        self.calibration_status = s[0]
+        self.open_position = s[1]
+        self.shut_position = s[2]

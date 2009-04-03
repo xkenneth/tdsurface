@@ -80,7 +80,7 @@ def plot_realtime_gammaray(request, object_id) :
     times = []
 
     ragg = ToolMWDRealTime.objects.filter(run=run, type='gammaray').aggregate(Max('time_stamp'))
-    hoursago = (ragg['time_stamp__max'] or datetime.utcnow()) - timedelta(hours=12)
+    hoursago = (ragg['time_stamp__max'] or datetime.utcnow()) - timedelta(hours=1)
     r = ToolMWDRealTime.objects.filter(run=run, type='gammaray', time_stamp__gt=hoursago).order_by('time_stamp')    
 
     # System goes to 100% memory used if 0-1 points are plotted

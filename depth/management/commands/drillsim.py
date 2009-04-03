@@ -30,7 +30,7 @@ class Command(BaseCommand):
 
             d += (int(random.uniform(1,10)) * m)
 
-            if d - ((d/100)*100) <= 20 : 
+            if d - ((d/100)*100) <= 20 and d>120: 
                 g = int(random.uniform(90,110))
             else :
                 g = int(random.uniform(30,35))

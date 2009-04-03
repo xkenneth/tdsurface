@@ -63,7 +63,7 @@ def pull_calibration(request, object_id) :
     
    
     
-    d['time_stamp'] = datetime.utcnow()
+    d['time_stamp'] = datetime.datetime.utcnow()
     tc = ToolCalibration(time_stamp = d['time_stamp'],
                          tool=tool,
                          calibration_id=cal_vals[0],
@@ -109,7 +109,7 @@ def set_time(request, object_id) :
             
             return render_to_response('timeset_results.html', {'tool_time': tool_time,'object': tool,}, context_instance = RequestContext(request))
     else:
-        form = SetTimeForm(initial = {'set_time_to': datetime.utcnow(),}) # An unbound form
+        form = SetTimeForm(initial = {'set_time_to': datetime.datetime.utcnow(),}) # An unbound form
 
     return render_to_response('generic_form.html', {'form': form,}, context_instance = RequestContext(request))
 
@@ -125,7 +125,7 @@ def reset_timer(request, object_id) :
         tc.close()
         return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
         
-    tapi.set_time(datetime(2001,1,1,0,0,0)) # Set the timer to 0 using tool base time (2001-01-01 00:00:00) (year & month are ignored on the timer)
+    tapi.set_time(datetime.datetime(2001,1,1,0,0,0)) # Set the timer to 0 using tool base time (2001-01-01 00:00:00) (year & month are ignored on the timer)
     
     tc.close()
     
@@ -149,9 +149,9 @@ def tool_status(request, object_id) :
     
     calibration = tapi.get_calibration_contants()
     log_address = tapi.get_current_log_address()
-    bytes_in_log = int(log_address, 16) - int('D600', 16)
+    bytes_in_log = int(log_address, 16) - int('E600', 16)
     scp = tapi.get_status_constant_profile()
-    logging_interval = (0x10000*scp[88]) + scp[89]
+    logging_interval = scp.logging_interval
     sensor = tapi.get_sensor_readings()
     tool_timer = tapi.get_timer()    
     tc.close()
@@ -159,13 +159,13 @@ def tool_status(request, object_id) :
     return render_to_response('tool_status.html', {'calibration': calibration, 'scp': scp, 'logging_interval': logging_interval, 'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'log_address': log_address, 'bytes_in_log': bytes_in_log}, context_instance = RequestContext(request))
 
 
-def tool_config(request, object_id, extra_context=None) :
+def tool_general_config(request, object_id, extra_context=None) :
     
     tool = Tool.objects.get(pk=object_id)
 
     data = {'object': tool}
     if request.method == 'POST': # If the form has been submitted...
-        form = ToolConfigForm(request.POST) # A form bound to the POST data
+        form = ToolGeneralConfigForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass                                            
             tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
             tapi = ToolAPI(tc)
@@ -175,17 +175,17 @@ def tool_config(request, object_id, extra_context=None) :
                 return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
 
             scp = tapi.get_status_constant_profile()
-            logging_interval = (0x10000*scp[88]) + scp[89]
+            logging_interval = scp.logging_interval
             if logging_interval != form.cleaned_data['logging_interval'] :
                 tapi.set_logging_interval(form.cleaned_data['logging_interval'])
 
-            if bool(scp[3]) != form.cleaned_data['advanced_squence_pattern'] :
+            if scp.advanced_squence_pattern != form.cleaned_data['advanced_squence_pattern'] :
                 tapi.toggle_advanced_sequence_pattern_mode()
 
-            if bool(scp[4]) != form.cleaned_data['tool_face_zeroing'] :
+            if scp.tool_face_zeroing != form.cleaned_data['tool_face_zeroing'] :
                 tapi.toggle_tool_face_zeroing()
 
-            if bool(scp[5]) != form.cleaned_data['rotation_sensing'] :
+            if scp.rotation_sensing != form.cleaned_data['rotation_sensing'] :
                 tapi.toggle_rotation_sensing()
             
             tc.close()
@@ -199,13 +199,13 @@ def tool_config(request, object_id, extra_context=None) :
             return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
 
         scp = tapi.get_status_constant_profile()
-        initial = {'advanced_squence_pattern': bool(scp[3]),
-                   'tool_face_zeroing': bool(scp[4]),
-                   'rotation_sensing': bool(scp[5]),
-                   'logging_interval': (0x10000*scp[88]) + scp[89],                   
+        initial = {'advanced_squence_pattern': scp.advanced_squence_pattern,
+                   'tool_face_zeroing': scp.tool_face_zeroing,
+                   'rotation_sensing': scp.rotation_sensing,
+                   'logging_interval': scp.logging_interval,                   
                   }
 
-        form = ToolConfigForm(initial = initial) # An unbound form
+        form = ToolGeneralConfigForm(initial = initial) # An unbound form
 
     data['form'] = form
         
@@ -218,7 +218,81 @@ def tool_config(request, object_id, extra_context=None) :
 
     
     
-    return render_to_response('tool_config_form.html', data, context_instance = RequestContext(request))
+    return render_to_response('tool_general_config_form.html', data, context_instance = RequestContext(request))
+
+
+def tool_motor_config(request, object_id, extra_context=None) :
+    
+    tool = Tool.objects.get(pk=object_id)
+
+    data = {'object': tool}
+    if request.method == 'POST': # If the form has been submitted...
+        form = ToolMotorConfigForm(request.POST) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass                                            
+            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+            tapi = ToolAPI(tc)
+            
+            comcheck = tapi.echo('ABC123')
+            if comcheck != 'ABC123' :
+                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+
+            scp = tapi.get_status_constant_profile()
+            ms = tapi.get_motor_status()
+            
+            if scp.motor_open_position_offset != form.cleaned_data['open_position_offset'] :
+                tapi.set_motor_open_position_offset(form.cleaned_data['open_position_offset'])
+            if scp.motor_shut_position_offset != form.cleaned_data['shut_position_offset'] :
+                tapi.set_motor_shut_position_offset(form.cleaned_data['shut_position_offset'])
+                
+            if scp.motor_open_max_acceleration != form.cleaned_data['open_max_acceleration'] :
+                tapi.set_motor_open_max_acceleration(form.cleaned_data['open_max_acceleration'])
+            if scp.motor_shut_max_acceleration != form.cleaned_data['shut_max_acceleration'] :
+                tapi.set_motor_shut_max_acceleration(form.cleaned_data['shut_max_acceleration'])
+            
+            if scp.motor_open_acceleration_delay != form.cleaned_data['open_acceleration_delay'] :
+                tapi.set_motor_open_acceleration_delay(form.cleaned_data['open_acceleration_delay'])
+            if scp.motor_shut_acceleration_delay != form.cleaned_data['shut_acceleration_delay'] :
+                tapi.set_motor_shut_acceleration_delay(form.cleaned_data['shut_acceleration_delay'])
+                
+            tc.close()
+           
+    else:
+        tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+        tapi = ToolAPI(tc)
+            
+        comcheck = tapi.echo('ABC123')
+        if comcheck != 'ABC123' :
+            return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+
+        scp = tapi.get_status_constant_profile()
+        ms = tapi.get_motor_status()
+        tc.close()
+        
+        initial = {'open_position_offset': scp.motor_open_position_offset,
+                   'open_acceleration_delay': scp.motor_open_acceleration_delay,
+                   'open_max_acceleration': scp.motor_open_max_acceleration,
+                   'shut_position_offset': scp.motor_shut_position_offset,
+                   'shut_acceleration_delay': scp.motor_shut_acceleration_delay,
+                   'shut_max_acceleration': scp.motor_shut_max_acceleration,
+                  }
+
+        form = ToolMotorConfigForm(initial = initial) # An unbound form
+
+    data['form'] = form
+    data['scp'] = scp
+    data['ms'] = ms
+    
+    if extra_context :
+        for key, value in extra_context.items():
+            if callable(value):
+                data[key] = value()
+            else:
+                data[key] = value    
+
+    
+    
+    return render_to_response('tool_motor_config_form.html', data, context_instance = RequestContext(request))
+
 
 
 
@@ -443,7 +517,7 @@ def tool_calibration_update(request, object_id, template_name, extra_context=Non
                 
             tcal = ToolCalibration()
             tcal.tool = tool
-            tcal.time_stamp =  datetime.utcnow()
+            tcal.time_stamp =  datetime.datetime.utcnow()
             tcal.calibration_id = cur_cal[0]
             tcal.tool_serial_number = cur_cal[1]
             

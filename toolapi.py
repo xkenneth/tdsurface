@@ -3,6 +3,8 @@ import datetime
 
 from tooldata import ToolLogData
 from tooldata import ToolSensorData
+from tooldata import StatusConstantProfile
+from tooldata import MotorStatus
 
 calibration_map = {
     'accelerometer_x_offset': 0,
@@ -21,6 +23,15 @@ calibration_map = {
     'temperature_gain': 13
 }
 
+
+def hex2signedint(x, bits) :
+    s = pow(2,bits-1)
+    x = int(x,16)
+    if x >= s :
+        # Less than 0
+        x = (pow(2,bits) - x) * -1
+    return x
+        
 
 
 class ToolAPI :
@@ -190,7 +201,7 @@ class ToolAPI :
 
     def get_bytes_in_log(self) :    
         log_address = self.get_current_log_address()
-        bytes_in_log = int(log_address, 16) - int('D600', 16)
+        bytes_in_log = int(log_address, 16) - int('E600', 16)
         return bytes_in_log
         
     def _getset_pulse_pattern_profile(self, cmd) :
@@ -232,15 +243,23 @@ class ToolAPI :
     def set_pulse_pattern_sequence_profile(self, num, seq, time) :
         cmd = ' '.join(('WQ',str(num), hex(seq)[2:], hex(time)[2:]))
         return self._getset_pulse_pattern_sequence_profile(cmd)
-        
-    
+
     def _get_status_constant_profile(self,cmd) :
         self.toolcom.write_line(cmd)        
         scp = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
-        self.toolcom.read_line()    
-        return scp    
+        self.toolcom.read_line()
+        return StatusConstantProfile(scp)        
+
+    def _set_status_constant_profile(self,cmd) :
+        self.toolcom.write_line(cmd)        
+        scp = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        self.toolcom.read_line()
+        self.toolcom.read_line()
+        return StatusConstantProfile(scp)      
         
     def get_status_constant_profile(self) :
         return self._get_status_constant_profile('RT')
@@ -257,3 +276,37 @@ class ToolAPI :
     def set_logging_interval(self, time) :
         cmd = ' '.join(('TR', hex(time)[2:]))
         return self._get_status_constant_profile(cmd)
+
+    def _set_motor_position_offset(self, cmd, v) :
+        if v < 0 :
+            v = 0xFFFF + (v + 1)
+        cmd = ' '.join( (cmd, hex(v)[2:]) )
+        return self._set_status_constant_profile(cmd)
+
+    def set_motor_open_position_offset(self, v) :
+        return self._set_motor_position_offset('MOF',v)
+
+    def set_motor_shut_position_offset(self, v) :
+        return self._set_motor_position_offset('MSF',v)
+
+    def set_motor_open_max_acceleration(self, v) :
+        cmd = ' '.join(('MWUOM', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_motor_shut_max_acceleration(self, v) :
+        cmd = ' '.join(('MWUSM', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_motor_open_acceleration_delay(self, v) :
+        cmd = ' '.join(('MWUO', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_motor_shut_acceleration_delay(self, v) :
+        cmd = ' '.join(('MWUS', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def get_motor_status(self) :        
+        self.toolcom.write_line('MLT')
+        s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        
+        return MotorStatus(s)

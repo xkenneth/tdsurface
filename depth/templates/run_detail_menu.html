@@ -3,10 +3,12 @@
         <li><a href="{% url home %}">Home</a></li>        
         <li><a href="{% url run_list %}">Run List</a></li>
         <li><a href="{% url run_update object.pk %}">Update</a></li>
+        <li><a href="{% url bha_update object.pk %}">BHA</a></li>
         <li><a href="{% url run_rolltest object.pk %}">Roll Test</a></li>
         <li><a href="{% url run_download object.pk %}">Download Log</a></li>
         <li><a href="{% url run_pipe_tally object.pk %}">Pipe Tally</a></li>
         <li><a href="{% url run_manual_depth object.pk %}">Manual Depth</a></li>
         <li><a href="{% url run_wits0_latest object.pk%}">WITS0</a></li>
         <li><a href="{% url las_from_mwdlog object.pk%}">LAS Export</a></li>
+        
     </ul>

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}/css/forms.css" type="text/css" media="all" rel="stylesheet" />
+    {{ form.media }}
+    
+<script type="text/JavaScript">
+ 
+</script>    
+        
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Tool Motor Configuration - {{ object }}</h3>{% endblock subtitle %}
+
+{% block body %}
+
+<table>
+    <tr>
+        <th>Calibration Status</th>
+        <td align="right">{{ ms.calibration_status }}</td>
+    </tr>
+    <tr><th>Open Position</th><td align="right">{{ ms.open_position }}</td></tr>
+    <tr><th>Shut Position</th><td align="right">{{ ms.shut_position }}</td></tr>
+</table>
+
+<form action="." method="POST">
+{{ form.as_p }}
+<input type="submit" value="Save Configuration">
+</form>
+
+
+{% endblock body %}
