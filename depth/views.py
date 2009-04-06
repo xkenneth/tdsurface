@@ -304,7 +304,7 @@ def tool_motor_command(request, object_id, command) :
     if command == 'capture' :
         tapi.motor_capture()
     elif command == 'release' :
-        tapi.motor_release
+        tapi.motor_release()
     elif command == 'open' :
         tapi.motor_open()
     elif command == 'shut' :
