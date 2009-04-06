@@ -12,6 +12,16 @@ function handle_response(data, status_text)
     alert(data);
 }
 
+function calibrate_callback(data, textStatus)
+{
+    $("button").removeAttr("disabled");
+    
+    $("#calibration_speed").text(data.calibration_speed);
+    $("#open_position").text(data.open_position);
+    $("#shut_position").text(data.shut_position);
+    alert("Calibration Complete");
+}
+
 function motor_capture()
 {
     $("button").attr("disabled","disabled");
@@ -36,6 +46,12 @@ function motor_shut()
     $.get("{% url tool_motor_command object.pk, "shut" %}", callback = handle_response);
 }
 
+function motor_calibrate()
+{
+    $("button").attr("disabled","disabled");
+    $.getJSON("{% url tool_motor_calibrate object.pk %}", calibrate_callback);
+}    
+
 
 function install_events()
 {
@@ -43,6 +59,7 @@ function install_events()
     $("#release_button").click(motor_release);
     $("#open_button").click(motor_open);
     $("#shut_button").click(motor_shut);
+    $("#calibrate_button").click(motor_calibrate);
 }
 
 $(document).ready(install_events);
@@ -62,11 +79,13 @@ $(document).ready(install_events);
 <table>
     <tr>
         <th>Calibration Speed</th>
-        <td align="right">{{ ms.calibration_status }}</td>
+        <td id="calibration_speed" align="right">{{ ms.calibration_speed }}</td>
     </tr>
-    <tr><th>Open Position</th><td align="right">{{ ms.open_position }}</td></tr>
-    <tr><th>Shut Position</th><td align="right">{{ ms.shut_position }}</td></tr>
+    <tr><th>Open Position</th><td id="open_position" align="right">{{ ms.open_position }}</td></tr>
+    <tr><th>Shut Position</th><td id="shut_position" align="right">{{ ms.shut_position }}</td></tr>
 </table>
+<br>
+<button id="calibrate_button">Calibrate Motor</button><br>
 <br>
 <button id="capture_button">Capture Motor</button><br>
 <button id="release_button">Release Motor</button><br>

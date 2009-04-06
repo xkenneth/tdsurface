@@ -153,10 +153,15 @@ class ToolMotorConfigForm(forms.Form) :
                 'all': (form_css,)
         }
 
+    calibration_initial_acceleration = forms.IntegerField(min_value=0, max_value=15, widget=forms.TextInput(attrs={'size':'4'}))
+
     open_position_offset = forms.IntegerField(widget=forms.TextInput(attrs={'size':'4'}))
-    open_acceleration_delay = forms.IntegerField(min_value=1, max_value=10, widget=forms.TextInput(attrs={'size':'4'}))
-    open_max_acceleration = forms.IntegerField(min_value=0, max_value=15, widget=forms.TextInput(attrs={'size':'4'}))
+    shut_position_offset = forms.IntegerField(widget=forms.TextInput(attrs={'size':'4'}))
     
-    shut_position_offset = forms.IntegerField(widget=forms.TextInput(attrs={'size':'4'}))    
+    open_acceleration_delay = forms.IntegerField(min_value=1, max_value=10, widget=forms.TextInput(attrs={'size':'4'}))
     shut_acceleration_delay = forms.IntegerField(min_value=1, max_value=10, widget=forms.TextInput(attrs={'size':'4'}))
+    
+    open_max_acceleration = forms.IntegerField(min_value=0, max_value=15, widget=forms.TextInput(attrs={'size':'4'}))    
     shut_max_acceleration = forms.IntegerField(min_value=0, max_value=15, widget=forms.TextInput(attrs={'size':'4'}))
+
+    

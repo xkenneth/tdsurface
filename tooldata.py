@@ -63,10 +63,11 @@ class StatusConstantProfile :
         self.motor_shut_max_acceleration = scp[76]
         self.motor_open_acceleration_delay = scp[69]
         self.motor_shut_acceleration_delay = scp[70]
+        self.motor_calibration_initial_acceleration = scp[60]
 
 class MotorStatus :
     def __init__(self, s) :
         self.raw_data = s
-        self.calibration_status = s[0]
+        self.calibration_speed = s[0]
         self.open_position = s[1]
         self.shut_position = s[2]

@@ -253,6 +253,9 @@ def tool_motor_config(request, object_id, extra_context=None) :
                 tapi.set_motor_open_acceleration_delay(form.cleaned_data['open_acceleration_delay'])
             if scp.motor_shut_acceleration_delay != form.cleaned_data['shut_acceleration_delay'] :
                 tapi.set_motor_shut_acceleration_delay(form.cleaned_data['shut_acceleration_delay'])
+
+            if scp.motor_calibration_initial_acceleration != form.cleaned_data['calibration_initial_acceleration'] :
+                tapi.set_motor_calibration_initial_acceleration(form.cleaned_data['calibration_initial_acceleration'])
                 
             tc.close()
            
@@ -274,6 +277,7 @@ def tool_motor_config(request, object_id, extra_context=None) :
                    'shut_position_offset': scp.motor_shut_position_offset,
                    'shut_acceleration_delay': scp.motor_shut_acceleration_delay,
                    'shut_max_acceleration': scp.motor_shut_max_acceleration,
+                   'calibration_initial_acceleration': scp.motor_calibration_initial_acceleration,
                   }
 
         form = ToolMotorConfigForm(initial = initial) # An unbound form
@@ -311,7 +315,7 @@ def tool_motor_command(request, object_id, command) :
         tapi.motor_shut()
     else :
         tc.close()
-        return HttpResponse("Invalid Motor '%s'" % command)    
+        return HttpResponse("Invalid Motor Command '%s'" % command)    
 
     tc.close()
     return HttpResponse("'%s' command complete" % command)    
@@ -408,6 +412,25 @@ def tool_sensors_json(request, object_id) :
     
     return HttpResponse(data, mimetype="application/javascript")        
 
+def tool_motor_calibrate_json(request, object_id) :
+    
+    tool = Tool.objects.get(pk=object_id)
+    
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+    
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        tc.close()
+        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+                
+    ms = tapi.motor_calibrate()
+    tc.close()
+    
+    data = simplejson.dumps(ms.__dict__)   
+    
+    return HttpResponse(data, mimetype="application/javascript")
+    
 
 def tool_pulse_pattern_profile(request, object_id) :
     

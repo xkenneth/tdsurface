@@ -305,6 +305,10 @@ class ToolAPI :
         cmd = ' '.join(('MWUS', hex(v)[2:]) )
         return self._get_status_constant_profile(cmd)
 
+    def set_motor_calibration_initial_acceleration(self, v) :
+        cmd = ' '.join(('MLP', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
     def get_motor_status(self) :        
         self.toolcom.write_line('MLT')
         s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
@@ -322,3 +326,15 @@ class ToolAPI :
 
     def motor_shut(self) :
         self.toolcom.write_line('MS')
+
+    def motor_calibrate(self) :
+        self.toolcom.write_line('MC')
+        time.sleep(2)
+        self.toolcom.write_line('ML')
+
+        for x in range(10) :
+            self.toolcom.read_line()    # Ignore calibration data
+
+        s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        
+        return MotorStatus(s)
