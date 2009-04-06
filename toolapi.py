@@ -310,3 +310,15 @@ class ToolAPI :
         s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         
         return MotorStatus(s)
+
+    def motor_capture(self) :
+        self.toolcom.write_line('MC')
+
+    def motor_release(self) :
+        self.toolcom.write_line('MR')
+
+    def motor_open(self) :
+        self.toolcom.write_line('MO')
+
+    def motor_shut(self) :
+        self.toolcom.write_line('MS')

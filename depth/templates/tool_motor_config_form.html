@@ -5,8 +5,49 @@
     {{ form.media }}
     
 <script type="text/JavaScript">
+
+function handle_response(data, status_text)
+{
+    $("button").removeAttr("disabled");
+    alert(data);
+}
+
+function motor_capture()
+{
+    $("button").attr("disabled","disabled");
+    $.get("{% url tool_motor_command object.pk, "capture" %}", callback = handle_response);
+}
+
+function motor_release()
+{
+    $("button").attr("disabled","disabled");
+    $.get("{% url tool_motor_command object.pk, "release" %}", callback = handle_response);
+}
+
+function motor_open()
+{
+    $("button").attr("disabled","disabled");
+    $.get("{% url tool_motor_command object.pk, "open" %}", callback = handle_response);
+}
+
+function motor_shut()
+{
+    $("button").attr("disabled","disabled");
+    $.get("{% url tool_motor_command object.pk, "shut" %}", callback = handle_response);
+}
+
+
+function install_events()
+{
+    $("#capture_button").click(motor_capture);
+    $("#release_button").click(motor_release);
+    $("#open_button").click(motor_open);
+    $("#shut_button").click(motor_shut);
+}
+
+$(document).ready(install_events);
  
-</script>    
+</script>   
         
 {% endblock head %}
 
@@ -20,12 +61,19 @@
 
 <table>
     <tr>
-        <th>Calibration Status</th>
+        <th>Calibration Speed</th>
         <td align="right">{{ ms.calibration_status }}</td>
     </tr>
     <tr><th>Open Position</th><td align="right">{{ ms.open_position }}</td></tr>
     <tr><th>Shut Position</th><td align="right">{{ ms.shut_position }}</td></tr>
 </table>
+<br>
+<button id="capture_button">Capture Motor</button><br>
+<button id="release_button">Release Motor</button><br>
+<button id="open_button">Open</button><br>
+<button id="shut_button">Shut</button><br>
+<br>
+
 
 <form action="." method="POST">
 {{ form.as_p }}

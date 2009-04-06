@@ -294,7 +294,27 @@ def tool_motor_config(request, object_id, extra_context=None) :
     return render_to_response('tool_motor_config_form.html', data, context_instance = RequestContext(request))
 
 
+def tool_motor_command(request, object_id, command) :
+    
+    tool = Tool.objects.get(pk=object_id)
 
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+
+    if command == 'capture' :
+        tapi.motor_capture()
+    elif command == 'release' :
+        tapi.motor_release
+    elif command == 'open' :
+        tapi.motor_open()
+    elif command == 'shut' :
+        tapi.motor_shut()
+    else :
+        tc.close()
+        return HttpResponse("Invalid Motor '%s'" % command)    
+
+    tc.close()
+    return HttpResponse("'%s' command complete" % command)    
 
 def tool_sensors(request, object_id, extra_context=None) :
     
