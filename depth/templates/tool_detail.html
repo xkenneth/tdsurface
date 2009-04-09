@@ -11,6 +11,7 @@
 {% block subtitle %}<h3>{{ object }}</h3>{% endblock subtitle %}
 
 {% block body %}
+{% load utc2tz %}
 <table>
     <tr>
         <th>Tool Name
@@ -26,6 +27,27 @@
         <td>{{ object.type }}</td>
     </tr>
 </table>
+<br>
+<br>
+{% if object.toolnotes_set.all %}
+<table>
+    <tr>
+        <th colspan="2">Tool Notes</th>
+    </tr>
+    <tr>
+        <th>Time Stamp (UTC)</th>
+        <th>Notes</th>
+    </tr>
+    {% for n in object.toolnotes_set.all %}
+    <tr>
+        <td>
+        {{ n.time_stamp }}
+        </td>
+        <td>{{ n.notes }}</td>
+    </tr>
 
+    {% endfor %}
+</table>
+{% endif %}
 
 {% endblock body %}

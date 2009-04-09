@@ -149,7 +149,7 @@ def tool_status(request, object_id) :
     
     calibration = tapi.get_calibration_contants()
     log_address = tapi.get_current_log_address()
-    bytes_in_log = int(log_address, 16) - int('E600', 16)
+    bytes_in_log = tapi.get_bytes_in_log()
     scp = tapi.get_status_constant_profile()
     logging_interval = scp.logging_interval
     sensor = tapi.get_sensor_readings()
@@ -187,7 +187,10 @@ def tool_general_config(request, object_id, extra_context=None) :
 
             if scp.rotation_sensing != form.cleaned_data['rotation_sensing'] :
                 tapi.toggle_rotation_sensing()
-            
+
+            if scp.gammaray_log_size != form.cleaned_data['gammaray_log_size'] :
+                tapi.set_gammaray_log_size(form.cleaned_data['gammaray_log_size'])            
+                                
             tc.close()
            
     else:
@@ -202,7 +205,9 @@ def tool_general_config(request, object_id, extra_context=None) :
         initial = {'advanced_squence_pattern': scp.advanced_squence_pattern,
                    'tool_face_zeroing': scp.tool_face_zeroing,
                    'rotation_sensing': scp.rotation_sensing,
-                   'logging_interval': scp.logging_interval,                   
+                   'logging_interval': scp.logging_interval,
+                   'gammaray_log_size': scp.gammaray_log_size,
+                          
                   }
 
         form = ToolGeneralConfigForm(initial = initial) # An unbound form
@@ -256,6 +261,22 @@ def tool_motor_config(request, object_id, extra_context=None) :
 
             if scp.motor_calibration_initial_acceleration != form.cleaned_data['calibration_initial_acceleration'] :
                 tapi.set_motor_calibration_initial_acceleration(form.cleaned_data['calibration_initial_acceleration'])
+
+            if scp.pulse_time != form.cleaned_data['pulse_time'] :
+                tapi.set_pulse_time(form.cleaned_data['pulse_time'])
+                tapi.set_code_pulse_time(form.cleaned_data['pulse_time'])
+
+            if scp.narrow_pulse_time != form.cleaned_data['narrow_pulse_time'] :
+                tapi.set_narrow_pulse_time(form.cleaned_data['narrow_pulse_time'])
+
+            if scp.wide_pulse_time != form.cleaned_data['wide_pulse_time'] :
+                tapi.set_wide_pulse_time(form.cleaned_data['wide_pulse_time'])
+
+            if scp.gear_numerator != form.cleaned_data['gear_numerator'] :
+                tapi.set_gear_numerator(form.cleaned_data['gear_numerator'])
+
+            if scp.gear_denominator != form.cleaned_data['gear_denominator'] :
+                tapi.set_gear_denominator(form.cleaned_data['gear_denominator'])
                 
             tc.close()
            
@@ -278,6 +299,11 @@ def tool_motor_config(request, object_id, extra_context=None) :
                    'shut_acceleration_delay': scp.motor_shut_acceleration_delay,
                    'shut_max_acceleration': scp.motor_shut_max_acceleration,
                    'calibration_initial_acceleration': scp.motor_calibration_initial_acceleration,
+                   'pulse_time': scp.pulse_time,
+                   'narrow_pulse_time': scp.narrow_pulse_time,
+                   'wide_pulse_time': scp.wide_pulse_time,
+                   'gear_numerator': scp.gear_numerator,
+                   'gear_denominator': scp.gear_denominator,           
                   }
 
         form = ToolMotorConfigForm(initial = initial) # An unbound form
@@ -465,10 +491,13 @@ def tool_pulse_pattern_profile(request, object_id) :
                 print 'ppsp',cnt,seq,time,time_min,time_sec
                 tapi.set_pulse_pattern_sequence_profile(cnt, seq, time)                
         
-        adv_seq = 0
-        adv_seq_cur = int(request.POST['scp_adv_seq_cur'])
+        adv_seq = False
+        adv_seq_cur = False
+        print 'scp_adv_seq_cur', request.POST['scp_adv_seq_cur']
+        if request.POST['scp_adv_seq_cur'] == 'True' :
+            adv_seq_cur = True
         if request.POST.has_key('scp_adv_seq') :
-            adv_seq=1
+            adv_seq=True
         if adv_seq != adv_seq_cur :
             tapi.toggle_advanced_sequence_pattern_mode()
                 
@@ -767,7 +796,7 @@ def run_download_status_json(request) :
     percent = 0
     if t :
         # Note: 28 bytes per log line
-        percent = c * 28 * 100 / t
+        percent = c * 100 / t
         
     data = simplejson.dumps({'downloading': p, 'cnt': c, 'status':s, 'percent':percent})   
     
@@ -829,9 +858,19 @@ def _download_log(run_id) :
         tc.close()
         return
 
-    b = Settings.objects.get(name='LOG_DOWNLOAD_SIZE')
-    b.value=str(tapi.get_bytes_in_log())
+    s.value='Getting gamma interval'
+    s.save()
+    scp = tapi.get_status_constant_profile()
+    gamma_interval = scp.logging_interval/1000/scp.gammaray_log_size
+
+    s.value='Calculating log size'
+    s.save()
+    b = Settings.objects.get(name='LOG_DOWNLOAD_SIZE')    
+    # Lines of log = 20 bytes for the Grav, Mag & Temp + 2 per gamma ray
+    b.value=str(tapi.get_bytes_in_log()/( 20 + (scp.gammaray_log_size * 2) ))
     b.save()
+
+    
 
 
     def call_back(log_data) :
@@ -851,11 +890,21 @@ def _download_log(run_id) :
         d.magnetic_y = log_data.magnetic_y
         d.magnetic_z = log_data.magnetic_z
         d.temperature = log_data.temperature
-        d.gamma0 = log_data.gamma0
-        d.gamma1 = log_data.gamma1
-        d.gamma2 = log_data.gamma2
-        d.gamma3 = log_data.gamma3
+        print 'Saving ToolMWDLog'    
         d.save()
+        print 'Saved ToolMWDLog'
+        
+        seconds = log_data.seconds
+        for g in log_data.gamma :
+            d = ToolMWDLogGamma()
+            d.run_id = run_id
+            d.seconds = seconds
+            seconds += gamma_interval
+            d.status = log_data.status
+            d.gamma = g
+            print 'Saving ToolMWDLogGamma'
+            d.save()
+            print 'Saved ToolMWDLogGamma'
                 
         p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')        
         return bool(p.value)
@@ -1079,29 +1128,31 @@ def wits0_depth_to_mwdlog(request, object_id) :
     run = Run.objects.get(pk=object_id)
 
     mwdlogs = ToolMWDLog.objects.filter(run=run)
+    mwdgammalogs = ToolMWDLogGamma.objects.filter(run=run)
 
-    for l in mwdlogs :
-        time_stamp = run.start_time + timedelta(seconds=l.seconds)
-        try :
+    for logs in (mwdlogs,mwdgammalogs) :    
+        for l in logs :
+            time_stamp = run.start_time + timedelta(seconds=l.seconds)
+            try :
+                
+                lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
+                higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
+            except:
+                continue
+
+            # Linear Interpolation where x = seconds and y = depth    
+            x = time.mktime(time_stamp.timetuple())
+            xa = time.mktime(lower.time_stamp.timetuple())
+            xb = time.mktime(higher.time_stamp.timetuple())
+
+            ya = float(lower.value)
+            yb = float(higher.value)
             
-            lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
-            higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
-        except:
-            continue
+            y = ya + ((x - xa) * (yb - ya))/(xb - xa)
 
-        # Linear Interpolation where x = seconds and y = depth    
-        x = time.mktime(time_stamp.timetuple())
-        xa = time.mktime(lower.time_stamp.timetuple())
-        xb = time.mktime(higher.time_stamp.timetuple())
-
-        ya = float(lower.value)
-        yb = float(higher.value)
-        
-        y = ya + ((x - xa) * (yb - ya))/(xb - xa)
-
-        l.depth=str(y)
-        l.depth_units='ft'
-        l.save()
+            l.depth=str(y)
+            l.depth_units='ft'
+            l.save()
 
     return HttpResponseRedirect(reverse('las_from_mwdlog', args=[object_id]))    
 

@@ -9,12 +9,14 @@
 function handle_response(data, status_text)
 {
     $("button").removeAttr("disabled");
+    $("input").removeAttr("disabled");
     alert(data);
 }
 
 function calibrate_callback(data, textStatus)
 {
     $("button").removeAttr("disabled");
+    $("input").removeAttr("disabled");
     
     $("#calibration_speed").text(data.calibration_speed);
     $("#open_position").text(data.open_position);
@@ -25,30 +27,35 @@ function calibrate_callback(data, textStatus)
 function motor_capture()
 {
     $("button").attr("disabled","disabled");
+    $("input").attr("disabled","disabled");
     $.get("{% url tool_motor_command object.pk, "capture" %}", callback = handle_response);
 }
 
 function motor_release()
 {
     $("button").attr("disabled","disabled");
+    $("input").attr("disabled","disabled");
     $.get("{% url tool_motor_command object.pk, "release" %}", callback = handle_response);
 }
 
 function motor_open()
 {
     $("button").attr("disabled","disabled");
+    $("input").attr("disabled","disabled");
     $.get("{% url tool_motor_command object.pk, "open" %}", callback = handle_response);
 }
 
 function motor_shut()
 {
     $("button").attr("disabled","disabled");
+    $("input").attr("disabled","disabled");
     $.get("{% url tool_motor_command object.pk, "shut" %}", callback = handle_response);
 }
 
 function motor_calibrate()
 {
     $("button").attr("disabled","disabled");
+    $("input").attr("disabled","disabled");
     $.getJSON("{% url tool_motor_calibrate object.pk %}", calibrate_callback);
 }    
 

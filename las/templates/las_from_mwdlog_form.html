@@ -62,15 +62,15 @@ $(document).ready(install_events);
 
 <table cellpadding="5">
     <tr>
-        <th>
-        Tool Log
+        <th colspan="2">
+        Tool Internal Log
         </th>
         <th>
         Real Time Log
         </th>
     </tr>
     <tr>
-        <td>
+        <td colspan="2">
 
 <ul style="list-style: none; margin-left: 0; padding-left:0;">
     <li style="padding-bottom: 10px;"><button id="wits0_depth_2_mwdlog">WITS0 Depth >> Tool Log</button></li>
@@ -95,6 +95,17 @@ Note: The first curve will be Depth.
 </form>
 
         </td>
+
+        <td valign="top">
+Select curves to include.<br>
+Note: The first curve will be Depth.
+<form method="POST" action="{% url las_from_mwdgammalog object.pk%}" >
+{{ gammaform.as_p }}
+<input id="submit" value="Generate LAS File" type="submit">
+</form>
+
+        </td>
+        
         <td valign="top">
 Select curves to include.<br>
 Note: The first curve will be Depth.

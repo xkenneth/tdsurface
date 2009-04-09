@@ -9,6 +9,7 @@ from las.headers import *
 from datetime import date, datetime
 
 from tdsurface.depth.models import ToolMWDLog
+from tdsurface.depth.models import ToolMWDLogGamma
 from tdsurface.depth.models import ToolMWDRealTime
 from tdsurface.depth.models import Run
 from tdsurface.las.forms import *
@@ -97,27 +98,7 @@ def las_from_mwdlog(request, object_id) :
                 d = Descriptor(mnemonic="TMP", unit="degC", description="Temperature")
                 curve_headers.append(d)
                 curves.append(LasCurve(d,[l.temperature_c() for l in mwdlog]))
-                
-            if form.cleaned_data['gamma_ray_0'] :
-                d = Descriptor(mnemonic="GR0", unit="CPS", description="Gamma Ray counts/second first quarter logging cycle")
-                curve_headers.append(d)
-                curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma0*2/10000.0 ) * 2),1)  for l in mwdlog]))
-            
-            if form.cleaned_data['gamma_ray_1'] :
-                d = Descriptor(mnemonic="GR1", unit="CPS", description="Gamma Ray counts/second second quarter logging cycle")
-                curve_headers.append(d)
-                curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma1*2/10000.0 ) * 2),1)  for l in mwdlog]))
-
-            if form.cleaned_data['gamma_ray_2'] :
-                d = Descriptor(mnemonic="GR2", unit="CPS", description="Gamma Ray counts/second third quarter logging cycle")
-                curve_headers.append(d)
-                curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma2*2/10000.0 ) * 2),1)  for l in mwdlog]))
-
-            if form.cleaned_data['gamma_ray_3'] :
-                d = Descriptor(mnemonic="GR3", unit="CPS", description="Gamma Ray counts/second forth quarter logging cycle")
-                curve_headers.append(d)
-                curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma3*2/10000.0 ) * 2),1)  for l in mwdlog]))
-
+                           
             
             if form.cleaned_data['gravity_x'] or form.cleaned_data['total_gravity'] :                
                 gravity_x_calibrated = [l.gravity_x_calibrated(run) for l in mwdlog]                
@@ -191,7 +172,72 @@ def las_from_mwdlog(request, object_id) :
         form = LasFromMWDLogForm() # An unbound form
 
     rtform = LasFromRTLogForm()
-    return render_to_response('las_from_mwdlog_form.html', {'mwdform': form, 'rtform': rtform, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    
+    gammaform = LasFromMWDGammaLogForm()
+    return render_to_response('las_from_mwdlog_form.html', {'gammaform': gammaform, 'mwdform': form, 'rtform': rtform, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    
+
+
+
+def las_from_mwdgammalog(request, object_id) :
+    """Generates a LAS file of the MWD Gamma Log for a given run"""
+
+    run = Run.objects.get(pk=object_id)
+    if request.method == 'POST': # If the form has been submitted...
+        form = LasFromMWDGammaLogForm(request.POST) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass    
+            
+
+            log = ToolMWDLogGamma.objects.filter(run=object_id, depth__gt=0).order_by('depth')
+
+            log_agg = ToolMWDLogGamma.objects.filter(run=object_id, depth__gt=0).aggregate(Min('depth'), Max('depth'))
+            well_headers = [
+                Descriptor(mnemonic="STRT", unit="FT", data=str(log_agg['depth__min'])),
+                Descriptor(mnemonic="STOP", unit="FT", data=str(log_agg['depth__max'])),
+                Descriptor(mnemonic="STEP", unit="S", data="0"),
+                Descriptor(mnemonic="NULL", data = LASNULL, description="Null Value"),
+                Descriptor(mnemonic="COMP", data=run.well_bore.well.operator, description="Company"),
+                Descriptor(mnemonic="WELL", data=run.well_bore.well.name, description="Well Name"),
+                Descriptor(mnemonic="FLD", data=run.well_bore.well.field, description="Field Name"),
+                Descriptor(mnemonic="LOC", data=' ', description="Location"),
+                Descriptor(mnemonic="CNTY", data=run.well_bore.well.county, description="County"),
+                Descriptor(mnemonic="STAT", data=run.well_bore.well.state, description="State"),
+                Descriptor(mnemonic="CTRY", data=run.well_bore.well.country, description="Country"),
+                Descriptor(mnemonic="SRVC", data="TeleDrill", description="Service Company"),
+                Descriptor(mnemonic="API", data=run.well_bore.well.api_number, description="API Number"),
+                Descriptor(mnemonic="RUN", data=str(run).replace(':',' '), description="Run Name"),
+                Descriptor(mnemonic="RUNID", data=run.pk, description="Run Id"),
+                Descriptor(mnemonic="DATE", data=run.start_time.date().isoformat(), description="Log Start Date")
+                ]
+
+            curve_headers = [Descriptor(mnemonic="DEPT", unit="ft", description="Bit Depth"),]
+            curves = [LasCurve(Descriptor(mnemonic="DEPT", unit="ft", description="Bit Depth"), [l.depth for l in log])]
+
+            if form.cleaned_data['elapsed_time'] :
+                d = Descriptor(mnemonic="ETIM", unit="S", description="Elapsed Time")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,[l.seconds for l in log]))
+                
+            if form.cleaned_data['status'] :
+                d = Descriptor(mnemonic="STAT", unit="", description="Tool Status")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,[l.status for l in log]))             
+                
+            if form.cleaned_data['gamma_ray'] :
+                d = Descriptor(mnemonic="GR", unit="CPS", description="Gamma Ray counts/second")
+                curve_headers.append(d)
+                curves.append(LasCurve(d,['%.1f' % round((pow(10, l.gamma*2/10000.0 ) * 2),1)  for l in log]))
+            
+            
+            
+            lf = LasFile(VersionHeader("2.0", False), WellHeader(well_headers), CurveHeader(curve_headers), ParameterHeader([]), curves)
+
+            return HttpResponse(lf.to_las(), mimetype="text/plain")
+
+    else:
+        form = LasFromMWDGammaLogForm() # An unbound form
+
+    rtform = LasFromRTLogForm()
+    mwdform = LasFromMWDLogForm()
+    return render_to_response('las_from_mwdlog_form.html', {'gammaform':form, 'mwdform': mwdform, 'rtform': rtform, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    
 
 
 def las_from_rtlog(request, object_id) :
@@ -324,4 +370,6 @@ def las_from_rtlog(request, object_id) :
         logform = LasFromMWDLogForm() # An unbound form
 
     mwdform = LasFromMWDLogForm()
-    return render_to_response('las_from_mwdlog_form.html', {'mwdform': mwdform, 'rtform': form, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    
+    gammaform = LasFromMWDGammaLogForm()
+    
+    return render_to_response('las_from_mwdlog_form.html', {'gammaform': gammaform, 'mwdform': mwdform, 'rtform': form, 'object': run, 'run':run, 'navigation_template': 'run_detail_menu.html'}, context_instance = RequestContext(request))    

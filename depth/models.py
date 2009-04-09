@@ -316,7 +316,19 @@ class ToolMWDRealTime(models.Model) :
     depth_units = models.CharField(max_length=2, null=True, blank=True, choices = LENGTH_UNIT_CHOICES)
     
 admin.site.register(ToolMWDRealTime)
-    
+
+class ToolMWDLogGamma(models.Model) :
+    uid = UUIDField(primary_key=True, editable=False)    
+    run = models.ForeignKey(Run)
+    seconds = models.IntegerField(db_index=True)
+    status = models.IntegerField()
+    gamma = models.IntegerField()
+    depth = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, db_index=True)
+    depth_units = models.CharField(max_length=2, null=True, blank=True, choices = LENGTH_UNIT_CHOICES)
+
+    def gamma_cps(self) :
+        return round((pow(10, self.gamma*2/10000.0 ) * 2),1)
+
     
 class ToolMWDLog(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)    
@@ -330,31 +342,13 @@ class ToolMWDLog(models.Model) :
     magnetic_x = models.IntegerField()
     magnetic_y = models.IntegerField()
     magnetic_z = models.IntegerField()
-    temperature = models.IntegerField()
-    gamma0 = models.IntegerField()
-    gamma1 = models.IntegerField()
-    gamma2 = models.IntegerField()
-    gamma3 = models.IntegerField()
+    temperature = models.IntegerField()    
     depth = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, db_index=True)
     depth_units = models.CharField(max_length=2, null=True, blank=True, choices = LENGTH_UNIT_CHOICES)
 
     def _calibrate(self, value, offset, gain, flip) :
         return round(flip * (value - offset)/(1.0 * gain),3)
 
-    def _gammaxfer(self, gamma) :
-        return round((pow(10, gamma*2/10000.0 ) * 2),1)
-
-    def gamma0_cps(self):
-        return self._gammaxfer(self.gamma0)
-
-    def gamma1_cps(self):
-        return self._gammaxfer(self.gamma1)
-
-    def gamma2_cps(self):
-        return self._gammaxfer(self.gamma2)
-
-    def gamma3_cps(self):
-        return self._gammaxfer(self.gamma3)
 
     def temperature_f(self) :
         """Already calibrated, but needs to be detransfered"""

@@ -8,7 +8,7 @@
     
 <script type="text/JavaScript">
 
-var pattern_time = new Array(28,28,28,35,35,56,56,28,28,28,28,42,42,21,21,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,60,60);
+var pattern_time = new Array(21,28,28,28,28,35,35,56,56,28,28,28,28,21,21,42,42,21,21,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,60,60);
 
 var seq_time_prev = Array(3);
 
@@ -30,7 +30,7 @@ function update_sequence_time()
                 break;
             }
             
-            if(pat_val<35)
+            if(pat_val < pattern_time.length)
             {
                 seq_time = seq_time + (pattern_time[pat_val] * cnt_val);                
             }            
@@ -130,7 +130,7 @@ $(document).ready(ready);
     <tr>
         <th>Advanced Sequence Patterns</th>
         <td><input type="hidden" name="scp_adv_seq_cur" value="{{ scp.advanced_squence_pattern }}" >
-            <input type="checkbox" id="scp_adv_seq" name="scp_adv_seq" {% ifequal scp.advanced_squence_pattern 1 %}checked="checked"{% endifequal %} ></td>
+            <input type="checkbox" id="scp_adv_seq" name="scp_adv_seq" {% if scp.advanced_squence_pattern %}checked="checked"{% endif %} ></td>
     </tr>
 </table>
     
@@ -166,20 +166,27 @@ $(document).ready(ready);
                             <option value="0" {% ifequal p.0 0 %}selected="selected"{% endifequal %} >tool status</option>
                             <option value="1" {% ifequal p.0 1 %}selected="selected"{% endifequal %} >azimuth</option>
                             <option value="2" {% ifequal p.0 2 %}selected="selected"{% endifequal %} >inclination</option>
-                            <option value="3" {% ifequal p.0 3 %}selected="selected"{% endifequal %} >Gz</option>
-                            <option value="4" {% ifequal p.0 4 %}selected="selected"{% endifequal %} >Hz</option>
-                            <option value="5" {% ifequal p.0 5 %}selected="selected"{% endifequal %} >high res Gx Gy</option>
-                            <option value="6" {% ifequal p.0 6 %}selected="selected"{% endifequal %} >high res Hx Hy</option>
-                            <option value="7" {% ifequal p.0 7 %}selected="selected"{% endifequal %} >temperature</option>
-                            <option value="9" {% ifequal p.0 9 %}selected="selected"{% endifequal %} >high res tool face</option>
-                            <option value="10" {% ifequal p.0 10 %}selected="selected"{% endifequal %} >high res gamma</option>
-                            <option value="11" {% ifequal p.0 11 %}selected="selected"{% endifequal %} >low res Gx Gy</option>
-                            <option value="12" {% ifequal p.0 12 %}selected="selected"{% endifequal %} >low res Hx Hy</option>
-                            <option value="13" {% ifequal p.0 13 %}selected="selected"{% endifequal %} >low res tool face</option>
-                            <option value="14" {% ifequal p.0 14 %}selected="selected"{% endifequal %} >low res gamma</option>
-                            <option value="15" {% ifequal p.0 15 %}selected="selected"{% endifequal %} >low res tool face gamma</option>
-                            <option value="33" {% ifequal p.0 33 %}selected="selected"{% endifequal %} >pulse cnt inclination</option>                        
-                            <option value="34" {% ifequal p.0 34 %}selected="selected"{% endifequal %} >pulse freq inclination</option>
+                            <option value="3" {% ifequal p.0 3 %}selected="selected"{% endifequal %} >G</option>
+                            <option value="4" {% ifequal p.0 4 %}selected="selected"{% endifequal %} >H</option>
+                            <option value="5" {% ifequal p.0 5 %}selected="selected"{% endifequal %} >Gz</option>
+                            <option value="6" {% ifequal p.0 6 %}selected="selected"{% endifequal %} >Hz</option>
+                            <option value="7" {% ifequal p.0 7 %}selected="selected"{% endifequal %} >high res Gx Gy</option>
+                            <option value="8" {% ifequal p.0 8 %}selected="selected"{% endifequal %} >high res Hx Hy</option>
+                            <option value="9" {% ifequal p.0 9 %}selected="selected"{% endifequal %} >temperature</option>
+                            <option value="10" {% ifequal p.0 10 %}selected="selected"{% endifequal %} >Presure</option>
+                            
+                            <option value="11" {% ifequal p.0 11 %}selected="selected"{% endifequal %} >high res tool face</option>
+                            <option value="12" {% ifequal p.0 12 %}selected="selected"{% endifequal %} >high res gamma</option>
+                            <option value="13" {% ifequal p.0 13 %}selected="selected"{% endifequal %} >low res G</option>
+                            <option value="14" {% ifequal p.0 14 %}selected="selected"{% endifequal %} >low res H</option>
+                            
+                            <option value="15" {% ifequal p.0 15 %}selected="selected"{% endifequal %} >low res Gx Gy</option>
+                            <option value="16" {% ifequal p.0 16 %}selected="selected"{% endifequal %} >low res Hx Hy</option>
+                            <option value="17" {% ifequal p.0 17 %}selected="selected"{% endifequal %} >low res tool face</option>
+                            <option value="18" {% ifequal p.0 18 %}selected="selected"{% endifequal %} >low res gamma</option>
+                            <option value="19" {% ifequal p.0 19 %}selected="selected"{% endifequal %} >low res tool face gamma</option>
+                            <option value="41" {% ifequal p.0 41 %}selected="selected"{% endifequal %} >pulse cnt inclination</option>                        
+                            <option value="42" {% ifequal p.0 42 %}selected="selected"{% endifequal %} >pulse freq inclination</option>
                         </select>
                         
                     </td>

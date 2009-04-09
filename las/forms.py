@@ -15,10 +15,7 @@ class LasFromMWDLogForm(forms.Form) :
     status = forms.BooleanField(required=False)
     temperature_f = forms.BooleanField(required=False)
     temperature_c = forms.BooleanField(required=False)    
-    gamma_ray_0 = forms.BooleanField(required=False)
-    gamma_ray_1 = forms.BooleanField(required=False)
-    gamma_ray_2 = forms.BooleanField(required=False)
-    gamma_ray_3 = forms.BooleanField(required=False)    
+    gamma_ray = forms.BooleanField(required=False)    
     gravity_x = forms.BooleanField(required=False)
     gravity_y = forms.BooleanField(required=False)
     gravity_z = forms.BooleanField(required=False)
@@ -27,6 +24,17 @@ class LasFromMWDLogForm(forms.Form) :
     magnetic_y = forms.BooleanField(required=False)
     magnetic_z = forms.BooleanField(required=False)
     total_magnetic = forms.BooleanField(required=False)
+
+class LasFromMWDGammaLogForm(forms.Form) :
+    
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
+    
+    elapsed_time = forms.BooleanField(required=False)
+    status = forms.BooleanField(required=False)    
+    gamma_ray = forms.BooleanField(required=False)        
 
 class LasFromRTLogForm(forms.Form) :
     

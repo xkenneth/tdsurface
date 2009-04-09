@@ -17,7 +17,7 @@
 
 <ul>
 {% for object in object_list %}
-<li>{% block objectline %}<a href="update/{{ object.pk}}/">{{ object }}</a>{% endblock objectline %}</li>
+<li>{% block objectline %}<a href="{{ object.pk}}/update/">{{ object }}</a>{% endblock objectline %}</li>
 {% endfor %}
 </ul>
 

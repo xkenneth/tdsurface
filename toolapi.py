@@ -112,7 +112,8 @@ class ToolAPI :
         s = self.decruft(raw)
         return self._tooltime2datetime(s)
     
-    def echo(self, s) :        
+    def echo(self, s) :
+        self.toolcom.flush_input_buffer() 
         self.toolcom.write_line('E ' + s)
         return self.decruft(self.toolcom.read_line())        
     
@@ -195,13 +196,19 @@ class ToolAPI :
         self.toolcom.read_line()  # Read the log start address '>> D600\r\n'        
 
     def get_current_log_address(self) :        
-        self.toolcom.write_line('RS')
+        self.toolcom.write_line('RLE')
+        raw = self.toolcom.read_line()        
+        return self.decruft(raw)
+
+    def get_beginning_log_address(self) :        
+        self.toolcom.write_line('RLB')
         raw = self.toolcom.read_line()        
         return self.decruft(raw)
 
     def get_bytes_in_log(self) :    
         log_address = self.get_current_log_address()
-        bytes_in_log = int(log_address, 16) - int('E600', 16)
+        beginning_address = self.get_beginning_log_address()
+        bytes_in_log = int(log_address, 16) - int(beginning_address, 16)
         return bytes_in_log
         
     def _getset_pulse_pattern_profile(self, cmd) :
@@ -250,16 +257,7 @@ class ToolAPI :
         scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         self.toolcom.read_line()
-        return StatusConstantProfile(scp)        
-
-    def _set_status_constant_profile(self,cmd) :
-        self.toolcom.write_line(cmd)        
-        scp = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
-        scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
-        scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
-        self.toolcom.read_line()
-        self.toolcom.read_line()
-        return StatusConstantProfile(scp)      
+        return StatusConstantProfile(scp)            
         
     def get_status_constant_profile(self) :
         return self._get_status_constant_profile('RT')
@@ -281,13 +279,19 @@ class ToolAPI :
         if v < 0 :
             v = 0xFFFF + (v + 1)
         cmd = ' '.join( (cmd, hex(v)[2:]) )
-        return self._set_status_constant_profile(cmd)
+        d = self._get_status_constant_profile(cmd)
+        self.toolcom.read_line()
+        return d
 
     def set_motor_open_position_offset(self, v) :
-        return self._set_motor_position_offset('MOF',v)
+        d = self._get_motor_position_offset('MOF',v)
+        self.toolcom.read_line()
+        return d
 
     def set_motor_shut_position_offset(self, v) :
-        return self._set_motor_position_offset('MSF',v)
+        d = self._get_motor_position_offset('MSF',v)
+        self.toolcom.read_line()
+        return d
 
     def set_motor_open_max_acceleration(self, v) :
         cmd = ' '.join(('MWUOM', hex(v)[2:]) )
@@ -338,3 +342,32 @@ class ToolAPI :
         s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         
         return MotorStatus(s)
+
+    def set_gammaray_log_size(self, v) :
+        cmd = ' '.join(('SGB', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_pulse_time(self, v) :
+        cmd = ' '.join(('PI', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_code_pulse_time(self, v) :
+        cmd = ' '.join(('PIC', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_narrow_pulse_time(self, v) :
+        cmd = ' '.join(('PIN', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_wide_pulse_time(self, v) :
+        cmd = ' '.join(('PIW', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_gear_numerator(self, v) :
+        cmd = ' '.join(('MGN', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+
+    def set_gear_denominator(self, v) :
+        cmd = ' '.join(('MGD', hex(v)[2:]) )
+        return self._get_status_constant_profile(cmd)
+        

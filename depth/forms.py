@@ -145,7 +145,8 @@ class ToolGeneralConfigForm(forms.Form) :
     advanced_squence_pattern = forms.BooleanField(required=False)
     tool_face_zeroing = forms.BooleanField(required=False)
     rotation_sensing = forms.BooleanField(required=False)
-    logging_interval = forms.IntegerField(label='Logging Interval (ms)',max_value=3600000, min_value=0)
+    logging_interval = forms.IntegerField(label='Logging Interval (ms)',max_value=3600000, min_value=0, widget=forms.TextInput(attrs={'size':'6'}))
+    gammaray_log_size = forms.IntegerField(label='Gamma Ray Logs / Interval',max_value=60, min_value=1, widget=forms.TextInput(attrs={'size':'4'}))
 
 class ToolMotorConfigForm(forms.Form) :
     class Media:
@@ -164,4 +165,10 @@ class ToolMotorConfigForm(forms.Form) :
     open_max_acceleration = forms.IntegerField(min_value=0, max_value=15, widget=forms.TextInput(attrs={'size':'4'}))    
     shut_max_acceleration = forms.IntegerField(min_value=0, max_value=15, widget=forms.TextInput(attrs={'size':'4'}))
 
+    pulse_time = forms.IntegerField(label='Pulse time (ms)', min_value=0, max_value=2000, widget=forms.TextInput(attrs={'size':'4'}))
+    narrow_pulse_time = forms.IntegerField(label='Narrow pulse time (ms)', min_value=0, max_value=5000, widget=forms.TextInput(attrs={'size':'4'}))
+    wide_pulse_time = forms.IntegerField(label='Wide pulse time (ms)', min_value=0, max_value=5000, widget=forms.TextInput(attrs={'size':'4'}))
+
+    gear_numerator = forms.IntegerField(min_value=0, max_value=1000, widget=forms.TextInput(attrs={'size':'4'}))
+    gear_denominator = forms.IntegerField(min_value=0, max_value=1000, widget=forms.TextInput(attrs={'size':'4'}))
     

@@ -24,33 +24,31 @@ def manual_depth_to_mwdlog(request, object_id) :
     run = Run.objects.get(pk=object_id)
 
     mwdlogs = ToolMWDLog.objects.filter(run=run)
+    mwdgammalogs = ToolMWDLogGamma.objects.filter(run=run)
 
-    for l in mwdlogs :
-        time_stamp = run.start_time + timedelta(seconds=l.seconds)
-        #try :
+    for logs in (mwdlogs,mwdgammalogs) :    
+        for l in logs :
             
-        lower = ManualDepth.objects.filter(run=run, time_stamp__lte = time_stamp ).order_by('-time_stamp')[0]
-        higher = ManualDepth.objects.filter(run=run, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
-        #except:
-        #    continue
+            time_stamp = run.start_time + timedelta(seconds=l.seconds)
+            try :
+                lower = ManualDepth.objects.filter(run=run, time_stamp__lte = time_stamp ).order_by('-time_stamp')[0]
+                higher = ManualDepth.objects.filter(run=run, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
+            except:
+                continue
 
-        # Linear Interpolation where x = seconds and y = depth    
-        x = mktime(time_stamp.timetuple())
-        xa = mktime(lower.time_stamp.timetuple())
-        xb = mktime(higher.time_stamp.timetuple())
+            # Linear Interpolation where x = seconds and y = depth    
+            x = mktime(time_stamp.timetuple())
+            xa = mktime(lower.time_stamp.timetuple())
+            xb = mktime(higher.time_stamp.timetuple())
 
-        ya = float(lower.depth)
-        yb = float(higher.depth)
-        
-        y = ya + ((x - xa) * (yb - ya))/(xb - xa)
-
-        #print xa, x, xb
-        #print ya, y, yb
-        #print
-        
-        l.depth=str(y)
-        l.depth_units='ft'
-        l.save()
+            ya = float(lower.depth)
+            yb = float(higher.depth)
+            
+            y = ya + ((x - xa) * (yb - ya))/(xb - xa)
+            
+            l.depth=str(y)
+            l.depth_units='ft'
+            l.save()
 
     return HttpResponseRedirect(reverse('las_from_mwdlog', args=[object_id]))  
 
