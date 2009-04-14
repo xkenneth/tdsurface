@@ -417,7 +417,42 @@ def run_roll_test(request, object_id, extra_context=None) :
     data['rolltest'] = RollTest.objects.filter(run=run).order_by('-time_stamp')
     
     return render_to_response('run_roll_test.html', data, context_instance = RequestContext(request))
+
+
+
+def tool_face_zero_json(request, object_id) :
+    
+    tool = Tool.objects.get(pk=object_id)
+    
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+    
+    sensor = tapi.get_sensor_readings()
+    scp = tapi.get_status_constant_profile()        
+    tc.close()
+    
+    data = {'tool_face': sensor.tool_face, 'tool_face_zeroing': scp.tool_face_zeroing }
+
+    data = simplejson.dumps(data)
+    
+    return HttpResponse(data, mimetype="application/javascript")        
+
+
+def tool_face_zero_start(request, object_id) :
+    
+    tool = Tool.objects.get(pk=object_id)
+    
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
         
+    scp = tapi.get_status_constant_profile()
+    if scp.tool_face_zeroing :
+        tapi.toggle_tool_face_zeroing()
+        
+    tc.close()
+    
+    return HttpResponse("Waiting for Gamma Ray Source...")
+
     
 def tool_sensors_json(request, object_id) :
     

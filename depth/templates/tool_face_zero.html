@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<script type="text/javascript" src="{{ MEDIA_URL}}scripts/bindows_gauges/bindows_gauges.js"></script>
+
+<script type="text/JavaScript">
+
+
+
+$(document).ready(im_ready);
+
+var toolface_gauge = 0;
+var zeroing = 0;
+var first = 1;
+
+function sensors_callback(data, textStatus)
+{        
+    $("#tool_face").text(data.tool_face.toFixed(1));
+        
+    toolface_gauge.needle.setValue(data.tool_face.toFixed(1)) 
+    
+    $.getJSON("{% url tool_face_zero_json object.pk %}", sensors_callback);
+    if(first)
+    {
+        first=0;
+        $("#zero_button").removeAttr("disabled");
+        $("#zero_status").text("");
+    }
+    
+    if(zeroing)
+    {
+        if(data.tool_face_zeroing)
+        {
+            zeroing=0;
+            $("#zero_status").text("Tool face zeroing complete.");
+            $("#zero_button").removeAttr("disabled");
+        }
+    }    
+}
+
+function zero_callback(data, textStatus)
+{
+    $("#zero_status").text("Waiting for gamma ray source...");
+    zeroing = 1;
+}
+ 
+function get_sensors()
+{    
+    $.getJSON("{% url tool_face_zero_json object.pk %}", sensors_callback);   
+}
+
+function zero_click()
+{    
+    $(this).attr("disabled","disabled");
+    $("#zero_status").text("Activating tool face zeroing...");
+    $.get("{% url tool_face_zero_start object.pk %}", zero_callback);
+}
+
+function im_ready()
+{
+    $("#zero_button").click(zero_click);     
+    toolface_gauge = bindows.loadGaugeIntoDiv("{{ MEDIA_URL }}scripts/bindows_gauges/toolface.xml", "toolface_gauge_div");
+    get_sensors();
+}
+</script>    
+    
+
+{% endblock head %}
+
+{% block navigation %}
+{% include navigation_template %}
+{% endblock navigation %}
+
+{% block subtitle %}<h3>Tool Face Zeroing - {{ object }}</h3>{% endblock subtitle %}
+
+{% block body %}
+{% load utc2tz %}
+
+<table >    
+    <tr>               
+        <th>Tool Face</th>        
+    </tr>
+    <tr>        
+        <td align="center"><span id="tool_face"></span>&deg; </td>
+    </tr>
+    <tr>
+        <td><div id="toolface_gauge_div" style="width: 175px; height: 175px"></div></td>
+    </tr>
+    
+    
+</table>
+
+
+<button disabled="disabled" id="zero_button">Zero Tool Face</button>
+
+<div id="zero_status">Waiting for tool face data...</div>
+
+{% endblock body %}

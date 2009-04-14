@@ -148,6 +148,7 @@ class ToolGeneralConfigForm(forms.Form) :
     logging_interval = forms.IntegerField(label='Logging Interval (ms)',max_value=3600000, min_value=0, widget=forms.TextInput(attrs={'size':'6'}))
     gammaray_log_size = forms.IntegerField(label='Gamma Ray Logs / Interval',max_value=60, min_value=1, widget=forms.TextInput(attrs={'size':'4'}))
 
+
 class ToolMotorConfigForm(forms.Form) :
     class Media:
         css = {
