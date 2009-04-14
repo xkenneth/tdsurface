@@ -132,6 +132,15 @@ class ToolAPI :
         cmd = ' '.join(('WC', hex(coeff)[2:], hex(val)[2:]))
         self.toolcom.write_line(cmd)
         return [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]        
+
+    def get_frame_mode_buffer(self) :        
+        self.toolcom.write_line('RM')
+        return [ int(x, 16) for x in (self.decruft(self.toolcom.read_line()).split(' '))[2:] ]
+        
+    def set_frame_mode_buffer(self, frame, val) :        
+        cmd = ' '.join(('WM', hex(frame)[2:], hex(val)[2:]))
+        self.toolcom.write_line(cmd)
+        return [ int(x, 16) for x in (self.decruft(self.toolcom.read_line()).split(' '))[2:] ]       
         
     def get_log(self, call_back) :        
         self.toolcom.write_line('RL')

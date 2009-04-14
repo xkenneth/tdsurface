@@ -550,6 +550,42 @@ def tool_pulse_pattern_profile(request, object_id) :
     return render_to_response('tool_pulse_pattern_profile.html', {'ppp': ppp, 'ppsp': ppsp, 'scp': scp, 'object': tool, }, context_instance = RequestContext(request))
 
 
+def tool_frame_mode_buffer(request, object_id) :
+    
+    tool = Tool.objects.get(pk=object_id)
+
+    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
+    tapi = ToolAPI(tc)
+
+    comcheck = tapi.echo('ABC123')
+    if comcheck != 'ABC123' :
+        tc.close()
+        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+
+    if request.method == 'POST':
+        form = ToolFrameModeBufferForm(request.POST) 
+        
+        if form.is_valid(): 
+            mode_cur = tapi.get_frame_mode_buffer()
+        
+            for frame in range(len(mode_cur)) :            
+                mode = form.cleaned_data['fmb'+str(frame)]
+                
+                if (mode != mode_cur[frame]):
+                    tapi.set_frame_mode_buffer(frame, mode)                    
+
+    else :
+        mode_cur = tapi.get_frame_mode_buffer()
+        b = {}
+        for frame in range(len(mode_cur)) :
+            b['fmb'+str(frame)] = mode_cur[frame]
+        form = ToolFrameModeBufferForm(initial = b)
+    tc.close()
+    
+    
+    return render_to_response('generic_form.html', {'object': tool, 'form': form, 'subtitle': 'Frame Mode Configuration', 'navigation_template': 'tool_config_menu.html'}, context_instance = RequestContext(request))
+
+
 def tool_purge_log(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
