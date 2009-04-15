@@ -461,10 +461,10 @@ def tool_sensors_json(request, object_id) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
     
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
-        tc.close()
-        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+    #comcheck = tapi.echo('ABC123')
+    #if comcheck != 'ABC123' :
+    #    tc.close()
+    #    return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
                 
     sensor = tapi.get_sensor_readings()
     tc.close()

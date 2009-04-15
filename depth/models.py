@@ -121,7 +121,7 @@ admin.site.register(Rig)
 
 
 class Well(models.Model) :
-    
+
     uid = UUIDField(primary_key=True, editable=False)    
     name = models.CharField(max_length=255, unique=True)
     legal_name = models.CharField(unique=True, max_length=255, null=True, blank=True)
@@ -161,10 +161,11 @@ class WellBore(models.Model) :
         ('sidetrack', 'sidestrack'),
         ('unknown', 'unknown'),
         )
-    
+
+    unique_together = (("name", "well"),)
     
     uid = UUIDField(primary_key=True, editable=False)
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=False)
     well = models.ForeignKey(Well)
     parrent_wellbore_uid = models.ForeignKey('self', blank=True, null=True)
     rig = models.ForeignKey(Rig)
@@ -248,15 +249,18 @@ admin.site.register(ToolCalibration)
 
     
 class Run(models.Model) :
+
+    unique_together = (("name", "well_bore"),)
+    
     uid = UUIDField(primary_key=True, editable=False)
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=False)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(blank=True, null=True)
     tool_calibration = models.ForeignKey(ToolCalibration, blank=True, null=True)
     well_bore = models.ForeignKey(WellBore)        
     
     def __unicode__(self) :
-        return str(self.name) + ' - ' + str(self.well_bore) + " " + str(self.start_time)
+        return str(self.well_bore) + ' - ' str(self.name)
         
 admin.site.register(Run)
 

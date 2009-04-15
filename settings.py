@@ -92,10 +92,10 @@ print "!",STATIC_DOC_ROOT
 
 #COMPORT = '/dev/tty.BluePortXP-C6DC-SPP-1'
 # Linux usb serial port
-#COMPORT = '/dev/ttyUSB0'
+COMPORT = '/dev/ttyUSB0'
 #COMPORT = '/dev/rfcomm0'
 # MacBook Pro usb serial port
-COMPORT = '/dev/tty.PL2303-0000103D'
+#COMPORT = '/dev/tty.PL2303-0000103D'
 BAUDRATE=2400
 DATABITS=8
 PARITY='N'

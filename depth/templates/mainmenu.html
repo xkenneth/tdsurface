@@ -119,7 +119,7 @@ function sensors_callback(data, textStatus)
             //$(this).show();
         }).error(function () {
             //alert("Error loading Gamma Ray graph");
-        }).attr('src', '{% url plot_realtime_gammaray active_run %}'+'?'+uniq);
+        }).attr('src', '{% url plot_realtime_gammaray active_run|default:"0" %}'+'?'+uniq);
     
     window.setTimeout(get_sensors,30000);
 }
@@ -127,7 +127,7 @@ function sensors_callback(data, textStatus)
 function get_sensors()
 {
     {% if active_run %} 
-    $.getJSON("{% url run_real_time_json active_run 5 %}", sensors_callback);
+    $.getJSON("{% url run_real_time_json active_run|default:"0" 5 %}", sensors_callback);
     {% endif %}
 }
 
