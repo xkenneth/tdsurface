@@ -260,7 +260,7 @@ class Run(models.Model) :
     well_bore = models.ForeignKey(WellBore)        
     
     def __unicode__(self) :
-        return str(self.well_bore) + ' - ' str(self.name)
+        return str(self.well_bore) + ' - ' + str(self.name)
         
 admin.site.register(Run)
 
