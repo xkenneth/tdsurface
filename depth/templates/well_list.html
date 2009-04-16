@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{{ form.media }}
+{% endblock head %}
+
+{% block subtitle %}
+    <h3>{{ subtitle }}</h3>
+{% endblock subtitle %}
+
+{% block navigation %}
+    {% include navigation_template %}
+{% endblock navigation %}
+
+{% block body %}
+
+<table>
+    <tr>
+        <th>
+        Well
+        </th>
+        <th>Receive Active Senor Data</th>
+    </tr>
+
+{% for object in object_list %}
+{% block objectline %}
+<tr>
+<td><a href="{{ object.pk}}/update/">{{ object }}</a></td>
+<td>{% ifequal active_well object.pk %}<span style="color:darkgreen">Active</span>{% endifequal %}
+{% ifnotequal active_well object.pk %}
+    <a href="{% url well_activate object.pk %}"><button>Activate</button></a>
+{% endifnotequal %}
+</td>
+</tr>
+{% endblock objectline %}
+{% endfor %}
+</table>
+<br>
+<br>
+Note: Any realtime sensor data or WITS0 data received will be associated with the active well.
+{% endblock body %}

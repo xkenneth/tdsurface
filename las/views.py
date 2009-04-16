@@ -54,9 +54,9 @@ def las_from_mwdlog(request, object_id) :
         if form.is_valid(): # All validation rules pass    
             
 
-            mwdlog = ToolMWDLog.objects.filter(run=object_id, depth__gt=0).order_by('depth')
+            mwdlog = ToolMWDLog.objects.filter(well=run.well_bore.well, time_stamp__gte=run.start_time, time_stamp__lte=run.end_time, depth__gt=0).order_by('depth')
 
-            mwdlog_agg = ToolMWDLog.objects.filter(run=object_id, depth__gt=0).aggregate(Min('depth'), Max('depth'))
+            mwdlog_agg = ToolMWDLog.objects.filter(well=run.well_bore.well, time_stamp__gte=run.start_time, time_stamp__lte=run.end_time, depth__gt=0).aggregate(Min('depth'), Max('depth'))
             well_headers = [
                 Descriptor(mnemonic="STRT", unit="FT", data=str(mwdlog_agg['depth__min'])),
                 Descriptor(mnemonic="STOP", unit="FT", data=str(mwdlog_agg['depth__max'])),
@@ -186,9 +186,9 @@ def las_from_mwdgammalog(request, object_id) :
         if form.is_valid(): # All validation rules pass    
             
 
-            log = ToolMWDLogGamma.objects.filter(run=object_id, depth__gt=0).order_by('depth')
+            log = ToolMWDLogGamma.objects.filter(run=run, depth__gt=0).order_by('depth')
 
-            log_agg = ToolMWDLogGamma.objects.filter(run=object_id, depth__gt=0).aggregate(Min('depth'), Max('depth'))
+            log_agg = ToolMWDLogGamma.objects.filter(run=run, depth__gt=0).aggregate(Min('depth'), Max('depth'))
             well_headers = [
                 Descriptor(mnemonic="STRT", unit="FT", data=str(log_agg['depth__min'])),
                 Descriptor(mnemonic="STOP", unit="FT", data=str(log_agg['depth__max'])),
@@ -250,9 +250,9 @@ def las_from_rtlog(request, object_id) :
             
             type = []
         
-            rtlog = ToolMWDRealTime.objects.filter(run=object_id, depth__gt=0).order_by('depth')
+            rtlog = ToolMWDRealTime.objects.filter(well=run.well_bore.well, time_stamp__gte=run.start_time, time_stamp__lte=run.end_time, depth__gt=0).order_by('depth')
 
-            rtlog_agg = ToolMWDRealTime.objects.filter(run=object_id, depth__gt=0).aggregate(Min('depth'), Max('depth'))
+            rtlog_agg = ToolMWDRealTime.objects.filter(well=run.well_bore.well, time_stamp__gte=run.start_time, time_stamp__lte=run.end_time, depth__gt=0).aggregate(Min('depth'), Max('depth'))
             well_headers = [
                 Descriptor(mnemonic="STRT", unit="FT", data=str(rtlog_agg['depth__min'])),
                 Descriptor(mnemonic="STOP", unit="FT", data=str(rtlog_agg['depth__max'])),

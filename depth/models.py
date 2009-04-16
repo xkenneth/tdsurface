@@ -8,6 +8,7 @@ from pytz import common_timezones
 from math import sqrt
 
 LENGTH_UNIT_CHOICES = (('m','meters'), ('ft','feet'))
+WEIGHT_UNIT_CHOICES = (('lbs','pounds'), ('klbs','Kilo Pounds'), ('t', 'tons') )
 TEMP_UNIT_CHOICES = (('F','Fahrenheit'), ('C','Celsius'))
 TIMEZONE_CHOICES =  [(x,x) for x in common_timezones if x.startswith( 'US/' )]
 
@@ -309,7 +310,7 @@ admin.site.register(PipeTally)
 class ToolMWDRealTime(models.Model) :
     VALUE_TYPE_CHOICES = (('g','Gravity'),('H','Magnetic'),('temperature','Temperature'),('gammaray','Gamma Ray'),('azimuth','Azimuth'),('inclination','Inclination'),('toolface','Tool Face'),('status', 'Status'))
     uid = UUIDField(primary_key=True, editable=False)
-    run = models.ForeignKey(Run)    
+    well = models.ForeignKey(Well)    
     time_stamp = models.DateTimeField( db_index=True)
     type = models.CharField(max_length=32, choices = VALUE_TYPE_CHOICES, db_index=True)
     value = models.IntegerField(blank=True, null=True)
@@ -413,7 +414,7 @@ admin.site.register(ToolMWDLog)
 
 class ManualDepth(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
-    run = models.ForeignKey(Run)
+    well = models.ForeignKey(Well)
     time_stamp = models.DateTimeField(db_index=True)
     depth = models.DecimalField(max_digits=10, decimal_places=3, db_index=True)
     depth_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
@@ -427,7 +428,7 @@ admin.site.register(ManualDepth)
 
 class BlockPosition(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
-    run = models.ForeignKey(Run)
+    well = models.ForeignKey(Well)
     time_stamp = models.DateTimeField(db_index=True)
     position = models.DecimalField(max_digits=10, decimal_places=3)
     position_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
@@ -435,10 +436,20 @@ class BlockPosition(models.Model) :
 admin.site.register(BlockPosition)
 
 
+class HookLoad(models.Model) :
+    uid = UUIDField(primary_key=True, editable=False)
+    well = models.ForeignKey(Well)
+    time_stamp = models.DateTimeField(db_index=True)
+    value = models.DecimalField(max_digits=10, decimal_places=3)
+    value_units = models.CharField(max_length=2, choices = WEIGHT_UNIT_CHOICES)
+
+admin.site.register(HookLoad)
+
+
 class Slip(models.Model) :
     SLIP_STATUS_CHOICES = ((0,'Out'),(1,'In'))
     uid = UUIDField(primary_key=True, editable=False)
-    run = models.ForeignKey(Run)
+    well = models.ForeignKey(Well)
     time_stamp = models.DateTimeField(db_index=True)
     status = models.DecimalField(max_digits=1, decimal_places=0, choices = SLIP_STATUS_CHOICES)
 
@@ -467,12 +478,16 @@ class Settings(models.Model) :
         active_run, created = Settings.objects.get_or_create(name='ACTIVE_RUN')
         return Run.objects.get(pk=active_run.value)
 
+    def get_active_well(self) :        
+        active_well, created = Settings.objects.get_or_create(name='ACTIVE_WELL')
+        return Well.objects.get(pk=active_well.value)
+
 admin.site.register(Settings)
 
 
 class WITSGeneralTimeBased(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
-    run = models.ForeignKey(Run)
+    well = models.ForeignKey(Well)
     time_stamp = models.DateTimeField(db_index=True)
     recid = models.IntegerField(blank=True, null=True)
     seqid = models.IntegerField(blank=True, null=True)
@@ -521,7 +536,7 @@ admin.site.register(WITSGeneralTimeBased)
 
 class WITS0(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
-    run = models.ForeignKey(Run)
+    well = models.ForeignKey(Well)
     time_stamp = models.DateTimeField(db_index=True)
     recid = models.IntegerField(db_index=True)
     itemid = models.IntegerField(db_index=True)

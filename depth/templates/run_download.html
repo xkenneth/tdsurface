@@ -80,16 +80,7 @@ function status()
     </tr>
     <tr>
         <th>Bore</th><td>{{ object.well_bore }}</td>
-    </tr>
-    <tr>
-        <th>Active (RTD)</th>
-        <td>
-            {% ifequal active_run object.pk %}<img src="{{ MEDIA_URL }}/images/action_check.png" alt="Active">{% endifequal %}
-            {% ifnotequal active_run object.pk %}
-                <a href="{% url run_activate object.pk %}"><button>Activate</button></a>
-            {% endifnotequal %}
-        </td>
-    </tr>
+    </tr>    
     <tr>
         <th>Tool</th>
         <td>{{ object.tool_calibration.tool }}</td>

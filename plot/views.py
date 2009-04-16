@@ -74,14 +74,14 @@ import pytz
 
 def plot_realtime_gammaray(request, object_id) :
 
-    run = Run.objects.get(pk=object_id)
-    wltz = pytz.timezone(run.well_bore.well.timezone)
+    well = Well.objects.get(pk=object_id)
+    wltz = pytz.timezone(well.timezone)
     gammas = []    
     times = []
 
-    ragg = ToolMWDRealTime.objects.filter(run=run, type='gammaray').aggregate(Max('time_stamp'))
+    ragg = ToolMWDRealTime.objects.filter(well=well, type='gammaray').aggregate(Max('time_stamp'))
     hoursago = (ragg['time_stamp__max'] or datetime.utcnow()) - timedelta(hours=1)
-    r = ToolMWDRealTime.objects.filter(run=run, type='gammaray', time_stamp__gt=hoursago).order_by('time_stamp')    
+    r = ToolMWDRealTime.objects.filter(well=well, type='gammaray', time_stamp__gt=hoursago).order_by('time_stamp')    
 
     # System goes to 100% memory used if 0-1 points are plotted
     if len(r) < 2 :
@@ -97,8 +97,8 @@ def plot_realtime_gammaray(request, object_id) :
         ftime = wlt.strftime('%H:%M')
         
         try :            
-            lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
-            higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
+            lower = WITS0.objects.filter(well=well, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
+            higher = WITS0.objects.filter(well=well, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
         except:            
             return '%s / No Dpth' % ftime
 
@@ -132,8 +132,8 @@ def plot_realtime_gammaray(request, object_id) :
     prev_depth = -999
     for t in times :
         try :            
-            lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = t ).order_by('-time_stamp')[0]
-            higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = t ).order_by('time_stamp')[0]
+            lower = WITS0.objects.filter(well=well, recid=1, itemid=8, time_stamp__lt = t ).order_by('-time_stamp')[0]
+            higher = WITS0.objects.filter(well=well, recid=1, itemid=8, time_stamp__gt = t ).order_by('time_stamp')[0]
         except:            
             continue
 

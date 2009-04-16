@@ -52,7 +52,7 @@ function onDeleteRow(eventObject)
     if( sr != null )
     {
         jQuery("#grid").delRowData(sr);
-        jQuery.post("{% url run_manual_depth_grid_delete object.pk %}", {'id':sr}, deleteRowCallBack );
+        jQuery.post("{% url bha_component_grid_delete object.pk %}", {'id':sr}, deleteRowCallBack );
     }
     else
     {
@@ -62,12 +62,23 @@ function onDeleteRow(eventObject)
 
 function onAddRow(eventObject)
 {    
-                 
-    jQuery("#grid").addRowData('new',{'time_stamp':'','depth':'','depth_units':'ft','notes':''},'last');
-    jQuery("#grid").resetSelection();
-    jQuery("#grid").setSelection('new');
-    jQuery('#grid').editRow('new', false);
-    
+    var sr = jQuery("#grid").getGridParam("selrow");
+    if( sr != null )
+    {
+        var order = jQuery("#grid").getCell(sr,'order');        
+        order = 1+parseInt(order);   
+        jQuery("#grid").addRowData('new',{'order':''+order,'description':'','serial_number':'','odia':'0','idia':'0', 'fn_length':'0', 'top_conn': '', 'pb':'', 'length':'0' },'after',sr);
+        jQuery("#grid").resetSelection();
+        jQuery("#grid").setSelection('new');
+        jQuery('#grid').editRow('new', false);            
+    }
+    else
+    {                
+        jQuery("#grid").addRowData('new',{'order':'end','description':'','serial_number':'','odia':'0','idia':'0', 'fn_length':'0', 'top_conn': '', 'pb':'', 'length':'0'},'last');
+        jQuery("#grid").resetSelection();
+        jQuery("#grid").setSelection('new');
+        jQuery('#grid').editRow('new', false);
+    }
 }
 
 function saveRowSuccess(response)
@@ -82,8 +93,9 @@ function onSaveRow(eventObject)
 {
     var sr = jQuery("#grid").getGridParam("selrow");
     if( sr != null )
-    {        
-        jQuery("#grid").saveRow(sr, successfunc=saveRowSuccess, url=null); 
+    {
+        var order = jQuery("#grid").getCell(sr,'order');
+        jQuery("#grid").saveRow(sr, successfunc=saveRowSuccess, url=null, extraparam = {'order': order}); 
     }
     else
     {
@@ -92,10 +104,51 @@ function onSaveRow(eventObject)
         
 }
 
+
+function onMoveRowUp(eventObject)
+{
+    var sr = jQuery("#grid").getGridParam("selrow");
+    if( sr != null )
+    {
+        var order = jQuery("#grid").getCell(sr,'order');
+        order -= 1;
+        if(order > 0)
+        {
+            jQuery("#grid").setCell(sr,'order',order);
+            jQuery('#grid').editRow(sr, false);            
+            jQuery("#grid").saveRow(sr, successfunc=saveRowSuccess, url=null, extraparam = {'order': order}); 
+        }
+    }
+    else
+    {
+        alert("Please Select Row");
+    }
+    
+}
+
+function onMoveRowDown(eventObject)
+{
+    var sr = jQuery("#grid").getGridParam("selrow");
+    if( sr != null )
+    {        
+        var order = jQuery("#grid").getCell(sr,'order');
+        order = parseInt(order) + 1;
+        jQuery("#grid").setCell(sr,'order',order);
+        jQuery('#grid').editRow(sr, false);        
+        jQuery("#grid").saveRow(sr, successfunc=saveRowSuccess, url=null, extraparam = {'order': order});       
+    }
+    else
+    {
+        alert("Please Select Row");
+    }
+        
+}
+
+
 function imready()
 {
     $("#grid").jqGrid({
-    url:'{% url run_manual_depth_grid object.pk %}',
+    url:'{% url bha_component_grid object.pk %}',
     datatype: 'json',    
     mtype: 'GET',
     height: 200,  
@@ -103,8 +156,8 @@ function imready()
       {name:'order', label:'Order', width:70, align:'right', editable:false},
       {name:'description', label:'Description', width:150, align:'left', editable:true},      
       {name:'serial_number', label:'Serial Number', width:150, align:'left', sortable:false, editable:true, edittype:'text'},
-      {name:'od', label:'OD', width:70, align:'right', sortable:false, editable:true, edittype:'text'},
-      {name:'id', label:'ID', width:70, align:'right', sortable:false, editable:true, edittype:'text'},
+      {name:'odia', label:'OD', width:70, align:'right', sortable:false, editable:true, edittype:'text'},
+      {name:'idia', label:'ID', width:70, align:'right', sortable:false, editable:true, edittype:'text'},
       {name:'fn_length', label:'FN Length', width:70, align:'right', sortable:false, editable:true, edittype:'text'},
       {name:'top_conn', label:'Top Conn', width:125, align:'left', sortable:false, editable:true, edittype:'text'},
       {name:'pb', label:'PB', width:150, align:'left', sortable:false, editable:true, edittype:'text'},
@@ -117,7 +170,7 @@ function imready()
     sortorder: "asc",
     viewrecords: true,
     imgpath: '{{ MEDIA_URL}}scripts/jquery/jqGrid/themes/basic/images',
-    caption: 'Bottom Hole Assembly',
+    caption: 'Bottom Hole Assembly Components',
     jsonReader : {
       root: "rows",
       page: "page",
@@ -127,7 +180,7 @@ function imready()
       id: "id",
         },
     onSelectRow: onSelectRow,
-    editurl: '{% url run_manual_depth_grid_edit object.pk %}',
+    editurl: '{% url bha_component_grid_edit object.pk %}',
     scrollrows: true
     });
 
@@ -135,6 +188,8 @@ function imready()
     $("#editrow").click(onEditRow);
     $("#saverow").click(onSaveRow);    
     $("#delrow").click(onDeleteRow);
+    $("#moveup").click(onMoveRowUp);
+    $("#movedown").click(onMoveRowDown);
 
 }
 
@@ -166,5 +221,7 @@ th
 <br>
 <table id="grid" class="scroll"></table>
 <div id="pager" class="scroll" style="text-align:center;"></div> 
+<button id="editrow">Edit Row</button>  <button id="saverow">Save Row</button>  <button id="addrow">Add Row</button>
+<button id="moveup">Up</button>  <button id="movedown">Down</button>  <button id="delrow">Delete Row</button>
 
 {% endblock body %}

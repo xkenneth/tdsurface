@@ -119,15 +119,15 @@ function sensors_callback(data, textStatus)
             //$(this).show();
         }).error(function () {
             //alert("Error loading Gamma Ray graph");
-        }).attr('src', '{% url plot_realtime_gammaray active_run|default:"0" %}'+'?'+uniq);
+        }).attr('src', '{% url plot_realtime_gammaray active_well|default:"0" %}'+'?'+uniq);
     
     window.setTimeout(get_sensors,30000);
 }
  
 function get_sensors()
 {
-    {% if active_run %} 
-    $.getJSON("{% url run_real_time_json active_run|default:"0" 5 %}", sensors_callback);
+    {% if active_well %} 
+    $.getJSON("{% url well_real_time_json active_well|default:"0" 5 %}", sensors_callback);
     {% endif %}
 }
 
@@ -160,13 +160,13 @@ function im_ready()
 
 {% block body %}
 
-{% if active_run %}
+{% if active_well %}
 <table border="0">
     <tr>
         <td valign="top">
 <table border="0">
     <tr>
-        <th colspan="4">Active Run Real Time Readings</th>        
+        <th colspan="4">Tool Real Time Sensor Readings</th>        
     </tr>
     <tr>
         <th>Temperature</th>              
@@ -197,8 +197,16 @@ function im_ready()
 </table>
 
         </td>
-        <td valign="top"> <div id="loader"></div></td>
-    </tr>
+        <td valign="top"> <div id="loader"></div>
+        <table>
+            <tr>
+                <td style="background-color:#FFBFCC;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </td>
+                <td>Bit Off Bottom</td>
+            </tr>
+        </table>
+        </td>
+    </tr>    
 </table>
 
 {% endif %}

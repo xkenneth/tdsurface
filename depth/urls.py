@@ -7,13 +7,20 @@ def get_active_run() :
     active_run, created = Settings.objects.get_or_create(name='ACTIVE_RUN')
     return active_run.value
 
+def get_active_well() :
+    active_well, created = Settings.objects.get_or_create(name='ACTIVE_WELL')
+    return active_well.value    
+
 urlpatterns = patterns('',
     
     (r'^test/$', 'tdsurface.depth.views.test', {}, 'test'),
     
     (r'^well/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'well_create'),
+    (r'^well/createactive/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Active Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../%(uid)s/activate/' }, 'well_createactive'),
+    (r'^well/(?P<object_id>[\d\-a-f]+)/activate/$', 'tdsurface.depth.views.well_activate', {}, 'well_activate'),
     (r'^well/(?P<object_id>[\d\-a-f]+)/update/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Well', 'navigation_template': 'well_menu.html'}, 'form_class': WellForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'well_update'),    
-    (r'^well/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Wells', 'navigation_template': 'well_menu.html'}, 'queryset': Well.objects.all(), 'template_name': 'generic_list.html'}, 'well_list'),
+    (r'^well/(?P<object_id>[\d\-a-f]+)/real_time_json/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.well_real_time_json', {}, 'well_real_time_json'),
+    (r'^well/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Wells', 'navigation_template': 'well_menu.html', 'active_well': get_active_well}, 'queryset': Well.objects.all(), 'template_name': 'well_list.html'}, 'well_list'),
         
     (r'^rig/create/$', 'django.views.generic.create_update.create_object', {'extra_context': {'subtitle':'New Rig', 'navigation_template': 'rig_menu.html'}, 'form_class': RigForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../' }, 'rig_create'),
     (r'^rig/(?P<object_id>[\d\-a-f]+)/update/$', 'django.views.generic.create_update.update_object', {'extra_context': {'subtitle':'Update Rig', 'navigation_template': 'rig_menu.html'}, 'form_class': RigForm, 'template_name': 'generic_form.html', 'post_save_redirect': '../../' }, 'rig_update'),    
@@ -72,7 +79,10 @@ urlpatterns = patterns('',
     (r'^run/downloadstatus/$', 'tdsurface.depth.views.run_download_status_json', {}, 'run_download_status'),
     (r'^run/downloadcancel/$', 'tdsurface.depth.views.run_download_cancel', {}, 'run_download_cancel'),
 
-    (r'^run/(?P<object_id>[\d\-a-f]+)/bha/update/$', 'tdsurface.bha.views.bha_update', {'extra_context': {'subtitle':'BHA Update', 'navigation_template': 'run_detail_menu.html',} }, 'bha_update'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/bha/update/$', 'tdsurface.bha.views.bha_update', {'extra_context': {'subtitle':'BHA Update', 'navigation_template': 'run_detail_menu.html',} }, 'bha_update'),    
+    (r'^run/(?P<object_id>[\d\-a-f]+)/bha/component/grid/$', 'tdsurface.bha.views.bha_component_grid', {}, 'bha_component_grid'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/bha/component/grid/edit/$', 'tdsurface.bha.views.bha_component_grid_edit', {}, 'bha_component_grid_edit'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/bha/component/grid/delete/$', 'tdsurface.bha.views.bha_component_grid_delete', {}, 'bha_component_grid_delete'),
     
     (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/(?P<num_skip>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_detail_menu.html',} }, 'run_wits0_latest'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/wits0/log/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_wits0_latest', {'extra_context': {'subtitle':'Latest WITS0 Records', 'navigation_template': 'run_detail_menu.html',} }, 'run_wits0_latest'),
@@ -82,11 +92,10 @@ urlpatterns = patterns('',
 
     (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/mwdlog/$', 'tdsurface.manual_depth.views.manual_depth_to_mwdlog', {}, 'run_manual_depth_to_mwdlog'),    
     (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/rtlog/$', 'tdsurface.manual_depth.views.manual_depth_to_rtlog', {}, 'run_manual_depth_to_rtlog'),
-
-    (r'^run/(?P<object_id>[\d\-a-f]+)/real_time_json/(?P<num_latest>[\d]+)/$', 'tdsurface.depth.views.run_real_time_json', {}, 'run_real_time_json'),
+    
 
     (r'^run/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html', 'active_run': get_active_run }, 'queryset': Run.objects.all(), 'template_name': 'run_list.html'}, 'run_list'),
          
-    (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html', 'extra_context': { 'active_run': get_active_run }}, 'home'),
+    (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html', 'extra_context': { 'active_run': get_active_run, 'active_well': get_active_well }}, 'home'),
     #(r'.*', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}),
 )

@@ -26,12 +26,12 @@ class Component(models.Model) :
     order = models.PositiveIntegerField()
     description = models.CharField(max_length=255, blank=True, null=True)
     serial_number = models.CharField(max_length=255, blank=True, null=True)
-    od = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
-    id = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
-    fn_length = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
+    odia = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, default=0)
+    idia = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, default=0)
+    fn_length = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, default=0)
     top_conn = models.CharField(max_length=255, blank=True, null=True)
     pb = models.CharField(max_length=255, blank=True, null=True)
-    length = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
+    length = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, default=0)
 
 class Bit(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)

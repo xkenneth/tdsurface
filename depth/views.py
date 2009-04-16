@@ -733,6 +733,20 @@ def run_activate(request, object_id) :
         
     return HttpResponseRedirect(reverse('run_list'))
 
+
+def well_activate(request, object_id) :    
+    d = {}
+    
+    well = Well.objects.get(pk=object_id)
+   
+    active_well, created = Settings.objects.get_or_create(name='ACTIVE_WELL')
+    
+    active_well.value=well.pk
+    active_well.save()
+        
+    return HttpResponseRedirect(reverse('well_list'))    
+
+
 def run_create(request, template_name,
         post_save_redirect, extra_context=None) :
 
@@ -781,7 +795,8 @@ def run_update(request, object_id, extra_context=None,) :
             run_form = RunFormForm(request.POST) # A form bound to the POST data
             run_notes_form = RunNotesForm()
             if run_form.is_valid(): # All validation rules pass                
-                well_bore = WellBore.objects.get(pk=run_form.cleaned_data['well_bore'])
+                #well_bore = WellBore.objects.get(pk=run_form.cleaned_data['well_bore'])
+                well_bore = run_form.cleaned_data['well_bore']
                 # Convert user entered Well Local Time to to UTC
                 wlt = timezone(well_bore.well.timezone)                
                 start_time = run_form.cleaned_data['start_time']
@@ -1027,7 +1042,7 @@ def run_wits0_latest(request, object_id, num_latest=100, num_skip=0, extra_conte
     neg_num_latest = -num_latest
     num_skip = int(num_skip)
 
-    wits = WITS0.objects.filter(run=run).order_by('-time_stamp','recid','itemid')[num_skip: num_skip+num_latest]
+    wits = WITS0.objects.filter(well=run.well_bore.well).order_by('-time_stamp','recid','itemid')[num_skip: num_skip+num_latest]
     
     data = {'wits':wits, 'num_latest':num_latest, 'neg_num_latest':neg_num_latest, 'num_skip':num_skip, 'run':run, 'object':run }
     
@@ -1039,35 +1054,35 @@ def run_wits0_latest(request, object_id, num_latest=100, num_skip=0, extra_conte
     
     return render_to_response('wits0_detail.html', data , context_instance = RequestContext(request)) 
     
-def run_real_time_json(request, object_id, num_latest=5) :
+def well_real_time_json(request, object_id, num_latest=5) :
 
-    run = Run.objects.get(pk=object_id)
+    well = Well.objects.get(pk=object_id)
     num_latest=int(num_latest)
-    wltz = pytz.timezone(run.well_bore.well.timezone)
+    wltz = pytz.timezone(well.timezone)
     
     azimuth = []
-    [azimuth.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='azimuth').order_by('-time_stamp')[:num_latest] ]
+    [azimuth.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='azimuth').order_by('-time_stamp')[:num_latest] ]
     toolface = []
-    [toolface.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='toolface').order_by('-time_stamp')[:num_latest] ]
+    [toolface.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='toolface').order_by('-time_stamp')[:num_latest] ]
     inclination = []
-    [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='inclination').order_by('-time_stamp')[:num_latest] ]
+    [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='inclination').order_by('-time_stamp')[:num_latest] ]
     gamma = []
     
-    [gamma.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='gammaray').order_by('-time_stamp')[:num_latest*10] ]
+    [gamma.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='gammaray').order_by('-time_stamp')[:num_latest*10] ]
     temperature = []
-    [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(run=run).filter(type='temperature').order_by('-time_stamp')[:num_latest] ]
+    [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='temperature').order_by('-time_stamp')[:num_latest] ]
 
 
     hole_depth = []
-    [hole_depth.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
+    [hole_depth.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=10).order_by('-time_stamp')[:num_latest] ]
     bit_depth = []
-    [bit_depth.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=8).order_by('-time_stamp')[:num_latest] ]    
+    [bit_depth.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=8).order_by('-time_stamp')[:num_latest] ]    
     weight_on_bit = []
-    [weight_on_bit.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
+    [weight_on_bit.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
     mud_flow_in = []
-    [mud_flow_in.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
+    [mud_flow_in.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
     rop = []
-    [rop.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(run=run).filter(recid=1,itemid=13).order_by('-time_stamp')[:num_latest] ]
+    [rop.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=13).order_by('-time_stamp')[:num_latest] ]
     
     data =  {
         'azimuth': azimuth,
@@ -1204,10 +1219,9 @@ def wits0_depth_to_mwdlog(request, object_id) :
     for logs in (mwdlogs,mwdgammalogs) :    
         for l in logs :
             time_stamp = run.start_time + timedelta(seconds=l.seconds)
-            try :
-                
-                lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
-                higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
+            try :                
+                lower = WITS0.objects.filter(well = run.well_bore.well, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
+                higher = WITS0.objects.filter(well = run.well_bore.well, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
             except:
                 continue
 
@@ -1231,13 +1245,16 @@ def wits0_depth_to_mwdlog(request, object_id) :
 def wits0_depth_to_rtlog(request, object_id) :
     run = Run.objects.get(pk=object_id)
 
-    logs = ToolMWDRealTime.objects.filter(run=run)
+    if not run.start_time or not run.end_time :
+        return render_to_response('message.html', {'message': 'The Run Start Time and End Time are required', 'navigation_template': 'run_detail_menu.html' , 'object':run }, context_instance = RequestContext(request))
+        
+    logs = ToolMWDRealTime.objects.filter(well=run.well_bore.well, time_stamp__gte=run.start_time, time_stamp__lte=run.end_time)
 
     for l in logs :
         time_stamp = l.time_stamp
         try :            
-            lower = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
-            higher = WITS0.objects.filter(run=run, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
+            lower = WITS0.objects.filter(well=run.well_bore.well, recid=1, itemid=8, time_stamp__lt = time_stamp ).order_by('-time_stamp')[0]
+            higher = WITS0.objects.filter(well=run.well_bore.well, recid=1, itemid=8, time_stamp__gt = time_stamp ).order_by('time_stamp')[0]
         except:
             continue
 

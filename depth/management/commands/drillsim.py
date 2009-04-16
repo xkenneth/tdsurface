@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         
         settings = Settings()
-        active_run = settings.get_active_run()
+        active_well = settings.get_active_well()
 
         d=100
         h=d      
@@ -38,13 +38,13 @@ class Command(BaseCommand):
             if d > h :
                 h=d
 
-            bd = WITS0(run=active_run, time_stamp=datetime.utcnow(), recid=1, itemid=8, value=d)
+            bd = WITS0(well=active_well, time_stamp=datetime.utcnow(), recid=1, itemid=8, value=d)
             bd.save()
-            hd = WITS0(run=active_run, time_stamp=datetime.utcnow(), recid=1, itemid=10, value=h)
+            hd = WITS0(well=active_well, time_stamp=datetime.utcnow(), recid=1, itemid=10, value=h)
             hd.save()
             time.sleep(10)
             
-            mdwrt = ToolMWDRealTime(run=active_run, time_stamp=datetime.utcnow(), type='gammaray', value=g )
+            mdwrt = ToolMWDRealTime(well=active_well, time_stamp=datetime.utcnow(), type='gammaray', value=g )
             mdwrt.save()
             
             time.sleep(10)                        

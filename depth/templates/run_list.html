@@ -20,8 +20,7 @@
         <th>Start Time</th>
         <th>End Time</th>
         <th>Well</th>
-        <th>Bore</th>
-        <th>Active (RTD)</th>
+        <th>Bore</th>        
         <th>Log Count</th>        
     </tr>
     
@@ -31,13 +30,7 @@
         <td><a href="{% url run_detail object.pk %}">{{ object.start_time|utc2tz:object.well_bore.well.timezone }}</a> </td>
         <td><a href="{% url run_detail object.pk %}">{{ object.end_time|utc2tz:object.well_bore.well.timezone }}</a> </td>
         <td><a href="{% url run_detail object.pk %}">{{ object.well_bore.well }}</a> </td>
-        <td><a href="{% url run_detail object.pk %}">{{ object.well_bore }}</a> </td>        
-        <td>
-            {% ifequal active_run object.pk %}<img src="{{ MEDIA_URL }}/images/action_check.png" alt="Active">{% endifequal %}
-            {% ifnotequal active_run object.pk %}
-                <a href="{% url run_activate object.pk %}"><button>Activate</button></a>
-            {% endifnotequal %}
-        </td>
+        <td><a href="{% url run_detail object.pk %}">{{ object.well_bore }}</a> </td>                
         <td>
             {{ object.toolmwdlog_set.count }}
         </td>        

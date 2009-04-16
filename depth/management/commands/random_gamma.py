@@ -18,14 +18,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         
         settings = Settings()
-        active_run = settings.get_active_run()
+        active_well = settings.get_active_well()
 
         g = 30
         m = 1
         for cnt in range(100) :
             g += (int(random.uniform(1,15)) * m)
             print g
-            mdwrt = ToolMWDRealTime(run=active_run, time_stamp=datetime.utcnow(), type='gammaray', value=g )
+            mdwrt = ToolMWDRealTime(well=active_well, time_stamp=datetime.utcnow(), type='gammaray', value=g )
             mdwrt.save()
             if g>75 :
                 m=-1
