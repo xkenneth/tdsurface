@@ -12,6 +12,44 @@ var pattern_time = new Array(21,28,28,28,28,35,35,56,56,28,28,28,28,21,21,42,42,
 
 var seq_time_prev = Array(3);
 
+function clear_unused_patterns()
+{
+    for(var seq=0;seq<3;seq=seq+1)
+    {
+        var seq_time=0;
+        for(var pat=0;pat<20;pat=pat+1)
+        {
+            var pat_id = '#ppp_seq'+seq+'_pat'+pat;
+            var cnt_id = '#ppp_seq'+seq+'_cnt'+pat;
+            
+            var pat_val = $(pat_id).val()*1;
+            var cnt_val = $(cnt_id).val()*1;
+                        
+            if(cnt_val == 0  && cnt_val != 65535)
+            {
+                $(pat_id).val("65535");
+            }            
+        }
+    }
+
+    for(var sp = 0; sp < 10; sp = sp + 1)
+    {
+        seq_id = '#ppsp_seq' + sp;
+        min_id = '#ppsp_min' + sp;
+        sec_id = '#ppsp_sec' + sp;
+
+        var sec = $(sec_id).val() * 1;
+        var min = $(min_id).val() * 1;
+
+        seq = $(seq_id).val() * 1;
+
+        if( sec+min==0 && seq != 65535)
+        {
+            $(seq_id).val('65536');
+        }
+    }
+}
+
 function update_sequence_time()
 {    
     for(var seq=0;seq<3;seq=seq+1)
@@ -106,6 +144,7 @@ function ready()
     $('.count_field').change(ppp_change);
     $('.ppsp_seq_field').change(ppsp_change);
     $('.ppsp_time_field').change(ppsp_change);
+    $('#clear_button').click(clear_unused_patterns);
 }
 
 $(document).ready(ready);
@@ -129,8 +168,8 @@ $(document).ready(ready);
 <table>
     <tr>
         <th>Advanced Sequence Patterns</th>
-        <td><input type="hidden" name="scp_adv_seq_cur" value="{{ scp.advanced_squence_pattern }}" >
-            <input type="checkbox" id="scp_adv_seq" name="scp_adv_seq" {% if scp.advanced_squence_pattern %}checked="checked"{% endif %} ></td>
+        <td><input type="hidden" name="scp_adv_seq_cur" value="{{ scp.advanced_sequence_pattern }}" >
+            <input type="checkbox" id="scp_adv_seq" name="scp_adv_seq" {% if scp.advanced_sequence_pattern %}checked="checked"{% endif %} ></td>
     </tr>
 </table>
     
@@ -151,7 +190,7 @@ $(document).ready(ready);
             <table>
                 <tr>    
                     <th>
-                        Pattern
+                        Data Frame
                     </th>
                     <th>
                         Count
@@ -204,7 +243,7 @@ $(document).ready(ready);
             <table class="seqpatclass">
                 <tr>
                     <th>Sequence</th>
-                    <th>Repeat (m:s)</th>
+                    <th>Length (m:s)</th>
                 </tr>
                 {% for p in ppsp %}
                     <tr>
@@ -231,5 +270,10 @@ $(document).ready(ready);
     <br>
     <button id="submit_button" disabled="disabled" >Save To Tool</button>
 </form>
+
+<br>
+<br>
+<br>
+<button id="clear_button">Clear Unused Patterns</button>
 
 {% endblock body %}

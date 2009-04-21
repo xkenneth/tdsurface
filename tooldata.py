@@ -1,4 +1,13 @@
 
+def hex2signedint(x, bits) :
+    s = pow(2,bits-1)
+    x = int(x,16)
+    if x >= s :
+        # Less than 0
+        x = (pow(2,bits) - x) * -1
+    return x
+
+
 class ToolLogData :
     def __init__(self, raw_data) :
         self.raw_data = raw_data
@@ -52,16 +61,16 @@ def signedint(x,bits) :
 class StatusConstantProfile :
     def __init__(self, scp) :
         self.raw_data = scp
-        self.advanced_squence_pattern = bool(scp[3])
+        self.advanced_sequence_pattern = bool(scp[3])
         self.tool_face_zeroing = bool(scp[4])
         self.rotation_sensing = bool(scp[5])
-        self.logging_interval = (0x10000*scp[88]) + scp[89]
-        self.motor_open_position_offset = signedint(scp[65],16)
-        self.motor_shut_position_offset = signedint(scp[66],16)
-        self.motor_open_max_acceleration = scp[75]
-        self.motor_shut_max_acceleration = scp[76]
-        self.motor_open_acceleration_delay = scp[69]
-        self.motor_shut_acceleration_delay = scp[70]
+        self.logging_interval = (0x10000*scp[92]) + scp[93]
+        self.motor_open_position_offset = signedint(scp[67],16)
+        self.motor_shut_position_offset = signedint(scp[68],16)
+        self.motor_open_max_acceleration = scp[79]
+        self.motor_shut_max_acceleration = scp[80]
+        self.motor_open_acceleration_delay = scp[73]
+        self.motor_shut_acceleration_delay = scp[74]
         self.motor_calibration_initial_acceleration = scp[60]
         self.gammaray_log_size = scp[57]
         self.pulse_time = scp[8]
@@ -75,6 +84,6 @@ class StatusConstantProfile :
 class MotorStatus :
     def __init__(self, s) :
         self.raw_data = s
-        self.calibration_speed = s[0]
-        self.open_position = s[1]
-        self.shut_position = s[2]
+        self.calibration_speed = int(s[0])
+        self.open_position = hex2signedint(s[1],32)
+        self.shut_position = hex2signedint(s[2],32)

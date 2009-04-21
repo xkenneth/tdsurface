@@ -179,7 +179,7 @@ def tool_general_config(request, object_id, extra_context=None) :
             if logging_interval != form.cleaned_data['logging_interval'] :
                 tapi.set_logging_interval(form.cleaned_data['logging_interval'])
 
-            if scp.advanced_squence_pattern != form.cleaned_data['advanced_squence_pattern'] :
+            if scp.advanced_sequence_pattern != form.cleaned_data['advanced_sequence_pattern'] :
                 tapi.toggle_advanced_sequence_pattern_mode()
 
             if scp.tool_face_zeroing != form.cleaned_data['tool_face_zeroing'] :
@@ -202,7 +202,7 @@ def tool_general_config(request, object_id, extra_context=None) :
             return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
 
         scp = tapi.get_status_constant_profile()
-        initial = {'advanced_squence_pattern': scp.advanced_squence_pattern,
+        initial = {'advanced_sequence_pattern': scp.advanced_sequence_pattern,
                    'tool_face_zeroing': scp.tool_face_zeroing,
                    'rotation_sensing': scp.rotation_sensing,
                    'logging_interval': scp.logging_interval,

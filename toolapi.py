@@ -23,17 +23,6 @@ calibration_map = {
     'temperature_gain': 13
 }
 
-
-def hex2signedint(x, bits) :
-    s = pow(2,bits-1)
-    x = int(x,16)
-    if x >= s :
-        # Less than 0
-        x = (pow(2,bits) - x) * -1
-    return x
-        
-
-
 class ToolAPI :
     def __init__(self, toolcom) :
         self.toolcom = toolcom
@@ -265,7 +254,8 @@ class ToolAPI :
         scp = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
         scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
-        self.toolcom.read_line()
+        scp += [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        #self.toolcom.read_line()
         return StatusConstantProfile(scp)            
         
     def get_status_constant_profile(self) :
@@ -293,13 +283,13 @@ class ToolAPI :
         return d
 
     def set_motor_open_position_offset(self, v) :
-        d = self._get_motor_position_offset('MOF',v)
-        self.toolcom.read_line()
+        d = self._set_motor_position_offset('MOF',v)
+        #self.toolcom.read_line()
         return d
 
     def set_motor_shut_position_offset(self, v) :
-        d = self._get_motor_position_offset('MSF',v)
-        self.toolcom.read_line()
+        d = self._set_motor_position_offset('MSF',v)
+        #self.toolcom.read_line()
         return d
 
     def set_motor_open_max_acceleration(self, v) :
@@ -323,8 +313,8 @@ class ToolAPI :
         return self._get_status_constant_profile(cmd)
 
     def get_motor_status(self) :        
-        self.toolcom.write_line('MLT')
-        s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        self.toolcom.write_line('MLT')        
+        s = self.decruft(self.toolcom.read_line()).split(' ') 
         
         return MotorStatus(s)
 
@@ -348,7 +338,7 @@ class ToolAPI :
         for x in range(10) :
             self.toolcom.read_line()    # Ignore calibration data
 
-        s = [ int(x, 16) for x in self.decruft(self.toolcom.read_line()).split(' ') ]
+        s = self.decruft(self.toolcom.read_line()).split(' ')
         
         return MotorStatus(s)
 

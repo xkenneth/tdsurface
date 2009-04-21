@@ -140,7 +140,7 @@ class ToolGeneralConfigForm(forms.Form) :
                 'all': (form_css,)
         }
 
-    advanced_squence_pattern = forms.BooleanField(required=False)
+    advanced_sequence_pattern = forms.BooleanField(required=False)
     tool_face_zeroing = forms.BooleanField(label="Tool Face Zeroed", required=False)
     rotation_sensing = forms.BooleanField(required=False)
     logging_interval = forms.IntegerField(label='Logging Interval (ms)',max_value=3600000, min_value=0, widget=forms.TextInput(attrs={'size':'6'}))

@@ -21,8 +21,8 @@ from tdsurface.depth.models import *
 import pytz
 
 def manual_depth_to_mwdlog(request, object_id) :
-    run = Run.objects.get(pk=object_id)
-
+    run = Run.objects.get(pk=object_id)    
+    
     mwdlogs = ToolMWDLog.objects.filter(run=run)
     mwdgammalogs = ToolMWDLogGamma.objects.filter(run=run)
 
@@ -90,7 +90,8 @@ def manual_depth_to_rtlog(request, object_id) :
 def run_manual_depth_grid(request, object_id) :
 
     run = Run.objects.get(pk=object_id)
-    wltz = pytz.timezone(run.well_bore.well.timezone)
+    well = run.well_bore.well
+    wltz = pytz.timezone(well.timezone)
     
     page = int(request.GET['page'])
     rows = int(request.GET['rows'])
@@ -99,7 +100,13 @@ def run_manual_depth_grid(request, object_id) :
     if request.GET['sord'] == 'desc' :
         sort_order= '-'
     
-    pt = ManualDepth.objects.filter(run=object_id).order_by(sort_order+request.GET['sidx'])
+    pt = ManualDepth.objects.filter(well=well)
+    if run.start_time :
+        pt = pt.filter(time_stamp__gte = run.start_time)
+    if run.end_time :
+        pt = pt.filter(time_stamp__lte = run.end_time)
+    pt = pt.order_by(sort_order+request.GET['sidx'])
+    
     records = len(pt)
     total_pages = records/rows;
     if records % rows :
@@ -128,6 +135,8 @@ def run_manual_depth_grid(request, object_id) :
         
 def run_manual_depth_grid_edit(request, object_id) :    
     run = Run.objects.get(pk=object_id)
+    well = run.well_bore.well
+    
     wltz = pytz.timezone(run.well_bore.well.timezone)
     
     if request.method=='POST' :
@@ -135,7 +144,7 @@ def run_manual_depth_grid_edit(request, object_id) :
         time_stamp = wltz.localize(wlt).astimezone(pytz.utc).replace(tzinfo=None)   
         if request.POST['id'] == 'new' :
                         
-            md = ManualDepth(run = run,
+            md = ManualDepth(well = well,
                            time_stamp = time_stamp,                           
                            depth = request.POST['depth'],
                            depth_units = request.POST['depth_units'],
