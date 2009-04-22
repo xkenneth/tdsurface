@@ -12,12 +12,20 @@ $(document).ready(im_ready);
 var toolface_gauge = 0;
 var zeroing = 0;
 var first = 1;
+var waiting_to_start = 0;
 
 function sensors_callback(data, textStatus)
 {        
     $("#tool_face").text(data.tool_face.toFixed(1));
         
     toolface_gauge.needle.setValue(data.tool_face.toFixed(1)) 
+
+    if(waiting_to_start)
+    {
+        waiting_to_start=0;
+        $.get("{% url tool_face_zero_start object.pk %}", zero_callback);
+        return;
+    }
     
     $.getJSON("{% url tool_face_zero_json object.pk %}", sensors_callback);
     if(first)
@@ -42,6 +50,7 @@ function zero_callback(data, textStatus)
 {
     $("#zero_status").text("Waiting for gamma ray source...");
     zeroing = 1;
+    $.getJSON("{% url tool_face_zero_json object.pk %}", sensors_callback);
 }
  
 function get_sensors()
@@ -53,7 +62,7 @@ function zero_click()
 {    
     $(this).attr("disabled","disabled");
     $("#zero_status").text("Activating tool face zeroing...");
-    $.get("{% url tool_face_zero_start object.pk %}", zero_callback);
+    waiting_to_start = 1;
 }
 
 function im_ready()

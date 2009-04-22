@@ -428,6 +428,7 @@ def tool_face_zero_json(request, object_id) :
     tapi = ToolAPI(tc)
     
     sensor = tapi.get_sensor_readings()
+    time.sleep(1)
     scp = tapi.get_status_constant_profile()        
     tc.close()
     

@@ -1,5 +1,6 @@
 import serial
 import logging
+import time
 
 
 class ToolCom :
@@ -7,6 +8,7 @@ class ToolCom :
         self.raw_data = []
         self.ser = None
         self.ser = serial.Serial(**args)
+        time.sleep(1)
         self.ser.flushInput()        
         
     
