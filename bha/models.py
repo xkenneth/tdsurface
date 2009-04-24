@@ -12,8 +12,8 @@ class BHA(models.Model) :
 
 class Pump(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
-    bha = models.ForeignKey(BHA)
-    number = models.PositiveIntegerField()
+    bha = models.ForeignKey(BHA, editable=False)
+    number = models.PositiveIntegerField(editable=False)
     liner_size = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
     stroke_length = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
     stroke_volume = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
@@ -34,14 +34,21 @@ class Component(models.Model) :
     length = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, default=0)
 
 class Bit(models.Model) :
+
+    BIT_TYPE_CHOICES = (
+        ('tri-cone','tri-cone'),
+        ('PDC','PDC'),        
+        ('unknown', 'unknown'),
+        )
+    
     uid = UUIDField(primary_key=True, editable=False)
-    bha = models.OneToOneField(BHA)
+    bha = models.OneToOneField(BHA, editable=False)
     bit_number = models.PositiveIntegerField(blank=True, null=True)
     run_number = models.PositiveIntegerField(blank=True, null=True)
     serial_number = models.CharField(max_length=255, blank=True, null=True)
     manufacturer = models.CharField(max_length=255, blank=True, null=True)
     size = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
-    type = models.CharField(max_length=255, blank=True, null=True)
+    type = models.CharField(max_length=255, choices=BIT_TYPE_CHOICES, blank=True, null=True)
     blade_cnt = models.PositiveIntegerField(blank=True, null=True)
     cutter_size = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
     gauge_length = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
@@ -57,8 +64,8 @@ class Bit(models.Model) :
 
 class Jet(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
-    bit = models.ForeignKey(Bit)
-    value = models.DecimalField(max_digits=10, decimal_places=3)
+    bit = models.ForeignKey(Bit, editable=False)
+    value = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=3)
 
 
 

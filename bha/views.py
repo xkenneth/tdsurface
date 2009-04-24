@@ -15,25 +15,64 @@ from tdsurface.bha.forms import *
 
 from django.utils import simplejson
 
+MAX_JETS=9
+MAX_PUMPS=3
+
 def bha_update(request, object_id, extra_context=None) :
 
     run = Run.objects.get(pk=object_id)
 
-    bha = get_object_or_None(BHA, run=run)
-    if not bha :
-        bha = BHA(run=run)
-        bha.save()
+    bha, created = BHA.objects.get_or_create(run=run)    
+    bit, created = Bit.objects.get_or_create(bha=bha)
+
+    jets = Jet.objects.filter(bit=bit)
+    if len(jets) < MAX_JETS :
+        for x in range(MAX_JETS - len(jets)) :
+            j = Jet(bit=bit)
+            j.save()
+        jets = Jet.objects.filter(bit=bit)
         
+    pumps = Pump.objects.filter(bha=bha).order_by('number')
+    if len(pumps) < MAX_PUMPS :
+        cnt = len(pumps)
+        for x in range(MAX_PUMPS - len(pumps)) :
+            cnt=cnt+1
+            p = Pump(bha=bha, number=cnt)
+            p.save()
+        pumps = Pump.objects.filter(bha=bha).order_by('number')
+            
     if request.method == 'POST':
         bha_form = BHAForm(request.POST, instance=bha) # A form bound to the POST data
-        if bha_form.is_valid(): # All validation rules pass
-            bha_form.save()            
+        bit_form = BitForm(request.POST, instance=bit)
+        jet_forms = [JetForm(request.POST, prefix='jet'+str(x), instance=jets[x]) for x in range(MAX_JETS)]
+        pump_forms = [PumpForm(request.POST, prefix='pump'+str(x), instance=pumps[x]) for x in range(MAX_PUMPS)]
+        if all([bha_form.is_valid(), bit_form.is_valid()] + [x.is_valid() for x in jet_forms] + [x.is_valid() for x in pump_forms]) : # All validation rules pass
+            bha_form.save()
+            bit_form.save()
+            for jet_form in jet_forms :
+                jet_form.save()
+            for pump_form in pump_forms :
+                pump_form.save()
             return HttpResponseRedirect(reverse('bha_update', args=[object_id]))
 
     else :
         bha_form = BHAForm(instance=bha)
+        bit_form = BitForm(instance=bit)
+        jet_forms = [JetForm(prefix='jet'+str(x), instance=jets[x]) for x in range(MAX_JETS)]
+        pump_forms = [PumpForm(prefix='pump'+str(x), instance=pumps[x]) for x in range(MAX_PUMPS)]
+
+    pump_fields = []
+    for field in pump_forms[0].fields :
+        pump_fields.append([])
+
+    
+    for pump_form in pump_forms :
+        cnt=0
+        for field in pump_form.fields :
+            pump_fields[cnt].append(field)
+            cnt = cnt+1
         
-    data = {'object': run, 'bha_form': bha_form, 'bha':bha}
+    data = {'object': run, 'bha_form': bha_form, 'bit_form': bit_form, 'jet_forms': jet_forms, 'pump_forms': pump_forms, 'pump_fields': pump_fields, 'bha':bha}    
     
     for key, value in extra_context.items():
         if callable(value):

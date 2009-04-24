@@ -212,16 +212,73 @@ th
 {% block subtitle %}<h3>{{ subtitle }}</h3>{% endblock subtitle %}
 
 {% block body %}
-<h2 style="color: red;">Not used in depth calculations at this time.</h2>
-<form method="POST" action=".">
-{{ bha_form.as_p }}
-<input id="submit" value="Submit" type="submit">
-</form>
-<br>
-<br>
+
+
 <table id="grid" class="scroll"></table>
 <div id="pager" class="scroll" style="text-align:center;"></div> 
 <button id="editrow">Edit Row</button>  <button id="saverow">Save Row</button>  <button id="addrow">Add Row</button>
 <button id="moveup">Up</button>  <button id="movedown">Down</button>  <button id="delrow">Delete Row</button>
 
+<br>
+<br>
+<h2 style="color: red;">Not used in depth calculations at this time.</h2>
+<form method="POST" action=".">
+<table>
+    <tr>
+        <th>BHA Information</th>
+        <th>Pumps</th>
+    </tr>
+    <tr>
+        <td valign="top">
+        {{ bha_form.as_p }}
+        </td>
+        <td>
+        <table>        
+            <tr>
+                {% for form in pump_forms %}
+                    <td>
+                        <table>
+                            <tr>{% if forloop.first %}<td></td>{% endif %}<th valign="top">Pump {{ forloop.counter }}</th></tr>                 
+                            {% for field in form %}                                
+                            <tr>{% if forloop.parentloop.first %}<td>{{ field.label_tag }}:</td>{% endif %}<td valign="top">{{ field.errors }}{{ field }}</td></tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                {% endfor %}
+            </tr>
+        </table>
+        </td>
+    </tr>
+    <tr>
+        <th>Bit</th>
+        <th>Bit Jets</th>
+    </tr>
+    <tr>
+        <td>
+        {{ bit_form.as_p }}
+        </td>
+        <td valign="top">
+        <table>
+        {% for jet_form in jet_forms %}    
+            <tr>
+                <td>
+                    Jet {{ forloop.counter }}:
+                </td>
+                <td>                    
+                    {% for hidden in jet_form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+                    
+                    {{ jet_form.value.errors }}
+                    {{ jet_form.value }}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+        </td>
+    </tr>
+</table>
+
+<input id="submit" value="Submit" type="submit">
+</form>
 {% endblock body %}
