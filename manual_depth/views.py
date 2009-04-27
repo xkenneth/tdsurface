@@ -17,6 +17,7 @@ from datetime import datetime
 from datetime import timedelta
 
 from tdsurface.depth.models import *
+from tdsurface.bha.models import BHA
 
 import pytz
 
@@ -25,7 +26,8 @@ def manual_depth_to_mwdlog(request, object_id) :
     
     mwdlogs = ToolMWDLog.objects.filter(run=run)
     mwdgammalogs = ToolMWDLogGamma.objects.filter(run=run)
-
+    bha, created = BHA.objects.get_or_create(run=run)
+    
     for logs in (mwdlogs,mwdgammalogs) :    
         for l in logs :
             
@@ -45,6 +47,7 @@ def manual_depth_to_mwdlog(request, object_id) :
             yb = float(higher.depth)
             
             y = ya + ((x - xa) * (yb - ya))/(xb - xa)
+            y = y - float(bha.gammaray_sensor_offset)          #Offest position of tool in BHA
             
             l.depth=str(y)
             l.depth_units='ft'
@@ -55,8 +58,8 @@ def manual_depth_to_mwdlog(request, object_id) :
 
 def manual_depth_to_rtlog(request, object_id) :
     run = Run.objects.get(pk=object_id)
-
-    logs = ToolMWDRealTime.objects.filter(run=run)
+    logs = ToolMWDRealTime.objects.filter(well=run.well_bore.well)
+    bha, created = BHA.objects.get_or_create(run=run)
 
     for l in logs :
         time_stamp = l.time_stamp
@@ -76,10 +79,8 @@ def manual_depth_to_rtlog(request, object_id) :
         
         y = ya + ((x - xa) * (yb - ya))/(xb - xa)
 
-        #print xa, x, xb
-        #print ya, y, yb
-        #print
-        
+        y = y - float(bha.gammaray_sensor_offset)          #Offest position of tool in BHA
+                
         l.depth=str(y)
         l.depth_units='ft'
         l.save()
@@ -89,9 +90,8 @@ def manual_depth_to_rtlog(request, object_id) :
 
 def run_manual_depth_grid(request, object_id) :
 
-    run = Run.objects.get(pk=object_id)
-    well = run.well_bore.well
-    wltz = pytz.timezone(well.timezone)
+    run = Run.objects.get(pk=object_id)    
+    wltz = pytz.timezone(run.well_bore.well.timezone)
     
     page = int(request.GET['page'])
     rows = int(request.GET['rows'])
@@ -100,12 +100,7 @@ def run_manual_depth_grid(request, object_id) :
     if request.GET['sord'] == 'desc' :
         sort_order= '-'
     
-    pt = ManualDepth.objects.filter(well=well)
-    if run.start_time :
-        pt = pt.filter(time_stamp__gte = run.start_time)
-    if run.end_time :
-        pt = pt.filter(time_stamp__lte = run.end_time)
-    pt = pt.order_by(sort_order+request.GET['sidx'])
+    pt = ManualDepth.objects.filter(run=run).order_by(sort_order+request.GET['sidx'])
     
     records = len(pt)
     total_pages = records/rows;
@@ -134,8 +129,7 @@ def run_manual_depth_grid(request, object_id) :
 
         
 def run_manual_depth_grid_edit(request, object_id) :    
-    run = Run.objects.get(pk=object_id)
-    well = run.well_bore.well
+    run = Run.objects.get(pk=object_id)    
     
     wltz = pytz.timezone(run.well_bore.well.timezone)
     
@@ -144,7 +138,7 @@ def run_manual_depth_grid_edit(request, object_id) :
         time_stamp = wltz.localize(wlt).astimezone(pytz.utc).replace(tzinfo=None)   
         if request.POST['id'] == 'new' :
                         
-            md = ManualDepth(well = well,
+            md = ManualDepth(run=run,
                            time_stamp = time_stamp,                           
                            depth = request.POST['depth'],
                            depth_units = request.POST['depth_units'],

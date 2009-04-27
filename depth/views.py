@@ -22,6 +22,8 @@ import pytz
 from tdsurface.depth.models import *
 from tdsurface.depth.forms import *
 
+from tdsurface.bha.models import BHA
+
 from tdsurface.toolcom import ToolCom
 from tdsurface.toolapi import ToolAPI
 from django.conf import settings
@@ -1216,6 +1218,7 @@ def wits0_depth_to_mwdlog(request, object_id) :
 
     mwdlogs = ToolMWDLog.objects.filter(run=run)
     mwdgammalogs = ToolMWDLogGamma.objects.filter(run=run)
+    bha, created = BHA.objects.get_or_create(run=run)
 
     for logs in (mwdlogs,mwdgammalogs) :    
         for l in logs :
@@ -1235,7 +1238,8 @@ def wits0_depth_to_mwdlog(request, object_id) :
             yb = float(higher.value)
             
             y = ya + ((x - xa) * (yb - ya))/(xb - xa)
-
+            y = y - float(bha.gammaray_sensor_offset)          #Offest position of tool in BHA
+            
             l.depth=str(y)
             l.depth_units='ft'
             l.save()
@@ -1245,7 +1249,8 @@ def wits0_depth_to_mwdlog(request, object_id) :
 
 def wits0_depth_to_rtlog(request, object_id) :
     run = Run.objects.get(pk=object_id)
-
+    bha, created = BHA.objects.get_or_create(run=run)
+    
     if not run.start_time or not run.end_time :
         return render_to_response('message.html', {'message': 'The Run Start Time and End Time are required', 'navigation_template': 'run_detail_menu.html' , 'object':run }, context_instance = RequestContext(request))
         
@@ -1268,6 +1273,7 @@ def wits0_depth_to_rtlog(request, object_id) :
         yb = float(higher.value)
         
         y = ya + ((x - xa) * (yb - ya))/(xb - xa)
+        y = y - float(bha.gammaray_sensor_offset)          #Offest position of tool in BHA
 
         l.depth=str(y)
         l.depth_units='ft'

@@ -54,9 +54,9 @@ def las_from_mwdlog(request, object_id) :
         if form.is_valid(): # All validation rules pass    
             
 
-            mwdlog = ToolMWDLog.objects.filter(well=run.well_bore.well, time_stamp__gte=run.start_time, time_stamp__lte=run.end_time, depth__gt=0).order_by('depth')
+            mwdlog = ToolMWDLog.objects.filter(run=run, depth__gt=0).order_by('depth')
 
-            mwdlog_agg = ToolMWDLog.objects.filter(well=run.well_bore.well, time_stamp__gte=run.start_time, time_stamp__lte=run.end_time, depth__gt=0).aggregate(Min('depth'), Max('depth'))
+            mwdlog_agg = ToolMWDLog.objects.filter(run=run, depth__gt=0).aggregate(Min('depth'), Max('depth'))
             well_headers = [
                 Descriptor(mnemonic="STRT", unit="FT", data=str(mwdlog_agg['depth__min'])),
                 Descriptor(mnemonic="STOP", unit="FT", data=str(mwdlog_agg['depth__max'])),
@@ -326,7 +326,8 @@ def las_from_rtlog(request, object_id) :
                         
             data = {}    
             for l in rtlog :
-                data.setdefault(l.depth,{}).setdefault(l.type,[]).append(float(l.value))
+                if l.value and l.type :
+                    data.setdefault(l.depth,{}).setdefault(l.type,[]).append(float(l.value))
 
             l = data.items()
             l.sort()

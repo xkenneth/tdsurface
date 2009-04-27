@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from tdsurface.shortcuts import get_object_or_None
 
-from tdsurface.bha.models import Run
+from tdsurface.depth.models import Run
 from tdsurface.bha.models import *
 from tdsurface.bha.forms import *
 

@@ -414,7 +414,7 @@ admin.site.register(ToolMWDLog)
 
 class ManualDepth(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
-    well = models.ForeignKey(Well)
+    run = models.ForeignKey(Run)
     time_stamp = models.DateTimeField(db_index=True)
     depth = models.DecimalField(max_digits=10, decimal_places=3, db_index=True)
     depth_units = models.CharField(max_length=2, choices = LENGTH_UNIT_CHOICES)
