@@ -434,7 +434,7 @@ def tool_face_zero_json(request, object_id) :
     scp = tapi.get_status_constant_profile()        
     tc.close()
     
-    data = {'tool_face': sensor.tool_face, 'tool_face_zeroing': scp.tool_face_zeroing }
+    data = {'tool_face': sensor.tool_face, 'tool_face_zeroed': scp.tool_face_zeroing }
 
     data = simplejson.dumps(data)
     
@@ -1062,18 +1062,20 @@ def well_real_time_json(request, object_id, num_latest=5) :
     well = Well.objects.get(pk=object_id)
     num_latest=int(num_latest)
     wltz = pytz.timezone(well.timezone)
+
+    hoursago = datetime.datetime.utcnow() - timedelta(hours=1)
     
     azimuth = []
-    [azimuth.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='azimuth').order_by('-time_stamp')[:num_latest] ]
+    [azimuth.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well, type='azimuth', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
     toolface = []
-    [toolface.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='toolface').order_by('-time_stamp')[:num_latest] ]
+    [toolface.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well, type='toolface', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
     inclination = []
-    [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='inclination').order_by('-time_stamp')[:num_latest] ]
+    [inclination.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well, type='inclination', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
     gamma = []
     
-    [gamma.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='gammaray').order_by('-time_stamp')[:num_latest*10] ]
+    [gamma.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='gammaray', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest*10] ]
     temperature = []
-    [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='temperature').order_by('-time_stamp')[:num_latest] ]
+    [temperature.append(x.value) for x in ToolMWDRealTime.objects.filter(well=well, type='temperature', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
 
 
     hole_depth = []

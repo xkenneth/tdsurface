@@ -118,7 +118,10 @@ def plot_realtime_gammaray(request, object_id) :
     canvas = FigureCanvas(fig)
     ax = fig.add_axes([0.4, 0.08 ,0.55 ,0.85])
     ax.plot(gammas, times)
-    ax.set_title('Gamma Ray')
+    wlt = pytz.utc.localize(ragg['time_stamp__max'] or datetime.utcnow()).astimezone(wltz).replace(tzinfo=None)
+    ftime = wlt.strftime('%Y/%m/%d %H:%M')
+    title = 'Gamma Ray\n' + ftime
+    ax.set_title(title)
     ax.grid(True)
     ax.set_xlabel('Gamma Ray (counts/sec)')
     ax.set_ylabel('Time / Depth (ft)')    

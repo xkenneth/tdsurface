@@ -10,7 +10,6 @@
 $(document).ready(im_ready);
 
 var toolface_gauge = 0;
-var zeroing = 0;
 var first = 1;
 var waiting_to_start = 0;
 
@@ -27,30 +26,26 @@ function sensors_callback(data, textStatus)
         return;
     }
     
-    $.getJSON("{% url tool_face_zero_json object.pk %}", sensors_callback);
+    
     if(first)
     {
         first=0;
-        $("#zero_button").removeAttr("disabled");
+        
         $("#zero_status").text("");
-    }
-    
-    if(zeroing)
-    {
-        if(data.tool_face_zeroing)
+        if(!data.tool_face_zeroed)
         {
-            zeroing=0;
-            $("#zero_status").text("Tool face zeroing complete.");
-            $("#zero_button").removeAttr("disabled");
+            zero_callback();
+            return;
         }
-    }    
+        $("#zero_button").removeAttr("disabled");
+    }
+
+    $.getJSON("{% url tool_face_zero_json object.pk %}", sensors_callback);
 }
 
 function zero_callback(data, textStatus)
 {
-    $("#zero_status").text("Waiting for gamma ray source...");
-    zeroing = 1;
-    $.getJSON("{% url tool_face_zero_json object.pk %}", sensors_callback);
+    $("#zero_status").html("Zeroing process started.  Please complete the following procedure.<ol><li>Disconnect the electronics chassis from the server.</li><li>Install the electronics chassis in a barrel fully assembled with battery and stinger.</li><li>Place a gamma ray source close to the sensor and wait 30-60 seconds for the tool to start pulsing</li></ol>");    
 }
  
 function get_sensors()
