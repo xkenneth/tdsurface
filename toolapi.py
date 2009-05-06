@@ -174,7 +174,30 @@ class ToolAPI :
         if canceled :
             return False
         return True
-        
+
+    def get_log_generator(self) :
+        log_size = self.get_bytes_in_log()
+        self.toolcom.write_line('RL')
+
+        cnt = log_size
+        while cnt :            
+            raw = self.toolcom.read_line()
+            s = self.decruft(raw)
+            l = s.split('\t')            
+            if not len(l) :                         # Check for data
+                break
+
+            cnt = cnt - len(l) * 2
+
+            yield ToolLogData(s)
+                                                    
+        self.get_log_cancel()        
+
+    def get_log_cancel(self) :
+        self.toolcom.write('\x1b')
+        self.toolcom.write_line('')
+        time.sleep(2)
+        self.toolcom.flush_input_buffer()   
 
     def get_sensor_readings(self) :        
         self.toolcom.write_line('S')

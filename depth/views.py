@@ -882,8 +882,7 @@ def run_download_status_json(request) :
     s = Settings.objects.get(name='LOG_DOWNLOAD_STATUS').value    
     t = int(Settings.objects.get(name='LOG_DOWNLOAD_SIZE').value)
     percent = 0
-    if t :
-        # Note: 28 bytes per log line
+    if t :        
         percent = c * 100 / t
         
     data = simplejson.dumps({'downloading': p, 'cnt': c, 'status':s, 'percent':percent})   
@@ -949,7 +948,7 @@ def _download_log(run_id) :
     s.value='Getting calibration constants'
     s.save()
     cal_vals = tapi.get_calibration_contants()
-    tc = ToolCalibration(time_stamp = datetime.datetime.utcnow(),
+    cal = ToolCalibration(time_stamp = datetime.datetime.utcnow(),
                          tool=run.tool,
                          calibration_id=cal_vals[0],
                          tool_serial_number=cal_vals[1],
@@ -970,8 +969,8 @@ def _download_log(run_id) :
                          temperature_offset=cal_vals[14],
                          temperature_gain=cal_vals[15],
                         )                         
-    tc.save()
-    run.tool_calibration = tc
+    cal.save()
+    run.tool_calibration = cal
     run.save()
 
     s.value='Getting gamma interval'
@@ -986,10 +985,11 @@ def _download_log(run_id) :
     b.value=str(tapi.get_bytes_in_log()/( 20 + (scp.gammaray_log_size * 2) ))
     b.save()
 
-    
+    s.value='Downloading'
+    s.save()
 
-
-    def call_back(log_data) :
+    rc = True
+    for log_data in tapi.get_log_generator() :
                 
         c.value = str(int(c.value) + 1)
         c.save()            
@@ -1006,9 +1006,7 @@ def _download_log(run_id) :
         d.magnetic_y = log_data.magnetic_y
         d.magnetic_z = log_data.magnetic_z
         d.temperature = log_data.temperature
-        print 'Saving ToolMWDLog'    
         d.save()
-        print 'Saved ToolMWDLog'
         
         seconds = log_data.seconds
         for g in log_data.gamma :
@@ -1018,16 +1016,13 @@ def _download_log(run_id) :
             seconds += gamma_interval
             d.status = log_data.status
             d.gamma = g
-            print 'Saving ToolMWDLogGamma'
             d.save()
-            print 'Saved ToolMWDLogGamma'
                 
         p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')        
-        return bool(p.value)
+        rc = bool(p.value)
+        if rc != True :
+            tapi.get_log_cancel()
 
-    s.value='Downloading'
-    s.save()
-    rc = tapi.get_log(call_back)
     if rc == None :
         s.value='Download Error'
     elif rc == False :

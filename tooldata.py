@@ -12,6 +12,7 @@ class ToolLogData :
     def __init__(self, raw_data) :
         self.raw_data = raw_data
         h = raw_data.split('\t')
+        self.log_size = len(h) * 2
         i = [int(x, 16) for x in h]
         self.raw_data = raw_data
         self.seconds = int(h[0]+h[1],16)
