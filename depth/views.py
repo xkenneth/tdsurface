@@ -771,8 +771,7 @@ def run_create(request, template_name,
             new_run = Run(name=run_form.cleaned_data['name'],
                           start_time=start_time,
                           end_time=end_time,
-                          well_bore=well_bore,
-                          tool_calibration = run_form.cleaned_data['tool_calibration'])
+                          well_bore=well_bore)
             new_run.save()                            
             #return render_to_response('message.html', {'message': 'Post Save', 'navigation_template': 'run_menu.html' }, context_instance = RequestContext(request))
             return HttpResponseRedirect(post_save_redirect % new_run.__dict__)
@@ -811,10 +810,10 @@ def run_update(request, object_id, extra_context=None,) :
                     end_time = wlt.localize(end_time).astimezone(pytz.utc).replace(tzinfo=None)
                 
                 run.name=run_form.cleaned_data['name']
+                run.tool = run_form.cleaned_data['tool']
                 run.start_time=start_time
                 run.end_time=end_time
-                run.well_bore=well_bore
-                run.tool_calibration_id = run_form.cleaned_data['tool_calibration']
+                run.well_bore=well_bore                
                 run.save()           
                 return HttpResponseRedirect(reverse('run_update', args=[run.pk]))
         else :
@@ -838,7 +837,7 @@ def run_update(request, object_id, extra_context=None,) :
                     'start_time':start_time,
                     'end_time':end_time,
                     'well_bore':run.well_bore_id,
-                    'tool_calibration':run.tool_calibration_id                    
+                    'tool':run.tool_id                    
                   }
         run_form = RunFormForm(initial=initial)
         run_notes_form = RunNotesForm()
@@ -946,6 +945,34 @@ def _download_log(run_id) :
         s.save()
         tc.close()
         return
+
+    s.value='Getting calibration constants'
+    s.save()
+    cal_vals = tapi.get_calibration_contants()
+    tc = ToolCalibration(time_stamp = datetime.datetime.utcnow(),
+                         tool=run.tool,
+                         calibration_id=cal_vals[0],
+                         tool_serial_number=cal_vals[1],
+                         accelerometer_x_offset=cal_vals[2],
+                         accelerometer_x_gain=cal_vals[3],
+                         accelerometer_y_offset=cal_vals[4],
+                         accelerometer_y_gain=cal_vals[5],
+                         accelerometer_z_offset=cal_vals[6],
+                         accelerometer_z_gain=cal_vals[7],
+                         
+                         magnetometer_x_offset=cal_vals[8],
+                         magnetometer_x_gain=cal_vals[9],
+                         magnetometer_y_offset=cal_vals[10],
+                         magnetometer_y_gain=cal_vals[11],
+                         magnetometer_z_offset=cal_vals[12],
+                         magnetometer_z_gain=cal_vals[13],
+                         
+                         temperature_offset=cal_vals[14],
+                         temperature_gain=cal_vals[15],
+                        )                         
+    tc.save()
+    run.tool_calibration = tc
+    run.save()
 
     s.value='Getting gamma interval'
     s.save()

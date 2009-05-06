@@ -62,7 +62,8 @@ class RunFormForm(forms.Form) :
     name = forms.CharField()
     start_time = forms.DateTimeField(label="Start Time", widget = DynarchDateTimeWidget(datetime_button_html))
     end_time = forms.DateTimeField(label = "End Time", required=False, widget = DynarchDateTimeWidget(datetime_button_html))    
-    tool_calibration = forms.ModelChoiceField(ToolCalibration.objects.all().order_by('-time_stamp'))    
+    #tool_calibration = forms.ModelChoiceField(ToolCalibration.objects.all().order_by('-time_stamp'))
+    tool = forms.ModelChoiceField(Tool.objects.all().order_by('serial_number'))
     well_bore = forms.ModelChoiceField(WellBore.objects.all().order_by('well'))
 
 class RunNotesForm(forms.Form) :

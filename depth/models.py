@@ -257,7 +257,8 @@ class Run(models.Model) :
     name = models.CharField(max_length=255, unique=False)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(blank=True, null=True)
-    tool_calibration = models.ForeignKey(ToolCalibration, blank=True, null=True)
+    tool = models.ForeignKey(Tool, blank=True, null=True)
+    tool_calibration = models.ForeignKey(ToolCalibration, blank=True, null=True, editable=False)
     well_bore = models.ForeignKey(WellBore)        
     
     def __unicode__(self) :
