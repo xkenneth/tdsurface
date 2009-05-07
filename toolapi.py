@@ -196,8 +196,9 @@ class ToolAPI :
     def get_log_cancel(self) :
         self.toolcom.write('\x1b')
         self.toolcom.write_line('')
-        time.sleep(2)
-        self.toolcom.flush_input_buffer()   
+        time.sleep(1)
+        self.toolcom.flush_input_buffer()
+        time.sleep(1)
 
     def get_sensor_readings(self) :        
         self.toolcom.write_line('S')

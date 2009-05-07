@@ -21,40 +21,46 @@ function sensors_callback(data, textStatus)
     {
         if(i==0)
         {
-            $("#azimuth").text(data.azimuth[i].toFixed(1));
+            $("#azimuth").text(data.azimuth[i].value.toFixed(1));
+            $("#azimuth_ts").text(data.azimuth[i].timestamp);
         }
         needle = 'needle' + (i + 1);        
-        azimuth_gauge[needle].setValue(data.azimuth[i].toFixed(1));        
+        azimuth_gauge[needle].setValue(data.azimuth[i].value.toFixed(1));        
     }
     
     for (var i=0; i<Math.min(5,data.toolface.length); i++)
     {
         if(i==0)
         {
-            $("#toolface").text(data.toolface[i].toFixed(1));
+            $("#toolface").text(data.toolface[i].value.toFixed(1));
+            $("#toolface_ts").text(data.toolface[i].timestamp);
         }
         needle = 'needle' + (i + 1);             
-        toolface_gauge[needle].setValue(data.toolface[i].toFixed(1));
+        toolface_gauge[needle].setValue(data.toolface[i].value.toFixed(1));
     }
     
     for (var i=0; i<Math.min(5,data.inclination.length); i++)
     {
         if(i==0)
         {
-            $("#inclination").text(data.inclination[i].toFixed(1));
+            $("#inclination").text(data.inclination[i].value.toFixed(1));
+            $("#inclination_ts").text(data.inclination[i].timestamp);
         }
         needle = 'needle' + (i + 1);             
-        inclination_gauge[needle].setValue(180.0 - data.inclination[i].toFixed(1));
+        inclination_gauge[needle].setValue(180.0 - data.inclination[i].value.toFixed(1));
     }
 
     if( data.temperature.length )
     {
-        c = (data.temperature[0].toFixed(1) - 32) * 5/9;
-        temperature_gauge['needle2'].setValue(data.temperature[0].toFixed(1));
-        $("#temperature_f").text(data.temperature[0].toFixed(1));
+        c = (data.temperature[0].value.toFixed(1) - 32) * 5/9;
+        f = data.temperature[0].value.toFixed(1)
+        temperature_gauge['needle2'].setValue(f);
+        $("#temperature_f").text(f);
 
         temperature_gauge['needle1'].setValue(c.toFixed(1));
         $("#temperature_c").text(c.toFixed(1));
+
+        $("#temperature_ts").text(data.temperature[0].timestamp);
     }
 
     if( data.gamma.length)
@@ -119,7 +125,7 @@ function sensors_callback(data, textStatus)
             //$(this).show();
         }).error(function () {
             //alert("Error loading Gamma Ray graph");
-        }).attr('src', '{% url plot_realtime_gammaray active_well|default:"0" %}'+'?'+uniq);
+        }).attr('src', '{% url plot_realtime_gammaray active_well.pk|default:"0" %}'+'?'+uniq);
     
     window.setTimeout(get_sensors,30000);
 }
@@ -127,7 +133,7 @@ function sensors_callback(data, textStatus)
 function get_sensors()
 {
     {% if active_well %} 
-    $.getJSON("{% url well_real_time_json active_well|default:"0" 5 %}", sensors_callback);
+    $.getJSON("{% url well_real_time_json active_well.pk|default:"0" 5 %}", sensors_callback);
     {% endif %}
 }
 
@@ -144,7 +150,7 @@ function im_ready()
 
 
 
-{% block subtitle %}<h3>Dash Board</h3>{% endblock subtitle %}
+{% block subtitle %}<h3>Dash Board{% if active_well %} - {{ active_well }}{% endif %}</h3>{% endblock subtitle %}
 
 {% block navigation %}
 <ul id="navigation">
@@ -186,7 +192,13 @@ function im_ready()
         <td><div id="azimuth_gauge_div" style="width: 175px; height: 175px"></div></td>
         <td><div id="inclination_gauge_div" style="width: 175px; height: 175px"></div></td>
         <td><div id="toolface_gauge_div" style="width: 175px; height: 175px"></div></td>        
-    </tr>    
+    </tr>
+    <tr>
+        <td align="center"><div id="temperature_ts"></div></td>
+        <td align="center"><div id="azimuth_ts"></div></td>
+        <td align="center"><div id="inclination_ts"></div></td>
+        <td align="center"><div id="toolface_ts"></div></td>        
+    </tr> 
     <tr>
         <th colspan="4">WITS0 Data</th>
     </tr>

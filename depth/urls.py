@@ -9,7 +9,12 @@ def get_active_run() :
 
 def get_active_well() :
     active_well, created = Settings.objects.get_or_create(name='ACTIVE_WELL')
-    return active_well.value    
+    return active_well.value
+
+def get_active_well_obj() :
+    active_well, created = Settings.objects.get_or_create(name='ACTIVE_WELL')
+    awo = get_object_or_None(Well, uid = active_well.value)    
+    return awo 
 
 urlpatterns = patterns('',
     
@@ -96,6 +101,6 @@ urlpatterns = patterns('',
 
     (r'^run/$', 'django.views.generic.list_detail.object_list', {'extra_context': {'subtitle':'Runs', 'navigation_template': 'run_menu.html', 'active_run': get_active_run }, 'queryset': Run.objects.all(), 'template_name': 'run_list.html'}, 'run_list'),
          
-    (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html', 'extra_context': { 'active_run': get_active_run, 'active_well': get_active_well }}, 'home'),
+    (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html', 'extra_context': { 'active_well': get_active_well_obj }}, 'home'),
     #(r'.*', 'django.views.generic.simple.direct_to_template', {'template': 'mainmenu.html'}),
 )
