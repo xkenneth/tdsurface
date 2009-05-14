@@ -162,7 +162,26 @@ def las_from_mwdlog(request, object_id) :
                 #curves.append(LasCurve(d,[round(sqrt(pow(magnetic_x_calibrated[c],2)+pow(magnetic_y_calibrated[c],2)+pow(magnetic_z_calibrated[c],2)),3) for c in range(len(mwdlog))]))
                 curves.append(LasCurve(d,[ l.total_magnetic(run) for l in mwdlog ]))
 
+            if form.cleaned_data['azimuth'] :
+                d = Descriptor(mnemonic="AZI", unit="DEG", description="Azimuth")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[l.azimuth(run) for l in mwdlog]))                
 
+            if form.cleaned_data['inclination'] :
+                d = Descriptor(mnemonic="INCL", unit="DEG", description="Inclination")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[l.inclination(run) for l in mwdlog]))                
+
+            if form.cleaned_data['tool_face_magnetic'] :
+                d = Descriptor(mnemonic="TFH", unit="DEG", description="Magnetic Tool Face")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[l.tool_face_magnetic(run) for l in mwdlog]))
+                
+            if form.cleaned_data['tool_face_gravity'] :
+                d = Descriptor(mnemonic="TFG", unit="DEG", description="Gravity Tool Face")
+                curve_headers.append(d)                                
+                curves.append(LasCurve(d,[l.tool_face_gravity(run) for l in mwdlog]))
+                
             
             lf = LasFile(VersionHeader("2.0", False), WellHeader(well_headers), CurveHeader(curve_headers), ParameterHeader([]), curves)
 

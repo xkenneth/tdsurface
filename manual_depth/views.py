@@ -1,3 +1,4 @@
+import pytz
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseNotFound
@@ -19,7 +20,7 @@ from datetime import timedelta
 from tdsurface.depth.models import *
 from tdsurface.bha.models import BHA
 
-import pytz
+
 
 def manual_depth_to_mwdlog(request, object_id) :
     run = Run.objects.get(pk=object_id)    

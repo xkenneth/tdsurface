@@ -1,11 +1,16 @@
+from pytz import common_timezones
 from django.db import models
 from django.contrib import admin
 from django.contrib.localflavor.us.models import USStateField
 from tdsurface.models import UUIDField
 
-from pytz import common_timezones
+
 
 from math import sqrt
+from math import acos
+from math import atan
+from math import atan2
+from math import pi
 
 LENGTH_UNIT_CHOICES = (('m','meters'), ('ft','feet'))
 WEIGHT_UNIT_CHOICES = (('lbs','pounds'), ('klbs','Kilo Pounds'), ('t', 'tons') )
@@ -352,9 +357,11 @@ class ToolMWDLog(models.Model) :
     depth = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True, db_index=True)
     depth_units = models.CharField(max_length=2, null=True, blank=True, choices = LENGTH_UNIT_CHOICES)
 
-    def _calibrate(self, value, offset, gain, flip) :
-        return round(flip * (value - offset)/(1.0 * gain),3)
-
+    def _calibrate(self, value, offset, gain, flip=False) :
+        c = round( (value - offset)/(1.0 * gain),3)
+        if flip :
+            c = c * -1
+        return c
 
     def temperature_f(self) :
         """Already calibrated, but needs to be detransfered"""
@@ -370,37 +377,38 @@ class ToolMWDLog(models.Model) :
         """
         if not run :
             run = self.run
-        flip = run.tool_calibration.tool.type.invert_gravity_x * -1    
+        
+        flip = run.tool_calibration.tool.type.invert_gravity_x        
         return self._calibrate(self.gravity_x, run.tool_calibration.accelerometer_x_offset, run.tool_calibration.accelerometer_x_gain, flip)
 
     def gravity_y_calibrated(self, run=None) :
         if not run :
             run = self.run
-        flip = run.tool_calibration.tool.type.invert_gravity_y * -1    
+        flip = run.tool_calibration.tool.type.invert_gravity_y
         return self._calibrate(self.gravity_y, run.tool_calibration.accelerometer_y_offset, run.tool_calibration.accelerometer_y_gain, flip)
 
     def gravity_z_calibrated(self, run=None) :
         if not run :
             run = self.run
-        flip = run.tool_calibration.tool.type.invert_gravity_z * -1    
+        flip = run.tool_calibration.tool.type.invert_gravity_z
         return self._calibrate(self.gravity_z, run.tool_calibration.accelerometer_z_offset, run.tool_calibration.accelerometer_z_gain, flip)
 
     def magnetic_x_calibrated(self, run=None) :
         if not run :
             run = self.run
-        flip = run.tool_calibration.tool.type.invert_magnetic_x * -1    
+        flip = run.tool_calibration.tool.type.invert_magnetic_x
         return self._calibrate(self.magnetic_x, run.tool_calibration.magnetometer_x_offset, run.tool_calibration.magnetometer_x_gain, flip)
 
     def magnetic_y_calibrated(self, run=None) :
         if not run :
             run = self.run
-        flip = run.tool_calibration.tool.type.invert_magnetic_y * -1    
+        flip = run.tool_calibration.tool.type.invert_magnetic_y
         return self._calibrate(self.magnetic_y, run.tool_calibration.magnetometer_y_offset, run.tool_calibration.magnetometer_y_gain, flip)
 
     def magnetic_z_calibrated(self, run=None) :
         if not run :
             run = self.run
-        flip = run.tool_calibration.tool.type.invert_magnetic_z * -1    
+        flip = run.tool_calibration.tool.type.invert_magnetic_z
         return self._calibrate(self.magnetic_z, run.tool_calibration.magnetometer_z_offset, run.tool_calibration.magnetometer_z_gain, flip)
 
     def total_gravity(self, run=None) :
@@ -409,7 +417,57 @@ class ToolMWDLog(models.Model) :
     def total_magnetic(self, run=None) :
         return round(sqrt(pow(self.magnetic_x_calibrated(run),2)+pow(self.magnetic_y_calibrated(run),2)+pow(self.magnetic_z_calibrated(run),2)),3)
 
-    
+    def inclination(self, run=None) :
+        return round(acos(self.gravity_z_calibrated(run)/self.total_gravity(run)) * 180.0/pi, 3)
+
+    def azimuth(self, run=None) :
+        Gt = self.total_gravity(run)
+        Gx = self.gravity_x_calibrated(run)        
+        Gy = self.gravity_y_calibrated(run)
+        Gz = self.gravity_z_calibrated(run)
+        
+        Bx = self.magnetic_x_calibrated(run)
+        By = self.magnetic_y_calibrated(run)
+        Bz = self.magnetic_z_calibrated(run)
+
+        n = Gt * ( (By * Gx) - (Bx * Gy) )
+        d = (Bz * (pow(Gx,2) + pow(Gy,2))) - (Gz * (Bx*Gx + By*Gy))
+        if -0.0001 < d < 0.0001 :
+            d = 0.0001
+
+        a = round(atan2( n, d ) * 180.0 / pi, 3)
+
+        if a < 0 :
+            a = 360.0 + tf  
+        return 
+
+    def tool_face_magnetic(self, run=None) :
+        Bx = self.magnetic_x_calibrated(run)
+        By = self.magnetic_y_calibrated(run)
+
+        if -0.0001 < By < 0.0001 :
+            By = 0.0001
+        
+        tf = round(atan2(Bx,By) * 180.0/pi, 3)
+        
+        if tf < 0 :
+            tf = 360.0 + tf  
+        return tf
+        
+
+    def tool_face_gravity(self, run=None) :
+        Gx = self.gravity_x_calibrated(run)        
+        Gy = self.gravity_y_calibrated(run)
+        
+        if -0.0001 < Gy < 0.0001 :
+            Gy = 0.0001
+
+        tf = round( atan2(Gx,Gy) * 180.0/pi, 3)        
+            
+        if tf < 0 :
+            tf = 360.0 + tf  
+        return tf
+        
 admin.site.register(ToolMWDLog)
 
 

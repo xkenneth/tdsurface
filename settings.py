@@ -89,7 +89,7 @@ INSTALLED_APPS = (
 
 STATIC_DOC_ROOT = os.path.join(os.getcwd(),'media')
 
-print "!",STATIC_DOC_ROOT
+#print "!",STATIC_DOC_ROOT
 
 #COMPORT = '/dev/tty.BluePortXP-C6DC-SPP-1'
 # Linux usb serial port

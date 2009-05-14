@@ -18,19 +18,17 @@
     <tr>
         <th>Run</th>
         <th>Start Time</th>
-        <th>End Time</th>
-        <th>Well</th>
-        <th>Bore</th>        
+        <th>End Time</th>        
+        <th>Tool</th>        
         <th>Log Count</th>        
     </tr>
     
 {% for object in object_list %}    
     <tr>
-        <td><a href="{% url run_detail object.pk %}">{{ object.name }}</a> </td>
+        <td><a href="{% url run_detail object.pk %}">{{ object }}</a> </td>
         <td><a href="{% url run_detail object.pk %}">{{ object.start_time|utc2tz:object.well_bore.well.timezone }}</a> </td>
         <td><a href="{% url run_detail object.pk %}">{{ object.end_time|utc2tz:object.well_bore.well.timezone }}</a> </td>
-        <td><a href="{% url run_detail object.pk %}">{{ object.well_bore.well }}</a> </td>
-        <td><a href="{% url run_detail object.pk %}">{{ object.well_bore }}</a> </td>                
+        <td><a href="{% url run_detail object.pk %}">{{ object.tool }}</a> </td>        
         <td>
             {{ object.toolmwdlog_set.count }}
         </td>        

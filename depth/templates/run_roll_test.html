@@ -37,13 +37,13 @@ function sensors_callback(data, textStatus)
     }
     else
     {    
-        $.getJSON("{% url tool_sensors_json object.tool_calibration.tool.pk %}", sensors_callback);
+        $.getJSON("{% url tool_sensors_json object.tool.pk %}", sensors_callback);
     }
 }
  
 function get_sensors()
 {    
-    $.getJSON("{% url tool_sensors_json object.tool_calibration.tool.pk %}", sensors_callback);   
+    $.getJSON("{% url tool_sensors_json object.tool.pk %}", sensors_callback);   
 }
 
 function capture_click()
