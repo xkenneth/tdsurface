@@ -36,6 +36,7 @@
 </table>
 
 {% if object.runnotes_set.all %}
+<div style="width:550px;">
 <table>
     <tr>
         <th colspan="2">Run Notes</th>
@@ -46,14 +47,15 @@
     </tr>
     {% for n in object.runnotes_set.all %}
     <tr>
-        <td>
+        <td valign="top">
         {{ n.time_stamp|utc2tz:object.well_bore.well.timezone }}
         </td>
-        <td>{{ n.notes }}</td>
+        <td valign="top">{{ n.notes }}</td>
     </tr>
 
     {% endfor %}
 </table>
+</div>
 {% endif %}
 
 {% endblock body %}

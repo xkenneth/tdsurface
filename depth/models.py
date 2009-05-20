@@ -319,7 +319,7 @@ class ToolMWDRealTime(models.Model) :
     well = models.ForeignKey(Well)    
     time_stamp = models.DateTimeField( db_index=True)
     type = models.CharField(max_length=32, choices = VALUE_TYPE_CHOICES, db_index=True)
-    value = models.IntegerField(blank=True, null=True)
+    value = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
     value_x = models.IntegerField(blank=True, null=True)
     value_y = models.IntegerField(blank=True, null=True)
     value_z = models.IntegerField(blank=True, null=True)
@@ -438,8 +438,8 @@ class ToolMWDLog(models.Model) :
         a = round(atan2( n, d ) * 180.0 / pi, 3)
 
         if a < 0 :
-            a = 360.0 + tf  
-        return 
+            a = 360.0 + a  
+        return a
 
     def tool_face_magnetic(self, run=None) :
         Bx = self.magnetic_x_calibrated(run)

@@ -22,6 +22,7 @@
 </form>
 <hr>
 
+<div style="width:550px;">
 <form id="run_notes_form" method="POST" action=".">
 <input id="form_id" name="form_id" value="run_notes_form" type="hidden">    
 <h3>Run Notes</h3>
@@ -33,7 +34,7 @@
 {% for note in run_notes %}    
     <tr>
         <td valign="top">{{ note.time_stamp|utc2tz:note.run.well_bore.well.timezone }} </td>
-        <td valign="top"><pre>{{ note.notes }}</pre></td>        
+        <td valign="top">{{ note.notes }}</td>        
     </tr>
 {% endfor %}
     <tr>
@@ -45,5 +46,5 @@
 </table>
 
 </form>
-
+</div>
 {% endblock body %}
