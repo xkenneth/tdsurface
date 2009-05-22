@@ -75,7 +75,9 @@ urlpatterns = patterns('',
     (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/grid/$', 'tdsurface.manual_depth.views.run_manual_depth_grid', {}, 'run_manual_depth_grid'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/grid/edit/$', 'tdsurface.manual_depth.views.run_manual_depth_grid_edit', {}, 'run_manual_depth_grid_edit'),
     (r'^run/(?P<object_id>[\d\-a-f]+)/manualdepth/grid/delete/$', 'tdsurface.manual_depth.views.run_manual_depth_grid_delete', {}, 'run_manual_depth_grid_delete'),
-    
+
+    (r'^run/(?P<object_id>[\d\-a-f]+)/toollog/$', 'django.views.generic.list_detail.object_detail', {'extra_context': {'navigation_template': 'run_detail_menu.html', },'queryset': Run.objects.all(), 'template_name': 'run_toollog_grid.html'}, 'run_toollog'),
+    (r'^run/(?P<object_id>[\d\-a-f]+)/toollog/grid/$', 'tdsurface.toollog.views.run_toollog_grid', {}, 'run_toollog_grid'),
     
     (r'^run/(?P<object_id>[\d\-a-f]+)/rolltest/$', 'tdsurface.depth.views.run_roll_test', {'extra_context': {'subtitle':'Run Roll Test', 'navigation_template': 'run_detail_menu.html'}, }, 'run_rolltest'),    
 

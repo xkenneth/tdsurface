@@ -176,3 +176,71 @@ def plot_realtime_gammaray(request, object_id) :
     fig.savefig(filename)
          
     return HttpResponseRedirect('/tdsurface/media/images/gammaray_rt.png')
+
+from min_curve_delta import min_curve_delta
+
+def plot_log_well_path(request, object_id) :
+    
+    run = Run.objects.get(pk=object_id)
+
+    data = ToolMWDLog.objects.filter(run=run).order_by('depth')
+
+    test_depth = range(0,100)
+    test_azimuth = range(100,200)
+    test_inclination = ([0] * 10) + range(0,10) +  ([10] * 50) + range(6,100)
+    #test_inclination = [5] * 10
+
+    north = []
+    east = []
+    vert = []
+    d1 = 0
+    a1 = 0
+    i1 = 0
+
+    #for d in data :
+        #v, n, e = min_curve_delta(d1,i1,a1, d.depth, d.inclination, d.azimuth)
+        #north.append(n)
+        #east.append(e)
+        #vert.append(v)
+
+        #d1 = d.depth
+        #a1 = d.azimuth
+        #i1 = d.inclination
+
+    north.append(0)
+    east.append(0)
+    vert.append(0)
+    
+    for c in range(0,100) :
+        v, n, e = min_curve_delta(d1, i1, a1, test_depth[c], test_inclination[c], test_azimuth[c])
+        
+        if c > 0 :
+            north.append(n + north[c-1])
+            east.append(e + east[c-1])
+            vert.append(v + vert[c-1])
+
+        d1 = test_depth[c]
+        a1 = test_azimuth[c]
+        i1 = test_inclination[c]
+
+    
+    
+    fig = Figure()
+    canvas = FigureCanvas(fig)
+    #ax = fig.add_axes([0.4, 0.08 ,0.55 ,0.85])
+    ax = fig.add_axes([0.15,0.1,.8,.8])
+    ax.grid(True)
+    ax.plot(east, north)    
+    ax.set_title('Well Plot')
+    
+    ax.set_ylabel('North')
+    ax.set_xlabel('East')    
+    
+    
+    
+    fig.set_size_inches( (5, 5) )
+        
+    filename = settings.MEDIA_ROOT + '/images/wellplot.png'
+    fig.savefig(filename)
+         
+    return HttpResponseRedirect('/tdsurface/media/images/wellplot.png')
