@@ -105,6 +105,21 @@ class ToolAPI :
         self.toolcom.flush_input_buffer() 
         self.toolcom.write_line('E ' + s)
         return self.decruft(self.toolcom.read_line())        
+
+    def sync_tool(self) :
+        
+        for x in range(5) :
+            s = 'TELEDRILL' + str(x)
+            if s == self.echo(s) :
+                return True
+
+            # If we get a bad response the first time, send an escape
+            # in case we are in the middle of a read log command.
+            if x == 0 :     
+                self.toolcom.write('\x1b')
+                time.sleep(2)
+                
+        return False
     
     def decruft(self, s) :
         s = s.strip(' >\n\r\0\t')  # Strip the line endings and beginning of line '>>'

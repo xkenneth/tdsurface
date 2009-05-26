@@ -34,7 +34,6 @@ import logging
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='/var/log/tdsurface/tdsurface.log',level=logging.DEBUG,)
 
 
-
 def test(request) :
     form = RunFormForm()
         
@@ -56,9 +55,9 @@ def pull_calibration(request, object_id) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
     
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
-        return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+    if not tapi.sync_tool() :
+        tc.close()
+        return HttpResponse('Communications sync with the tool failed.')
     
     cal_vals = tapi.get_calibration_contants()
     d['calibration'] = cal_vals
@@ -101,9 +100,9 @@ def set_time(request, object_id) :
             tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
             tapi = ToolAPI(tc)
             
-            comcheck = tapi.echo('ABC123')
-            if comcheck != 'ABC123' :
-                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+            if not tapi.sync_tool() :
+                tc.close()
+                return HttpResponse('Communications sync with the tool failed.')
                 
             tapi.set_time(form.cleaned_data['set_time_to']) # Set the time
             tool_time = tapi.get_time() # Read the time back
@@ -122,11 +121,10 @@ def reset_timer(request, object_id) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)    
     
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
+    if not tapi.sync_tool() :
         tc.close()
-        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
-        
+        return HttpResponse('Communications sync with the tool failed.')
+               
     tapi.set_time(datetime.datetime(2001,1,1,0,0,0)) # Set the timer to 0 using tool base time (2001-01-01 00:00:00) (year & month are ignored on the timer)
     
     tc.close()
@@ -138,16 +136,11 @@ def tool_status(request, object_id) :
     tool = Tool.objects.get(pk=object_id)
     
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
-
-    time.sleep(1)
-    tc.flush_input_buffer();
-    
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
+    tapi = ToolAPI(tc)    
+        
+    if not tapi.sync_tool() :
         tc.close()
-        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
-                
+        return HttpResponse('Communications sync with the tool failed.')
     
     calibration = tapi.get_calibration_contants()
     log_address = tapi.get_current_log_address()
@@ -172,10 +165,10 @@ def tool_general_config(request, object_id, extra_context=None) :
             tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
             tapi = ToolAPI(tc)
             
-            comcheck = tapi.echo('ABC123')
-            if comcheck != 'ABC123' :
-                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
-
+            if not tapi.sync_tool() :
+                tc.close()
+                return HttpResponse('Communications sync with the tool failed.')
+        
             scp = tapi.get_status_constant_profile()
             logging_interval = scp.logging_interval
             if logging_interval != form.cleaned_data['logging_interval'] :
@@ -199,10 +192,10 @@ def tool_general_config(request, object_id, extra_context=None) :
         tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
         tapi = ToolAPI(tc)
             
-        comcheck = tapi.echo('ABC123')
-        if comcheck != 'ABC123' :
-            return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
-
+        if not tapi.sync_tool() :
+            tc.close()
+            return HttpResponse('Communications sync with the tool failed.')
+        
         scp = tapi.get_status_constant_profile()
         initial = {'advanced_sequence_pattern': scp.advanced_sequence_pattern,
                    'tool_face_zeroing': scp.tool_face_zeroing,
@@ -239,9 +232,9 @@ def tool_motor_config(request, object_id, extra_context=None) :
             tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
             tapi = ToolAPI(tc)
             
-            comcheck = tapi.echo('ABC123')
-            if comcheck != 'ABC123' :
-                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+            if not tapi.sync_tool() :
+                tc.close()
+                return HttpResponse('Communications sync with the tool failed.')
 
             scp = tapi.get_status_constant_profile()
             ms = tapi.get_motor_status()
@@ -286,9 +279,9 @@ def tool_motor_config(request, object_id, extra_context=None) :
         tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
         tapi = ToolAPI(tc)
             
-        comcheck = tapi.echo('ABC123')
-        if comcheck != 'ABC123' :
-            return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+        if not tapi.sync_tool() :
+            tc.close()
+            return HttpResponse('Communications sync with the tool failed.')
 
         scp = tapi.get_status_constant_profile()
         ms = tapi.get_motor_status()
@@ -355,10 +348,9 @@ def tool_sensors(request, object_id, extra_context=None) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
     
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
+    if not tapi.sync_tool() :
         tc.close()
-        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+        return HttpResponse('Communications sync with the tool failed.')
                 
     sensor = tapi.get_sensor_readings()
     tc.close()
@@ -385,9 +377,9 @@ def run_roll_test(request, object_id, extra_context=None) :
             tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
             tapi = ToolAPI(tc)
             
-            comcheck = tapi.echo('ABC123')
-            if comcheck != 'ABC123' :
-                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+            if not tapi.sync_tool() :
+                tc.close()
+                return HttpResponse('Communications sync with the tool failed.')
 
             sensor = tapi.get_sensor_readings()
             tc.close()
@@ -463,12 +455,7 @@ def tool_sensors_json(request, object_id) :
     
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
-    
-    #comcheck = tapi.echo('ABC123')
-    #if comcheck != 'ABC123' :
-    #    tc.close()
-    #    return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
-                
+                    
     sensor = tapi.get_sensor_readings()
     tc.close()
     
@@ -483,10 +470,9 @@ def tool_motor_calibrate_json(request, object_id) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
     
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
+    if not tapi.sync_tool() :
         tc.close()
-        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+        return HttpResponse('Communications sync with the tool failed.')
                 
     ms = tapi.motor_calibrate()
     tc.close()
@@ -503,10 +489,9 @@ def tool_pulse_pattern_profile(request, object_id) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
 
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
+    if not tapi.sync_tool() :
         tc.close()
-        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+        return HttpResponse('Communications sync with the tool failed.')
 
     if request.method == 'POST':
         for seq in range(3) :
@@ -543,13 +528,7 @@ def tool_pulse_pattern_profile(request, object_id) :
     ppsp = tapi.get_pulse_pattern_sequence_profile()
     scp = tapi.get_status_constant_profile()
     tc.close()
-    
-    # Debug values
-    #ppp = [[(1, 1), (14, 1), (2, 1), (14, 1), (1, 1), (14, 1), (2, 1), (14, 1), (14, 3), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(33, 1), (65535, 1), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)], [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]]
-    #ppsp = [(0, 240000), (1, 256608), (65535, 196609), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608), (0, 196608)]
-    ##ppsp = [(0, 4), (1, 4), (65535, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3), (0, 3)]
-    #scp = [42330, 33, 0, 0, 1, 1, 0, 6, 300, 300, 7, 500, 1000, 0, 0, 0, 8528, 14, 576, 25, 4, 0, 30, 30, 10, 20, 20, 20, 20, 20]
-    
+        
     return render_to_response('tool_pulse_pattern_profile.html', {'ppp': ppp, 'ppsp': ppsp, 'scp': scp, 'object': tool, }, context_instance = RequestContext(request))
 
 
@@ -560,10 +539,9 @@ def tool_frame_mode_buffer(request, object_id) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
 
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
+    if not tapi.sync_tool() :
         tc.close()
-        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
+        return HttpResponse('Communications sync with the tool failed.')
 
     if request.method == 'POST':
         form = ToolFrameModeBufferForm(request.POST) 
@@ -596,11 +574,10 @@ def tool_purge_log(request, object_id) :
     tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
     tapi = ToolAPI(tc)
     
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
+    if not tapi.sync_tool() :
         tc.close()
-        return HttpResponse("Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck)
-        
+        return HttpResponse('Communications sync with the tool failed.')
+                
     tapi.purge_log()
     
     tc.close()
@@ -654,9 +631,9 @@ def tool_calibration_update(request, object_id, template_name, extra_context=Non
             tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
             tapi = ToolAPI(tc)
     
-            comcheck = tapi.echo('ABC123')
-            if comcheck != 'ABC123' :
-                return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
+            if not tapi.sync_tool() :
+                tc.close()
+                return HttpResponse('Communications sync with the tool failed.')
                 
             for k,v in form.cleaned_data.items() :                
                 cur_cal = tapi.set_calibration_contant(k,int(v))
@@ -689,10 +666,10 @@ def tool_calibration_update(request, object_id, template_name, extra_context=Non
         tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
         tapi = ToolAPI(tc)
     
-        comcheck = tapi.echo('ABC123')
-        if comcheck != 'ABC123' :
-            return HttpResponse("Communications check of the tool failed: '%s'" % comcheck)
-        
+        if not tapi.sync_tool() :
+            tc.close()
+            return HttpResponse('Communications sync with the tool failed.')
+                
         c = tapi.get_calibration_contants()
         initial = {
             'accelerometer_x_offset': c[2],
@@ -756,8 +733,6 @@ def run_create(request, template_name,
     if request.method == 'POST' :
         run_form = RunFormForm(request.POST)
         if run_form.is_valid():
-            print 'well_bore', run_form.cleaned_data['well_bore']
-            #well_bore = WellBore.objects.get(pk=run_form.cleaned_data['well_bore'])
             well_bore = run_form.cleaned_data['well_bore']
             tool = run_form.cleaned_data['tool']
             ltz = timezone(well_bore.well.timezone)
@@ -774,8 +749,7 @@ def run_create(request, template_name,
                           end_time=end_time,
                           well_bore=well_bore,
                           tool=tool)
-            new_run.save()                            
-            #return render_to_response('message.html', {'message': 'Post Save', 'navigation_template': 'run_menu.html' }, context_instance = RequestContext(request))
+            new_run.save()                                        
             return HttpResponseRedirect(post_save_redirect % new_run.__dict__)
     else :
         run_form = RunFormForm()
@@ -936,13 +910,12 @@ def _download_log(run_id) :
     
     s.value='Checking Tool'
     s.save()
-    comcheck = tapi.echo('ABC123')
-    if comcheck != 'ABC123' :
+    if not tapi.sync_tool() :
         p.value=''
         p.save()
         c.value = str(-1)
         c.save()
-        s.value="Communications check of the tool failed. Expected 'ABC123' got '%s'" % comcheck
+        s.value="Communications sync with the tool failed."
         s.save()
         tc.close()
         return
