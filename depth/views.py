@@ -24,8 +24,7 @@ from tdsurface.depth.forms import *
 
 from tdsurface.bha.models import BHA
 
-from tdsurface.toolcom import ToolCom
-from tdsurface.toolapi import ToolAPI
+import xmlrpclib
 from django.conf import settings
 
 import threading
@@ -51,18 +50,14 @@ def pull_calibration(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
     d['object'] = tool
+
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
-    
-    if not tapi.sync_tool() :
-        tc.close()
+    if not ts.sync_tool() :        
         return HttpResponse('Communications sync with the tool failed.')
     
-    cal_vals = tapi.get_calibration_contants()
+    cal_vals = ts.get_calibration_contants()
     d['calibration'] = cal_vals
-    
-   
     
     d['time_stamp'] = datetime.datetime.utcnow()
     tc = ToolCalibration(time_stamp = d['time_stamp'],
@@ -96,17 +91,14 @@ def set_time(request, object_id) :
         if form.is_valid(): # All validation rules pass
                                 
             tool = Tool.objects.get(pk=object_id)
-    
-            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-            tapi = ToolAPI(tc)
+
+            ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
             
-            if not tapi.sync_tool() :
-                tc.close()
+            if not ts.sync_tool() :                
                 return HttpResponse('Communications sync with the tool failed.')
                 
-            tapi.set_time(form.cleaned_data['set_time_to']) # Set the time
-            tool_time = tapi.get_time() # Read the time back
-            tc.close()
+            ts.set_time(form.cleaned_data['set_time_to']) # Set the time
+            tool_time = ts.get_time() # Read the time back            
             
             return render_to_response('timeset_results.html', {'tool_time': tool_time,'object': tool,}, context_instance = RequestContext(request))
     else:
@@ -117,17 +109,13 @@ def set_time(request, object_id) :
 def reset_timer(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
+
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)    
-    
-    if not tapi.sync_tool() :
-        tc.close()
+    if not ts.sync_tool() :        
         return HttpResponse('Communications sync with the tool failed.')
                
-    tapi.set_time(datetime.datetime(2001,1,1,0,0,0)) # Set the timer to 0 using tool base time (2001-01-01 00:00:00) (year & month are ignored on the timer)
-    
-    tc.close()
+    ts.reset_timer()
     
     return render_to_response('message.html', {'message': 'Tool timer reset to 0', 'navigation_template': 'tool_menu.html' , 'object':tool }, context_instance = RequestContext(request))
         
@@ -135,21 +123,18 @@ def tool_status(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)    
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
         
-    if not tapi.sync_tool() :
-        tc.close()
+    if not ts.sync_tool() :        
         return HttpResponse('Communications sync with the tool failed.')
     
-    calibration = tapi.get_calibration_contants()
-    log_address = tapi.get_current_log_address()
-    bytes_in_log = tapi.get_bytes_in_log()
-    scp = tapi.get_status_constant_profile()
-    logging_interval = scp.logging_interval
-    sensor = tapi.get_sensor_readings()
-    tool_timer = tapi.get_timer()    
-    tc.close()
+    calibration = ts.get_calibration_contants()
+    log_address = ts.get_current_log_address()
+    bytes_in_log = ts.get_bytes_in_log()
+    scp = ts.get_status_constant_profile()
+    logging_interval = scp['logging_interval']
+    sensor = ts.get_sensor_readings()
+    tool_timer = ts.get_timer()        
     
     return render_to_response('tool_status.html', {'calibration': calibration, 'scp': scp, 'logging_interval': logging_interval, 'sensor': sensor, 'tool_timer': tool_timer, 'object': tool, 'log_address': log_address, 'bytes_in_log': bytes_in_log}, context_instance = RequestContext(request))
 
@@ -157,51 +142,44 @@ def tool_status(request, object_id) :
 def tool_general_config(request, object_id, extra_context=None) :
     
     tool = Tool.objects.get(pk=object_id)
-
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
+    
     data = {'object': tool}
     if request.method == 'POST': # If the form has been submitted...
         form = ToolGeneralConfigForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass                                            
-            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-            tapi = ToolAPI(tc)
             
-            if not tapi.sync_tool() :
-                tc.close()
+            
+            if not ts.sync_tool() :                
                 return HttpResponse('Communications sync with the tool failed.')
         
-            scp = tapi.get_status_constant_profile()
-            logging_interval = scp.logging_interval
+            scp = ts.get_status_constant_profile()
+            logging_interval = scp['logging_interval']
             if logging_interval != form.cleaned_data['logging_interval'] :
-                tapi.set_logging_interval(form.cleaned_data['logging_interval'])
+                ts.set_logging_interval(form.cleaned_data['logging_interval'])
 
-            if scp.advanced_sequence_pattern != form.cleaned_data['advanced_sequence_pattern'] :
-                tapi.toggle_advanced_sequence_pattern_mode()
+            if scp['advanced_sequence_pattern'] != form.cleaned_data['advanced_sequence_pattern'] :
+                ts.toggle_advanced_sequence_pattern_mode()
 
-            if scp.tool_face_zeroing != form.cleaned_data['tool_face_zeroing'] :
-                tapi.toggle_tool_face_zeroing()
+            if scp['tool_face_zeroing'] != form.cleaned_data['tool_face_zeroing'] :
+                ts.toggle_tool_face_zeroing()
 
-            if scp.rotation_sensing != form.cleaned_data['rotation_sensing'] :
-                tapi.toggle_rotation_sensing()
+            if scp['rotation_sensing'] != form.cleaned_data['rotation_sensing'] :
+                ts.toggle_rotation_sensing()
 
-            if scp.gammaray_log_size != form.cleaned_data['gammaray_log_size'] :
-                tapi.set_gammaray_log_size(form.cleaned_data['gammaray_log_size'])            
-                                
-            tc.close()
+            if scp['gammaray_log_size'] != form.cleaned_data['gammaray_log_size'] :
+                ts.set_gammaray_log_size(form.cleaned_data['gammaray_log_size'])                                                        
            
     else:
-        tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-        tapi = ToolAPI(tc)
-            
-        if not tapi.sync_tool() :
-            tc.close()
+        if not ts.sync_tool() :            
             return HttpResponse('Communications sync with the tool failed.')
         
-        scp = tapi.get_status_constant_profile()
-        initial = {'advanced_sequence_pattern': scp.advanced_sequence_pattern,
-                   'tool_face_zeroing': scp.tool_face_zeroing,
-                   'rotation_sensing': scp.rotation_sensing,
-                   'logging_interval': scp.logging_interval,
-                   'gammaray_log_size': scp.gammaray_log_size,
+        scp = ts.get_status_constant_profile()
+        initial = {'advanced_sequence_pattern': scp['advanced_sequence_pattern'],
+                   'tool_face_zeroing': scp['tool_face_zeroing'],
+                   'rotation_sensing': scp['rotation_sensing'],
+                   'logging_interval': scp['logging_interval'],
+                   'gammaray_log_size': scp['gammaray_log_size'],
                           
                   }
 
@@ -224,81 +202,75 @@ def tool_general_config(request, object_id, extra_context=None) :
 def tool_motor_config(request, object_id, extra_context=None) :
     
     tool = Tool.objects.get(pk=object_id)
-
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
     data = {'object': tool}
     if request.method == 'POST': # If the form has been submitted...
         form = ToolMotorConfigForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass                                            
-            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-            tapi = ToolAPI(tc)
-            
-            if not tapi.sync_tool() :
-                tc.close()
+                        
+            if not ts.sync_tool() :                
                 return HttpResponse('Communications sync with the tool failed.')
 
-            scp = tapi.get_status_constant_profile()
-            ms = tapi.get_motor_status()
+            scp = ts.get_status_constant_profile()
+            ms = ts.get_motor_status()
             
-            if scp.motor_open_position_offset != form.cleaned_data['open_position_offset'] :
-                tapi.set_motor_open_position_offset(form.cleaned_data['open_position_offset'])
-            if scp.motor_shut_position_offset != form.cleaned_data['shut_position_offset'] :
-                tapi.set_motor_shut_position_offset(form.cleaned_data['shut_position_offset'])
+            if scp['motor_open_position_offset'] != form.cleaned_data['open_position_offset'] :
+                ts.set_motor_open_position_offset(form.cleaned_data['open_position_offset'])
+            if scp['motor_shut_position_offset'] != form.cleaned_data['shut_position_offset'] :
+                ts.set_motor_shut_position_offset(form.cleaned_data['shut_position_offset'])
                 
-            if scp.motor_open_max_acceleration != form.cleaned_data['open_max_acceleration'] :
-                tapi.set_motor_open_max_acceleration(form.cleaned_data['open_max_acceleration'])
-            if scp.motor_shut_max_acceleration != form.cleaned_data['shut_max_acceleration'] :
-                tapi.set_motor_shut_max_acceleration(form.cleaned_data['shut_max_acceleration'])
+            if scp['motor_open_max_acceleration'] != form.cleaned_data['open_max_acceleration'] :
+                ts.set_motor_open_max_acceleration(form.cleaned_data['open_max_acceleration'])
+            if scp['motor_shut_max_acceleration'] != form.cleaned_data['shut_max_acceleration'] :
+                ts.set_motor_shut_max_acceleration(form.cleaned_data['shut_max_acceleration'])
             
-            if scp.motor_open_acceleration_delay != form.cleaned_data['open_acceleration_delay'] :
-                tapi.set_motor_open_acceleration_delay(form.cleaned_data['open_acceleration_delay'])
-            if scp.motor_shut_acceleration_delay != form.cleaned_data['shut_acceleration_delay'] :
-                tapi.set_motor_shut_acceleration_delay(form.cleaned_data['shut_acceleration_delay'])
+            if scp['motor_open_acceleration_delay'] != form.cleaned_data['open_acceleration_delay'] :
+                ts.set_motor_open_acceleration_delay(form.cleaned_data['open_acceleration_delay'])
+            if scp['motor_shut_acceleration_delay'] != form.cleaned_data['shut_acceleration_delay'] :
+                ts.set_motor_shut_acceleration_delay(form.cleaned_data['shut_acceleration_delay'])
 
-            if scp.motor_calibration_initial_acceleration != form.cleaned_data['calibration_initial_acceleration'] :
-                tapi.set_motor_calibration_initial_acceleration(form.cleaned_data['calibration_initial_acceleration'])
+            if scp['motor_calibration_initial_acceleration'] != form.cleaned_data['calibration_initial_acceleration'] :
+                ts.set_motor_calibration_initial_acceleration(form.cleaned_data['calibration_initial_acceleration'])
 
-            if scp.pulse_time != form.cleaned_data['pulse_time'] :
-                tapi.set_pulse_time(form.cleaned_data['pulse_time'])
-                tapi.set_code_pulse_time(form.cleaned_data['pulse_time'])
+            if scp['pulse_time'] != form.cleaned_data['pulse_time'] :
+                ts.set_pulse_time(form.cleaned_data['pulse_time'])
+                ts.set_code_pulse_time(form.cleaned_data['pulse_time'])
 
-            if scp.narrow_pulse_time != form.cleaned_data['narrow_pulse_time'] :
-                tapi.set_narrow_pulse_time(form.cleaned_data['narrow_pulse_time'])
+            if scp['narrow_pulse_time'] != form.cleaned_data['narrow_pulse_time'] :
+                ts.set_narrow_pulse_time(form.cleaned_data['narrow_pulse_time'])
 
-            if scp.wide_pulse_time != form.cleaned_data['wide_pulse_time'] :
-                tapi.set_wide_pulse_time(form.cleaned_data['wide_pulse_time'])
+            if scp['wide_pulse_time'] != form.cleaned_data['wide_pulse_time'] :
+                ts.set_wide_pulse_time(form.cleaned_data['wide_pulse_time'])
 
-            if scp.gear_numerator != form.cleaned_data['gear_numerator'] :
-                tapi.set_gear_numerator(form.cleaned_data['gear_numerator'])
+            if scp['gear_numerator'] != form.cleaned_data['gear_numerator'] :
+                ts.set_gear_numerator(form.cleaned_data['gear_numerator'])
 
-            if scp.gear_denominator != form.cleaned_data['gear_denominator'] :
-                tapi.set_gear_denominator(form.cleaned_data['gear_denominator'])
+            if scp['gear_denominator'] != form.cleaned_data['gear_denominator'] :
+                ts.set_gear_denominator(form.cleaned_data['gear_denominator'])
                 
-            tc.close()
+            
            
     else:
-        tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-        tapi = ToolAPI(tc)
             
-        if not tapi.sync_tool() :
-            tc.close()
+        if not ts.sync_tool() :            
             return HttpResponse('Communications sync with the tool failed.')
 
-        scp = tapi.get_status_constant_profile()
-        ms = tapi.get_motor_status()
-        tc.close()
+        scp = ts.get_status_constant_profile()
+        ms = ts.get_motor_status()
+
         
-        initial = {'open_position_offset': scp.motor_open_position_offset,
-                   'open_acceleration_delay': scp.motor_open_acceleration_delay,
-                   'open_max_acceleration': scp.motor_open_max_acceleration,
-                   'shut_position_offset': scp.motor_shut_position_offset,
-                   'shut_acceleration_delay': scp.motor_shut_acceleration_delay,
-                   'shut_max_acceleration': scp.motor_shut_max_acceleration,
-                   'calibration_initial_acceleration': scp.motor_calibration_initial_acceleration,
-                   'pulse_time': scp.pulse_time,
-                   'narrow_pulse_time': scp.narrow_pulse_time,
-                   'wide_pulse_time': scp.wide_pulse_time,
-                   'gear_numerator': scp.gear_numerator,
-                   'gear_denominator': scp.gear_denominator,           
+        initial = {'open_position_offset': scp['motor_open_position_offset'],
+                   'open_acceleration_delay': scp['motor_open_acceleration_delay'],
+                   'open_max_acceleration': scp['motor_open_max_acceleration'],
+                   'shut_position_offset': scp['motor_shut_position_offset'],
+                   'shut_acceleration_delay': scp['motor_shut_acceleration_delay'],
+                   'shut_max_acceleration': scp['motor_shut_max_acceleration'],
+                   'calibration_initial_acceleration': scp['motor_calibration_initial_acceleration'],
+                   'pulse_time': scp['pulse_time'],
+                   'narrow_pulse_time': scp['narrow_pulse_time'],
+                   'wide_pulse_time': scp['wide_pulse_time'],
+                   'gear_numerator': scp['gear_numerator'],
+                   'gear_denominator': scp['gear_denominator'],           
                   }
 
         form = ToolMotorConfigForm(initial = initial) # An unbound form
@@ -323,37 +295,31 @@ def tool_motor_command(request, object_id, command) :
     
     tool = Tool.objects.get(pk=object_id)
 
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
 
     if command == 'capture' :
-        tapi.motor_capture()
+        ts.motor_capture()
     elif command == 'release' :
-        tapi.motor_release()
+        ts.motor_release()
     elif command == 'open' :
-        tapi.motor_open()
+        ts.motor_open()
     elif command == 'shut' :
-        tapi.motor_shut()
-    else :
-        tc.close()
+        ts.motor_shut()
+    else :        
         return HttpResponse("Invalid Motor Command '%s'" % command)    
-
-    tc.close()
+    
     return HttpResponse("'%s' command complete" % command)    
 
 def tool_sensors(request, object_id, extra_context=None) :
     
     tool = Tool.objects.get(pk=object_id)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
     
-    if not tapi.sync_tool() :
-        tc.close()
+    if not ts.sync_tool() :        
         return HttpResponse('Communications sync with the tool failed.')
                 
-    sensor = tapi.get_sensor_readings()
-    tc.close()
+    sensor = ts.get_sensor_readings()    
     
     data = {'sensor': sensor, 'object': tool}
     if extra_context :
@@ -374,25 +340,22 @@ def run_roll_test(request, object_id, extra_context=None) :
     if request.method == 'POST': # If the form has been submitted...
         form = RoleTestForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass                                            
-            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-            tapi = ToolAPI(tc)
+            ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
             
-            if not tapi.sync_tool() :
-                tc.close()
+            if not ts.sync_tool() :                
                 return HttpResponse('Communications sync with the tool failed.')
 
-            sensor = tapi.get_sensor_readings()
-            tc.close()
+            sensor = ts.get_sensor_readings()
 
             rt = RollTest(run=run,
-                          temperature= '%.1f' % sensor.temperature,
+                          temperature= '%.1f' % sensor['temperature'],
                           comment = form.cleaned_data['comment'],
-                          azimuth = '%.1f' % sensor.azimuth,
-                          inclination = '%.1f' % sensor.inclination,
-                          toolface = '%.1f' % sensor.tool_face,                                                    
-                          gravity = '%.1f' % sensor.gravity,
-                          magnetic = '%.1f' % sensor.magnetic,
-                          gamma = '%.1f' % sensor.gamma_ray)
+                          azimuth = '%.1f' % sensor['azimuth'],
+                          inclination = '%.1f' % sensor['inclination'],
+                          toolface = '%.1f' % sensor['tool_face'],
+                          gravity = '%.1f' % sensor['gravity'],
+                          magnetic = '%.1f' % sensor['magnetic'],
+                          gamma = '%.1f' % sensor['gamma_ray'])
             rt.save()                
             
             data['sensor'] = sensor            
@@ -418,15 +381,13 @@ def tool_face_zero_json(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
     
-    sensor = tapi.get_sensor_readings()
+    sensor = ts.get_sensor_readings()
     time.sleep(1)
-    scp = tapi.get_status_constant_profile()        
-    tc.close()
+    scp = ts.get_status_constant_profile()            
     
-    data = {'tool_face': sensor.tool_face, 'tool_face_zeroed': scp.tool_face_zeroing }
+    data = {'tool_face': sensor['tool_face'], 'tool_face_zeroed': scp['tool_face_zeroing'] }
 
     data = simplejson.dumps(data)
     
@@ -437,14 +398,11 @@ def tool_face_zero_start(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
         
-    scp = tapi.get_status_constant_profile()
-    if scp.tool_face_zeroing :
-        tapi.toggle_tool_face_zeroing()
-        
-    tc.close()
+    scp = ts.get_status_constant_profile()
+    if scp['tool_face_zeroing'] :
+        ts.toggle_tool_face_zeroing()
     
     return HttpResponse("Waiting for Gamma Ray Source...")
 
@@ -453,13 +411,11 @@ def tool_sensors_json(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
                     
-    sensor = tapi.get_sensor_readings()
-    tc.close()
+    sensor = ts.get_sensor_readings()    
     
-    data = simplejson.dumps(sensor.__dict__)   
+    data = simplejson.dumps(sensor)   
     
     return HttpResponse(data, mimetype="application/javascript")        
 
@@ -467,17 +423,14 @@ def tool_motor_calibrate_json(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
     
-    if not tapi.sync_tool() :
-        tc.close()
+    if not ts.sync_tool() :        
         return HttpResponse('Communications sync with the tool failed.')
                 
-    ms = tapi.motor_calibrate()
-    tc.close()
+    ms = ts.motor_calibrate()    
     
-    data = simplejson.dumps(ms.__dict__)   
+    data = simplejson.dumps(ms)   
     
     return HttpResponse(data, mimetype="application/javascript")
     
@@ -486,11 +439,9 @@ def tool_pulse_pattern_profile(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
 
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
 
-    if not tapi.sync_tool() :
-        tc.close()
+    if not ts.sync_tool() :        
         return HttpResponse('Communications sync with the tool failed.')
 
     if request.method == 'POST':
@@ -501,7 +452,7 @@ def tool_pulse_pattern_profile(request, object_id) :
                 cnt_val = int(request.POST['ppp_seq'+str(seq)+'_cnt'+str(num)])
                 cnt_val_cur = int(request.POST['ppp_seq'+str(seq)+'_cnt'+str(num)+'_cur'])
                 if (pat_val != pat_val_cur) or (cnt_val != cnt_val_cur):
-                    tapi.set_pulse_pattern_profile(seq, num, pat_val, cnt_val)                    
+                    ts.set_pulse_pattern_profile(seq, num, pat_val, cnt_val)                    
 
         for cnt in range(10) :
             seq = int(request.POST['ppsp_seq'+str(cnt)])
@@ -512,7 +463,7 @@ def tool_pulse_pattern_profile(request, object_id) :
             time_cur = int(request.POST['ppsp_time'+str(cnt)+'_cur'])
             if (seq != seq_cur) or (time != time_cur) :
                 print 'ppsp',cnt,seq,time,time_min,time_sec
-                tapi.set_pulse_pattern_sequence_profile(cnt, seq, time)                
+                ts.set_pulse_pattern_sequence_profile(cnt, seq, time)                
         
         adv_seq = False
         adv_seq_cur = False
@@ -522,12 +473,11 @@ def tool_pulse_pattern_profile(request, object_id) :
         if request.POST.has_key('scp_adv_seq') :
             adv_seq=True
         if adv_seq != adv_seq_cur :
-            tapi.toggle_advanced_sequence_pattern_mode()
+            ts.toggle_advanced_sequence_pattern_mode()
                 
-    ppp = tapi.get_pulse_pattern_profile()
-    ppsp = tapi.get_pulse_pattern_sequence_profile()
-    scp = tapi.get_status_constant_profile()
-    tc.close()
+    ppp = ts.get_pulse_pattern_profile()
+    ppsp = ts.get_pulse_pattern_sequence_profile()
+    scp = ts.get_status_constant_profile()    
         
     return render_to_response('tool_pulse_pattern_profile.html', {'ppp': ppp, 'ppsp': ppsp, 'scp': scp, 'object': tool, }, context_instance = RequestContext(request))
 
@@ -536,34 +486,30 @@ def tool_frame_mode_buffer(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
 
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
 
-    if not tapi.sync_tool() :
-        tc.close()
+    if not ts.sync_tool() :        
         return HttpResponse('Communications sync with the tool failed.')
 
     if request.method == 'POST':
         form = ToolFrameModeBufferForm(request.POST) 
         
         if form.is_valid(): 
-            mode_cur = tapi.get_frame_mode_buffer()
+            mode_cur = ts.get_frame_mode_buffer()
         
             for frame in range(len(mode_cur)) :            
                 mode = form.cleaned_data['fmb'+str(frame)]
                 
                 if (mode != mode_cur[frame]):
-                    tapi.set_frame_mode_buffer(frame, mode)                    
+                    ts.set_frame_mode_buffer(frame, mode)                    
 
     else :
-        mode_cur = tapi.get_frame_mode_buffer()
+        mode_cur = ts.get_frame_mode_buffer()
         b = {}
         for frame in range(len(mode_cur)) :
             b['fmb'+str(frame)] = mode_cur[frame]
-        form = ToolFrameModeBufferForm(initial = b)
-    tc.close()
-    
-    
+        form = ToolFrameModeBufferForm(initial = b)    
+        
     return render_to_response('generic_form.html', {'object': tool, 'form': form, 'subtitle': 'Frame Mode Configuration', 'navigation_template': 'tool_config_menu.html'}, context_instance = RequestContext(request))
 
 
@@ -571,17 +517,13 @@ def tool_purge_log(request, object_id) :
     
     tool = Tool.objects.get(pk=object_id)
     
-    tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    tapi = ToolAPI(tc)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
     
-    if not tapi.sync_tool() :
-        tc.close()
+    if not ts.sync_tool() :        
         return HttpResponse('Communications sync with the tool failed.')
                 
-    tapi.purge_log()
-    
-    tc.close()
-    
+    ts.purge_log()
+        
     return render_to_response('message.html', {'message': 'Tool MWD Log Purged', 'navigation_template': 'tool_menu.html', 'object':tool }, context_instance = RequestContext(request))
 
 def tool_update(request, object_id, extra_context=None,) :
@@ -622,21 +564,18 @@ def tool_update(request, object_id, extra_context=None,) :
 def tool_calibration_update(request, object_id, template_name, extra_context=None,) :
     
     tool = Tool.objects.get(pk=object_id)
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
         
     if request.method == 'POST': # If the form has been submitted...
         
         form = ToolCalibrationForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
-            # Open port after validation so the user does not have to wait so long to error messages
-            tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-            tapi = ToolAPI(tc)
     
-            if not tapi.sync_tool() :
-                tc.close()
+            if not ts.sync_tool() :                
                 return HttpResponse('Communications sync with the tool failed.')
                 
             for k,v in form.cleaned_data.items() :                
-                cur_cal = tapi.set_calibration_contant(k,int(v))
+                cur_cal = ts.set_calibration_contant(k,int(v))
                 
             tcal = ToolCalibration()
             tcal.tool = tool
@@ -663,14 +602,11 @@ def tool_calibration_update(request, object_id, template_name, extra_context=Non
             
             tcal.save()
     else:
-        tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-        tapi = ToolAPI(tc)
-    
-        if not tapi.sync_tool() :
-            tc.close()
+        
+        if not ts.sync_tool() :            
             return HttpResponse('Communications sync with the tool failed.')
                 
-        c = tapi.get_calibration_contants()
+        c = ts.get_calibration_contants()
         initial = {
             'accelerometer_x_offset': c[2],
             'accelerometer_x_gain': c[3],
@@ -699,8 +635,7 @@ def tool_calibration_update(request, object_id, template_name, extra_context=Non
 
     return render_to_response(template_name, data, context_instance = RequestContext(request))
  
-        
-    
+            
 def run_activate(request, object_id) :    
     d = {}
     
@@ -896,33 +831,23 @@ def _download_log(run_id) :
     s = Settings.objects.get(name='LOG_DOWNLOAD_STATUS')
     s.value='Opening COM Port %s' % settings.COMPORT
     s.save()
-    
-    try :    
-        tc = ToolCom(port = settings.COMPORT, baudrate=settings.BAUDRATE, bytesize=settings.DATABITS, parity=settings.PARITY, stopbits=settings.STOPBITS, timeout=settings.COMPORT_TIMEOUT)
-    except :
-        s.value='Error opening port %s' % settings.COMPORT
-        s.save()
-        p.value=''
-        p.save()
-        return
-        
-    tapi = ToolAPI(tc)
+
+    ts = xmlrpclib.ServerProxy(settings.TOOLSERVER)
     
     s.value='Checking Tool'
     s.save()
-    if not tapi.sync_tool() :
+    if not ts.sync_tool() :
         p.value=''
         p.save()
         c.value = str(-1)
         c.save()
         s.value="Communications sync with the tool failed."
-        s.save()
-        tc.close()
+        s.save()        
         return
 
     s.value='Getting calibration constants'
     s.save()
-    cal_vals = tapi.get_calibration_contants()
+    cal_vals = ts.get_calibration_contants()
     cal = ToolCalibration(time_stamp = datetime.datetime.utcnow(),
                          tool=run.tool,
                          calibration_id=cal_vals[0],
@@ -950,53 +875,57 @@ def _download_log(run_id) :
 
     s.value='Getting gamma interval'
     s.save()
-    scp = tapi.get_status_constant_profile()
-    gamma_interval = scp.logging_interval/1000/scp.gammaray_log_size
+    scp = ts.get_status_constant_profile()
+    gamma_interval = scp['logging_interval']/1000/scp['gammaray_log_size']
 
     s.value='Calculating log size'
     s.save()
     b = Settings.objects.get(name='LOG_DOWNLOAD_SIZE')    
     # Lines of log = 20 bytes for the Grav, Mag & Temp + 2 per gamma ray
-    b.value=str(tapi.get_bytes_in_log()/( 20 + (scp.gammaray_log_size * 2) ))
+    bytes_in_log = ts.get_bytes_in_log()
+    lines_in_log = bytes_in_log/( 20 + (scp['gammaray_log_size'] * 2) )
+    b.value=str(lines_in_log)
     b.save()
 
     s.value='Downloading'
     s.save()
 
     rc = True
-    for log_data in tapi.get_log_generator() :
-                
+    ts.log_download_start()    
+    for log_cnt in range(lines_in_log) :
+        log_data = ts.log_get_next()
+        
         c.value = str(int(c.value) + 1)
         c.save()            
         
         d = ToolMWDLog()        
         d.run_id = run_id
-        d.raw_data = log_data.raw_data
-        d.seconds = log_data.seconds
-        d.status = log_data.status
-        d.gravity_x = log_data.gravity_x
-        d.gravity_y = log_data.gravity_y
-        d.gravity_z = log_data.gravity_z
-        d.magnetic_x = log_data.magnetic_x
-        d.magnetic_y = log_data.magnetic_y
-        d.magnetic_z = log_data.magnetic_z
-        d.temperature = log_data.temperature
+        d.raw_data = log_data['raw_data']
+        d.seconds = log_data['seconds']
+        d.status = log_data['status']
+        d.gravity_x = log_data['gravity_x']
+        d.gravity_y = log_data['gravity_y']
+        d.gravity_z = log_data['gravity_z']
+        d.magnetic_x = log_data['magnetic_x']
+        d.magnetic_y = log_data['magnetic_y']
+        d.magnetic_z = log_data['magnetic_z']
+        d.temperature = log_data['temperature']
         d.save()
         
-        seconds = log_data.seconds
-        for g in log_data.gamma :
+        seconds = log_data['seconds']
+        for g in log_data['gamma'] :
             d = ToolMWDLogGamma()
             d.run_id = run_id
             d.seconds = seconds
             seconds += gamma_interval
-            d.status = log_data.status
+            d.status = log_data['status']
             d.gamma = g
             d.save()
                 
         p = Settings.objects.get(name='LOG_DOWNLOAD_IN_PROGRESS')        
         rc = bool(p.value)
         if rc != True :
-            tapi.get_log_cancel()
+            ts.get_log_cancel()
 
     if rc == None :
         s.value='Download Error'
@@ -1008,8 +937,7 @@ def _download_log(run_id) :
     
     p.value=''
     p.save()
-            
-    tc.close()
+                
     
 def run_start_download_log(request, object_id) :
     run = Run.objects.get(pk=object_id)

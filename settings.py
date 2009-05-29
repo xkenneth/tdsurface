@@ -103,5 +103,5 @@ DATABITS=8
 PARITY='N'
 STOPBITS=1
 COMPORT_TIMEOUT=10
-
+TOOLSERVER = 'http://localhost:8008'
 from settings_local import *
