@@ -314,7 +314,7 @@ admin.site.register(PipeTally)
 
 
 class ToolMWDRealTime(models.Model) :
-    VALUE_TYPE_CHOICES = (('g','Gravity'),('H','Magnetic'),('temperature','Temperature'),('gammaray','Gamma Ray'),('azimuth','Azimuth'),('inclination','Inclination'),('toolface','Tool Face'),('status', 'Status'))
+    VALUE_TYPE_CHOICES = (('gravity','Gravity'),('magnetic','Magnetic'),('temperature','Temperature'),('gammaray','Gamma Ray'),('azimuth','Azimuth'),('inclination','Inclination'),('toolface','Tool Face'),('status', 'Status'))
     uid = UUIDField(primary_key=True, editable=False)
     well = models.ForeignKey(Well)    
     time_stamp = models.DateTimeField( db_index=True)
