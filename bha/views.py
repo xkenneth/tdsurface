@@ -25,6 +25,8 @@ def bha_update(request, object_id, extra_context=None) :
     bha, created = BHA.objects.get_or_create(run=run)    
     bit, created = Bit.objects.get_or_create(bha=bha)
 
+    assets, created = SerializedAssests.objects.get_or_create(bha=bha)
+    
     jets = Jet.objects.filter(bit=bit)
     if len(jets) < MAX_JETS :
         for x in range(MAX_JETS - len(jets)) :
@@ -46,13 +48,24 @@ def bha_update(request, object_id, extra_context=None) :
         bit_form = BitForm(request.POST, instance=bit)
         jet_forms = [JetForm(request.POST, prefix='jet'+str(x), instance=jets[x]) for x in range(MAX_JETS)]
         pump_forms = [PumpForm(request.POST, prefix='pump'+str(x), instance=pumps[x]) for x in range(MAX_PUMPS)]
-        if all([bha_form.is_valid(), bit_form.is_valid()] + [x.is_valid() for x in jet_forms] + [x.is_valid() for x in pump_forms]) : # All validation rules pass
+        collar_form = CollarForm(request.POST)        
+        probe_form = ProbeForm(request.POST)
+        surface_gear_form = SurfaceGearForm(request.POST)
+        if all([collar_form.is_valid(), probe_form.is_valid(), surface_gear_form.is_valid(), bha_form.is_valid(), bit_form.is_valid()] + [x.is_valid() for x in jet_forms] + [x.is_valid() for x in pump_forms]) : # All validation rules pass
             bha_form.save()
             bit_form.save()
             for jet_form in jet_forms :
                 jet_form.save()
             for pump_form in pump_forms :
                 pump_form.save()
+
+            d = {'pk':assets.pk, 'bha_id':assets.bha_id}
+            d.update(collar_form.cleaned_data)
+            d.update(probe_form.cleaned_data)
+            d.update(surface_gear_form.cleaned_data)
+
+            SerializedAssests(**d).save()
+            
             return HttpResponseRedirect(reverse('bha_update', args=[object_id]))
 
     else :
@@ -60,6 +73,10 @@ def bha_update(request, object_id, extra_context=None) :
         bit_form = BitForm(instance=bit)
         jet_forms = [JetForm(prefix='jet'+str(x), instance=jets[x]) for x in range(MAX_JETS)]
         pump_forms = [PumpForm(prefix='pump'+str(x), instance=pumps[x]) for x in range(MAX_PUMPS)]
+       
+        collar_form = CollarForm(initial=assets.__dict__)
+        probe_form = ProbeForm(initial=assets.__dict__)
+        surface_gear_form = SurfaceGearForm(initial=assets.__dict__)
 
     pump_fields = []
     for field in pump_forms[0].fields :
@@ -72,7 +89,16 @@ def bha_update(request, object_id, extra_context=None) :
             pump_fields[cnt].append(field)
             cnt = cnt+1
         
-    data = {'object': run, 'bha_form': bha_form, 'bit_form': bit_form, 'jet_forms': jet_forms, 'pump_forms': pump_forms, 'pump_fields': pump_fields, 'bha':bha}    
+    data = {'object': run,
+            'bha_form': bha_form,
+            'bit_form': bit_form,
+            'jet_forms': jet_forms,
+            'pump_forms': pump_forms,
+            'pump_fields': pump_fields,
+            'bha':bha,
+            'collar_form': collar_form,
+            'probe_form': probe_form,
+            'surface_gear_form': surface_gear_form,}    
     
     for key, value in extra_context.items():
         if callable(value):

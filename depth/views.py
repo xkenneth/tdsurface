@@ -772,8 +772,7 @@ def run_update(request, object_id, extra_context=None,) :
         if request.POST['form_id'] == 'run_update_form' :
             run_form = RunFormForm(request.POST) # A form bound to the POST data
             run_notes_form = RunNotesForm()
-            if run_form.is_valid(): # All validation rules pass                
-                #well_bore = WellBore.objects.get(pk=run_form.cleaned_data['well_bore'])
+            if run_form.is_valid(): # All validation rules pass                                
                 well_bore = run_form.cleaned_data['well_bore']
                 # Convert user entered Well Local Time to to UTC
                 wlt = timezone(well_bore.well.timezone)                
