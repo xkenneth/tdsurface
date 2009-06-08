@@ -990,16 +990,16 @@ def well_real_time_json(request, object_id, num_latest=5) :
     hoursago = datetime.datetime.utcnow() - timedelta(hours=2)
     
     azimuth = []
-    [azimuth.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'), 'value':float(x.value)}) for x in ToolMWDRealTime.objects.filter(well=well, type='azimuth', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
+    [azimuth.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'), 'value':x.value}) for x in ToolMWDRealTime.objects.filter(well=well, type='azimuth', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
     toolface = []
-    [toolface.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'), 'value':float(x.value)}) for x in ToolMWDRealTime.objects.filter(well=well, type='toolface', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
+    [toolface.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'), 'value':x.value}) for x in ToolMWDRealTime.objects.filter(well=well, type='toolface', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
     inclination = []
-    [inclination.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'), 'value':float(x.value)}) for x in ToolMWDRealTime.objects.filter(well=well, type='inclination', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
+    [inclination.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'), 'value':x.value}) for x in ToolMWDRealTime.objects.filter(well=well, type='inclination', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
     gamma = []
     
-    [gamma.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':float(x.value)}) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='gammaray', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest*10] ]
+    [gamma.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in ToolMWDRealTime.objects.filter(well=well).filter(type='gammaray', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest*10] ]
     temperature = []
-    [temperature.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'), 'value':float(x.value)}) for x in ToolMWDRealTime.objects.filter(well=well, type='temperature', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
+    [temperature.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'), 'value':x.value}) for x in ToolMWDRealTime.objects.filter(well=well, type='temperature', time_stamp__gt=hoursago).order_by('-time_stamp')[:num_latest] ]
 
 
     hole_depth = []
