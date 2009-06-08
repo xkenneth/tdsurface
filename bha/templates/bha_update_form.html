@@ -222,7 +222,25 @@ th
 <br>
 <br>
 <form method="POST" action=".">
+
 <table>
+    <tr>
+        <th colspan="3">Serialized Assets</th>        
+    </tr>
+    <tr>
+        <th>Collar</th>
+        <th>Probe</th>
+        <th>Surface Gear</th>
+    </tr>
+    <tr>
+        <td valign="top">{{ collar_form.as_p }}</td>
+        
+        <td valign="top">{{ probe_form.as_p }}</td>
+        
+        <td valign="top">{{ surface_gear_form.as_p }}</td>
+    </tr>
+</table>
+<table border="1">
     <tr>
         <th>BHA Information</th>
         <th>Pumps</th>

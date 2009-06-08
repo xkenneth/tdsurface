@@ -39,18 +39,18 @@ class RigForm(ModelForm) :
     fax = USPhoneNumberField(required=False)
 
 
-class RunForm(ModelForm) :
+#class RunForm(ModelForm) :
     
-    class Meta :
-        model = Run
+    #class Meta :
+        #model = Run
 
-    class Media:
-        css = {
-                'all': (form_css,)
-        }
+    #class Media:
+        #css = {
+                #'all': (form_css,)
+        #}
 
-    start_time = forms.DateTimeField(label="Start Time (UTC)", widget = DynarchDateTimeWidget(datetime_button_html))
-    end_time = forms.DateTimeField(label = "End Time (UTC)", required=False, widget = DynarchDateTimeWidget(datetime_button_html))
+    #start_time = forms.DateTimeField(label="Start Time (UTC)", widget = DynarchDateTimeWidget(datetime_button_html))
+    #end_time = forms.DateTimeField(label = "End Time (UTC)", required=False, widget = DynarchDateTimeWidget(datetime_button_html))
 
 class RunFormForm(forms.Form) :
     
@@ -61,8 +61,7 @@ class RunFormForm(forms.Form) :
 
     name = forms.CharField()
     start_time = forms.DateTimeField(label="Start Time", widget = DynarchDateTimeWidget(datetime_button_html))
-    end_time = forms.DateTimeField(label = "End Time", required=False, widget = DynarchDateTimeWidget(datetime_button_html))    
-    #tool_calibration = forms.ModelChoiceField(ToolCalibration.objects.all().order_by('-time_stamp'))
+    end_time = forms.DateTimeField(label = "End Time", required=False, widget = DynarchDateTimeWidget(datetime_button_html))        
     tool = forms.ModelChoiceField(Tool.objects.all().order_by('serial_number'))
     well_bore = forms.ModelChoiceField(WellBore.objects.all().order_by('well'))
 

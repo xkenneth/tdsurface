@@ -316,13 +316,13 @@ def las_from_rtlog(request, object_id) :
                 d = Descriptor(mnemonic="GT", unit="", description="Total Gravity")
                 curve_headers.append(d)                                
                 curves.append(LasCurve(d,[]))
-                type.append('g')
+                type.append('gravity')
                         
             if form.cleaned_data['magnetic'] :
                 d = Descriptor(mnemonic="HT", unit="", description="Total Magnetic")
                 curve_headers.append(d)                                
                 curves.append(LasCurve(d,[]))
-                type.append('H')
+                type.append('magnetic')
 
             if form.cleaned_data['azimuth'] :
                 d = Descriptor(mnemonic="AZI", unit="DEG", description="Azimuth")
@@ -372,10 +372,10 @@ def las_from_rtlog(request, object_id) :
                         vl = v.get('gammaray',(LASNULL,))                                                
                         
                     if c.descriptor.mnemonic == 'GT' :                        
-                        vl = v.get('g',(LASNULL,))                                                
+                        vl = v.get('gravity',(LASNULL,))                                                
                         
                     if c.descriptor.mnemonic == 'HT' :                        
-                        vl = v.get('H',(LASNULL,))                                                
+                        vl = v.get('magnetic',(LASNULL,))                                                
 
                     if len(vl)>1 :
                         c.data.append(sum(vl)/len(vl))
