@@ -39,18 +39,18 @@ class RigForm(ModelForm) :
     fax = USPhoneNumberField(required=False)
 
 
-#class RunForm(ModelForm) :
+class RunForm(ModelForm) :
     
-    #class Meta :
-        #model = Run
+    class Meta :
+        model = Run
 
-    #class Media:
-        #css = {
-                #'all': (form_css,)
-        #}
+    class Media:
+        css = {
+                'all': (form_css,)
+        }
 
-    #start_time = forms.DateTimeField(label="Start Time (UTC)", widget = DynarchDateTimeWidget(datetime_button_html))
-    #end_time = forms.DateTimeField(label = "End Time (UTC)", required=False, widget = DynarchDateTimeWidget(datetime_button_html))
+    start_time = forms.DateTimeField(label="Start Time (UTC)", widget = DynarchDateTimeWidget(datetime_button_html))
+    end_time = forms.DateTimeField(label = "End Time (UTC)", required=False, widget = DynarchDateTimeWidget(datetime_button_html))
 
 class RunFormForm(forms.Form) :
     

@@ -126,13 +126,13 @@ function sensors_callback(data, textStatus)
         }).error(function () {
             //alert("Error loading Gamma Ray graph");
         }).attr('src', '{% url plot_realtime_gammaray active_well.pk|default:"0" %}'+'?'+uniq);
-    
-    window.setTimeout(get_sensors,30000);
+        
 }
  
 function get_sensors()
 {
-    {% if active_well %} 
+    {% if active_well %}
+    window.setTimeout(get_sensors,30000);
     $.getJSON("{% url well_real_time_json active_well.pk|default:"0" 5 %}", sensors_callback);
     {% endif %}
 }

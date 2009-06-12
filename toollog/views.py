@@ -56,6 +56,8 @@ def run_toollog_grid(request, object_id) :
         rd['toolface_gravity'] = str(log.tool_face_gravity())
         rd['depth'] = str(log.depth)
         rd['depth_units'] = log.depth_units
+        rd['temperature_f'] = log.temperature_f()
+        rd['temperature_c'] = log.temperature_c()
 
         gamma = ToolMWDLogGamma.objects.filter(run=run, seconds=log.seconds)[0]
         rd['gamma'] = str(gamma.gamma_cps())

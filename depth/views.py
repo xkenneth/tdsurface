@@ -1024,6 +1024,7 @@ def well_real_time_json(request, object_id, num_latest=5) :
         'weight_on_bit': weight_on_bit,
         'mud_flow_in': mud_flow_in,
         'rop': rop,
+        'hoursago': str(hoursago),
         }
     
     data = simplejson.dumps(data)   
