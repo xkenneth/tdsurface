@@ -596,9 +596,9 @@ admin.site.register(WITSGeneralTimeBased)
 class WITS0(models.Model) :
     uid = UUIDField(primary_key=True, editable=False)
     well = models.ForeignKey(Well)
-    time_stamp = models.DateTimeField(db_index=True)
-    recid = models.IntegerField(db_index=True)
-    itemid = models.IntegerField(db_index=True)
+    time_stamp = models.DateTimeField(db_index=False)
+    recid = models.IntegerField(db_index=False)
+    itemid = models.IntegerField(db_index=False)
     value = models.CharField(max_length=255, blank=True, null=True)
     
     def description(self) :

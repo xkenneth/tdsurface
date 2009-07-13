@@ -75,7 +75,7 @@ function sensors_callback(data, textStatus)
         $('#gamma_ray').html(html);
     }
 
-    html = "<table><tr><th>Time Stamp</th><th>Hole Depth</th><th>Bit Depth</th><th>Weight-on-Bit</th><th>Mud Flow In</th><th>ROP</th></tr>";            
+    html = "<table><tr><th>Time Stamp</th><th>Hole Depth</th><th>Bit Depth</th><th>Weight-on-Bit</th><th>Mud Flow In</th><th>Rotary Speed</th><th>Standpipe Pres.</th><th>ROP</th></tr>";            
     for(var i=0; i<data.hole_depth.length; i++)
     {
         html += "<tr>";
@@ -99,15 +99,29 @@ function sensors_callback(data, textStatus)
             html += data.mud_flow_in[i]['value'];
         }
         html += '</td>';
+        
+        html += '<td align="right">';
+        if(data.rotary_speed.length > i)
+        {
+            html += data.rotary_speed[i]['value'];
+        }
+        html += '</td>';        
+        
+        html += '<td align="right">';
+        if(data.standpipe_pressure.length > i)
+        {
+            html += data.standpipe_pressure[i]['value'];
+        }
+        html += '</td>';        
+        
+        
+        
         html += '<td align="right">';
         if(data.rop.length > i)
         {
             html += data.rop[i]['value'];
         }
-        html += '</td>';
-        //html += '<td align="right">' + data.weight_on_bit[i]['value'] + '</td>';
-        //html += '<td align="right">' + data.mud_flow_in[i]['value'] + '</td>';
-        //html += '<td align="right">' + data.rop[i]['value'] + '</td>';
+        html += '</td>';        
         html += '</tr>';
     }
     html += "<table>";

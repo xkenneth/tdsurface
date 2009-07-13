@@ -1010,6 +1010,10 @@ def well_real_time_json(request, object_id, num_latest=5) :
     [weight_on_bit.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=17).order_by('-time_stamp')[:num_latest] ]
     mud_flow_in = []
     [mud_flow_in.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=30).order_by('-time_stamp')[:num_latest] ]
+    rotary_speed = []
+    [rotary_speed.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=20).order_by('-time_stamp')[:num_latest] ]
+    standpipe_pressure = []
+    [standpipe_pressure.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=21).order_by('-time_stamp')[:num_latest] ]
     rop = []
     [rop.append({'timestamp': pytz.utc.localize(x.time_stamp).astimezone(wltz).replace(tzinfo=None).strftime('%Y/%m/%d %H:%M:%S'),'value':x.value}) for x in WITS0.objects.filter(well=well).filter(recid=1,itemid=13).order_by('-time_stamp')[:num_latest] ]
     
@@ -1023,6 +1027,8 @@ def well_real_time_json(request, object_id, num_latest=5) :
         'bit_depth': bit_depth,        
         'weight_on_bit': weight_on_bit,
         'mud_flow_in': mud_flow_in,
+        'rotary_speed': rotary_speed,
+        'standpipe_pressure': standpipe_pressure,
         'rop': rop,
         'hoursago': str(hoursago),
         }
