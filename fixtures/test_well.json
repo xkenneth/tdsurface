@@ -1,0 +1,36 @@
+[
+{"pk": "69aa3670-c736-4067-83c1-388b5fd84c28", 
+ "model": "depth.well",
+ "fields": {"county": null,
+	    "operator": null,
+	    "timezone": "US/Central",
+	    "water_depth_units": null,
+	    "district": null,
+	    "license_number": null,
+	    "lon": null,
+	    "field": null,
+	    "state": null,
+	    "interest": null,
+	    "license_date": null,
+	    "division": null,
+	    "api_number": null,
+	    "lat": null,
+	    "water_depth": null,
+	    "legal_name": null,
+	    "name": "asdf",
+	    "country": null,
+	    "region": null,
+	    "government_number": null,
+	    "notes": null,
+	    "block": null}
+
+
+},
+{
+    "model":"depth.settings",
+    "pk":"ACTIVE_WELL",
+    "fields": {
+	"value":"69aa3670-c736-4067-83c1-388b5fd84c28"	
+    }
+}
+]
