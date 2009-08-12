@@ -105,3 +105,8 @@ STOPBITS=1
 COMPORT_TIMEOUT=10
 TOOLSERVER = 'http://localhost:8008'
 from settings_local import *
+
+
+FIXTURE_DIRS = (
+    'fixtures',
+)
